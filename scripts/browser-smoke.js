@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { mkdir,writeFile } from 'node:fs/promises';
+import { openBrowserPage,pause } from './cdp.js';
+const page=await openBrowserPage();const measurements=[],graphics=[];let originalPreferences;
+try{
+ originalPreferences=await page.evaluate("localStorage.getItem('moba-training:preferences:v1')");
+ await page.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:1,mobile:false});assert.equal(await page.evaluate("document.querySelector('h1').textContent"),'MOBA Training');
+ for(const path of ['/levels','/diagnostics','/profile','/settings','/dpi']){await page.go(path);assert.equal(await page.evaluate("document.querySelectorAll('main').length"),1);assert.equal(await page.evaluate("document.documentElement.scrollWidth>innerWidth"),false,`Sem overflow em ${path}`);}
+ await page.go('/levels');assert.equal(await page.evaluate("document.querySelectorAll('.level').length"),40);await page.go('/diagnostics');assert.equal(await page.evaluate("document.querySelectorAll('a[href^=\"#/assessment/\"]').length"),4);
+ // Record the loop owned by a scene; the wrapper itself never retains completed callbacks.
+ await page.evaluate(`(()=>{const request=window.requestAnimationFrame.bind(window),cancel=window.cancelAnimationFrame.bind(window);window.qaFrames=new Set();window.requestAnimationFrame=callback=>{const id=request(time=>{qaFrames.delete(id);callback(time);});qaFrames.add(id);return id;};window.cancelAnimationFrame=id=>{qaFrames.delete(id);cancel(id);};})()`);
+ for(let cycle=0;cycle<10;cycle++){await page.go('/preview');await page.waitFor("document.querySelectorAll('canvas').length===1");await pause(100);const running=await page.evaluate('qaFrames.size');assert.equal(running,1);await page.go('/');await page.send('HeapProfiler.collectGarbage');measurements.push({cycle:cycle+1,frames:await page.evaluate('qaFrames.size'),canvases:await page.evaluate("document.querySelectorAll('canvas').length"),heap:(await page.send('Runtime.getHeapUsage')).usedSize});assert.equal(measurements.at(-1).frames,0);assert.equal(measurements.at(-1).canvases,0);}
+ assert.ok(measurements.at(-1).heap-measurements[1].heap<5*1024*1024,'Heap após aquecimento cresce menos de 5 MiB nesta sequência.');
+ await page.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:2,mobile:false});
+ for(const [quality,expected]of [['leve',1],['medio',1.4],['alto',1.75]]){
+  await page.go('/settings');await page.evaluate(`(()=>{const form=[...document.querySelectorAll('form')].find(f=>f.textContent.includes('Qualidade gráfica'));form.querySelectorAll('select')[2].value='${quality}';form.querySelector('button[type=submit]').click();})()`);await page.go('/preview');await page.waitFor("document.querySelectorAll('canvas').length===1");await pause(100);const dimensions=await page.evaluate("(()=>{const c=document.querySelector('canvas'),r=c.getBoundingClientRect();return {css:r.width,internal:c.width,dpr:devicePixelRatio};})()");assert.equal(dimensions.dpr,2);assert.ok(Math.abs(dimensions.internal/dimensions.css-expected)<.01);graphics.push({quality,...dimensions});await page.go('/');
+ }
+ for(const [width,height]of [[1366,768],[1920,1080],[390,844]]){await page.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await page.go('/levels');assert.equal(await page.evaluate('document.documentElement.scrollWidth>innerWidth'),false);if(process.env.QA_ARTIFACT_DIR){await mkdir(process.env.QA_ARTIFACT_DIR,{recursive:true});const shot=await page.send('Page.captureScreenshot',{format:'png'});await writeFile(`${process.env.QA_ARTIFACT_DIR}/levels-${width}.png`,Buffer.from(shot.data,'base64'));}}
+ assert.deepEqual(page.errors,[]);console.log(JSON.stringify({status:'PASSOU',navigation:5,unlockedLevels:40,diagnostics:4,reentries:measurements,graphics},null,2));
+}finally{if(originalPreferences!==undefined)await page.evaluate(originalPreferences===null?"localStorage.removeItem('moba-training:preferences:v1')":`localStorage.setItem('moba-training:preferences:v1',${JSON.stringify(originalPreferences)})`);await page.close();}

@@ -1,0 +1,14 @@
+import { GAME_VERSION } from '../app/version.js';
+import { readonlySnapshot } from '../training/snapshot.js';
+import { kitingDifficulty } from '../training/kiting/difficulty.js';
+import { KITING_METRICS_VERSION } from '../training/kiting/attempt.js';
+import { KITING_SCORING_VERSION } from '../training/kiting/score.js';
+import { StorageError,assertRecordData } from './storageError.js';
+export function validateKitingRecord(r){
+ assertRecordData(r);const m=r?.metrics,s=r?.score;
+ let config;try{config=kitingDifficulty(r.level,r.variant);}catch{throw new StorageError('Contexto de Kiting inválido.','INVALID_RECORD');}
+ if(r.recordSchemaVersion!==1||r.modality!=='kiting'||r.mode!=='timed'||r.endReason!=='completed'||typeof r.attemptId!=='string'||!r.attemptId.trim()||!Number.isFinite(Date.parse(r.completedAt))||!m||!s||m.origin!=='official'||m.modality!=='kiting'||!m.terminal||m.endReason!=='completed'||m.elapsedActiveSeconds!==60||m.metricsVersion!==KITING_METRICS_VERSION||s.scoringVersion!==KITING_SCORING_VERSION||s.metricsVersion!==KITING_METRICS_VERSION||s.status!=='scored'||!Number.isInteger(s.score)||s.score<0||s.score>100)throw new StorageError('Kiting não elegível para salvamento.','INELIGIBLE');
+ if([m,s].some(v=>v.attemptId!==r.attemptId||v.variant!==r.variant||v.level!==r.level)||![m.accepted,m.shots,m.hits,m.cancellations,m.rhythmOpportunities,m.rhythmCycles].every(n=>Number.isInteger(n)&&n>=0)||m.hits>m.shots||m.shots+m.cancellations>m.accepted||m.rhythmOpportunities!==Math.max(0,m.hits-1)||m.rhythmCycles>m.rhythmOpportunities||!Number.isFinite(m.totalDistanceMoved)||m.totalDistanceMoved<0||!Array.isArray(m.histogram)||m.histogram.length!==6||!m.histogram.every(n=>Number.isInteger(n)&&n>=0)||m.histogram.reduce((n,h)=>n+h,0)!==m.hits)throw new StorageError('Métricas de Kiting contraditórias.','INVALID_RECORD');
+ if(!m.config||Object.entries(config).some(([key,value])=>m.config[key]!==value)||s.referenceHits!==config.referenceHits||s.minSampleHits!==config.minSampleHits||s.activityGate!==Math.min(1,m.hits/config.minSampleHits)||!Array.isArray(s.components)||s.components.length!==4||s.components.some((c,i)=>Math.abs(c.contribution-c.weight*c.index)>1e-6||c.weight!==[40,30,20,10][i]||![c.index,c.contribution].every(Number.isFinite)||c.index<0||c.index>1||c.contribution<0||c.contribution>c.weight)||Math.round(s.components.reduce((n,c)=>n+c.contribution,0)*s.activityGate)!==s.score)throw new StorageError('Score de Kiting inconsistente.','INVALID_RECORD');return r;
+}
+export function createKitingRecord(metrics,score,{completedAt=new Date().toISOString(),gameVersion=GAME_VERSION}={}){return readonlySnapshot(validateKitingRecord({recordSchemaVersion:1,attemptId:metrics.attemptId,modality:'kiting',mode:'timed',variant:metrics.variant,level:metrics.level,endReason:metrics.endReason,completedAt,gameVersion,metrics,score}));}
