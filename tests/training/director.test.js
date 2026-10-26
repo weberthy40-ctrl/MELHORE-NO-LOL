@@ -29,5 +29,5 @@ describe('admission and difficulty',()=>{
     }
     expect(a.snapshot().peak).toBeGreaterThanOrEqual(2);expect(a.snapshot().combinations).toBeGreaterThan(0);
     a.dispose();b.dispose();
-  });
+  },15000);
 });

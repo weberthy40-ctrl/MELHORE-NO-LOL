@@ -7,8 +7,8 @@ import { DODGE_MOVEMENT_SPEED } from '../movement.js';
 export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficultyFor(level),interval=profile.interval,capacity=profile.capacity,events,attemptId=null,mode='technical',isRunning=()=>true,canSpawn=()=>true}={}) {
   validateDifficulty(profile);
   const options=Object.freeze({...profile,weights:Object.freeze({...profile.weights})});
-  if(!Number.isFinite(interval)||interval<0.25)throw new TypeError('Invalid attack interval.');
-  let elapsed=0,clock=0,shots=0,impacts=0,disposed=false,combo=null,sinceCombo=Infinity,attempts=0,rejected=0,peak=0,combinations=0;
+  if(!Number.isFinite(interval)||interval<.16)throw new TypeError('Invalid attack interval.');
+  let elapsed=0,clock=0,shots=0,impacts=0,disposed=false,combo=null,comboRemaining=0,lastCaster=null,sinceCombo=Infinity,attempts=0,rejected=0,peak=0,combinations=0;
   const select=createSelector({rng,weights:options.weights});
   const projectiles=createProjectiles({capacity,isRunning,onEvent(event){if(event.type==='impact')impacts++;events?.emit(`dodge:${event.type}`,Object.freeze({...event,attemptId,mode,level:options.level}));}});
   return {snapshot:()=>Object.freeze({level:options.level,elapsed,shots,impacts,attempts,rejected,peak,combinations,projectiles:projectiles.snapshot()}),
@@ -18,21 +18,20 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
       if(combo!==null)combo-=dt;
       const isCombo=combo!==null&&combo<=0;
       if(isCombo||clock>=interval){
-        if(isCombo)combo=null;else clock=0;
+        if(isCombo){comboRemaining--;combo=comboRemaining>0?options.comboDelay:null;}else clock=0;
         attempts++;
         if(projectiles.snapshot().length>=capacity){rejected++;return;}
-        const variant=select(),base=VARIANTS[variant],caster=chooseCasterOrigin(player,rng);
+        const variant=select(),base=VARIANTS[variant],caster=chooseCasterOrigin(player,rng,{avoid:isCombo?lastCaster:null});
         const vx=Math.max(-DODGE_MOVEMENT_SPEED,Math.min(DODGE_MOVEMENT_SPEED,(player.x-previousPlayer.x)/dt)),vz=Math.max(-DODGE_MOVEMENT_SPEED,Math.min(DODGE_MOVEMENT_SPEED,(player.z-previousPlayer.z)/dt));
         const lead=(options.level-1)*.018,ground=['circle','ring'].includes(base.shape);
         const aim={x:Math.max(ARENA.bounds.minX+.5,Math.min(ARENA.bounds.maxX-.5,player.x+vx*lead+(rng()-.5)*(ground?1.6:.3))),z:Math.max(ARENA.bounds.minZ+.5,Math.min(ARENA.bounds.maxZ-.5,player.z+vz*lead+(rng()-.5)*(ground?1.6:.3)))};
         const angle=Math.atan2(aim.x-caster.x,aim.z-caster.z),direction={x:Math.sin(angle),z:Math.cos(angle)},origin=ground?aim:caster;
-        const config={...base,speed:base.speed*(1+(options.level-1)*.03),windup:Math.max(base.shape==='bolt'?.48:.8,(base.windup??.9)-(options.level-1)*.02)};
+        const config={...base,speed:base.speed*(1+(options.level-1)*.075),pathHint:options.pathHint??'full',hintDuration:options.hintDuration??5,windup:Math.max(base.shape==='bolt'?.3:.55,(base.windup??.9)-(options.level-1)*.045)};
         const launch={origin,direction,variant,config,caster,aim:player},candidate=createAttackData(launch),active=projectiles.snapshot();
         if(!hasEscape(player,[...active,candidate],options)){rejected++;return;}
         const id=projectiles.spawn(launch);
-        if(id){shots++;peak=Math.max(peak,active.length+1);if(active.length)combinations++;}
-        if(isCombo)sinceCombo=0;
-        else if(combo===null&&sinceCombo>=options.peakCooldown&&rng()<options.comboChance)combo=options.comboDelay;
+        if(id){lastCaster=caster;shots++;peak=Math.max(peak,active.length+1);if(active.length)combinations++;}
+        if(!isCombo&&combo===null&&sinceCombo>=options.peakCooldown&&rng()<options.comboChance){comboRemaining=options.comboSize??1;combo=options.comboDelay;sinceCombo=0;}
       }
     },dispose(){if(disposed)return;disposed=true;projectiles.clear();}};
 }
@@ -63,9 +62,9 @@ export function chooseProjectileOrigin(player,rng,{minDistance=7.5,maxDistance=1
 }
 
 /** Random perimeter casters always stay outside the playable rectangle and away from the player. */
-export function chooseCasterOrigin(player,rng,{minDistance=9,attempts=16}={}){
+export function chooseCasterOrigin(player,rng,{minDistance=9,attempts=16,avoid=null}={}){
  if(![player?.x,player?.z,minDistance].every(Number.isFinite)||minDistance<4||minDistance>20||!Number.isInteger(attempts)||attempts<1||attempts>64)throw new TypeError('Invalid caster origin.');
  const xEdge=ARENA.width/2+2.8,zEdge=ARENA.length/2+2.8;
- for(let i=0;i<attempts;i++){const r=rng();if(!Number.isFinite(r)||r<0||r>=1)throw new TypeError('Invalid origin RNG.');const a=r*Math.PI*2,dx=Math.sin(a),dz=Math.cos(a),tx=Math.abs(dx)<1e-9?Infinity:((dx>0?xEdge:-xEdge)-player.x)/dx,tz=Math.abs(dz)<1e-9?Infinity:((dz>0?zEdge:-zEdge)-player.z)/dz,t=Math.min(tx,tz);if(t>=minDistance)return {x:player.x+dx*t,z:player.z+dz*t};}
+ for(let i=0;i<attempts;i++){const r=rng();if(!Number.isFinite(r)||r<0||r>=1)throw new TypeError('Invalid origin RNG.');const a=r*Math.PI*2,dx=Math.sin(a),dz=Math.cos(a),tx=Math.abs(dx)<1e-9?Infinity:((dx>0?xEdge:-xEdge)-player.x)/dx,tz=Math.abs(dz)<1e-9?Infinity:((dz>0?zEdge:-zEdge)-player.z)/dz,t=Math.min(tx,tz);if(t>=minDistance&&(!avoid||((avoid.x-player.x)*dx+(avoid.z-player.z)*dz)/Math.max(.01,Math.hypot(avoid.x-player.x,avoid.z-player.z))<.25))return {x:player.x+dx*t,z:player.z+dz*t};}
  const corners=[{x:-xEdge,z:-zEdge},{x:xEdge,z:-zEdge},{x:-xEdge,z:zEdge},{x:xEdge,z:zEdge}];return corners.sort((a,b)=>Math.hypot(b.x-player.x,b.z-player.z)-Math.hypot(a.x-player.x,a.z-player.z))[0];
 }

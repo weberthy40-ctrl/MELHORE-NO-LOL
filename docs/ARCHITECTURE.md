@@ -224,3 +224,12 @@ Ownership: um renderer e um RAF por cena; listeners e recursos exclusivos são l
 A esquiva usa `createAttackData` para normalizar o ataque antes de testar a admissão e inseri-lo na simulação. As formas `bolt`, `beam`, `circle` e `ring` compartilham as funções de geometria com a telemetria. `config.ttl` é a duração ativa; o snapshot normalizado armazena `ttl` como duração total, incluindo `windup`. Colisão e medição são recortadas ao intervalo ativo, e o evento de aviso qualifica a ameaça sem aplicar dano. A posição de `caster` fica fora da arena; o alvo e a direção anunciados são fixos no mundo.
 
 Precisão mista usa `sequenceVersion: clear-group-v2`: acertos retiram alvos, e apenas zerar o grupo sorteia o padrão seguinte. O prazo marca `overdue` uma vez sem retirar o alvo; `misses` continua contando cliques errados, separado de `expiredTargets`. Registros anteriores permanecem válidos. Ondas de kiting usam `configVersion: kiting-waves-v2` para registrar as novas velocidades; o validador ainda aceita a configuração anterior sem esse campo. Veja [feedback e validação rc.6](PLAYER_FEEDBACK_RC6.md).
+
+
+## Progressão e combate na rc.7
+
+Precisão mista usa `clear-group-v3`, com grupos de 3–8 alvos, movimentos limitados em dois eixos e sequência numérica a cada terceiro grupo. O contador `orderErrors` faz parte de `misses`; um clique em alvo fora da ordem não o remove. O picking ocorre na pose exibida antes da atualização de um quadro atrasado, e a identidade só é aceita depois de atualizar o relógio e verificar o fim da sessão.
+
+Kite apresenta o contexto `combat`, separado de `waves` e dos exercícios anteriores no histórico e na classificação. `enemyCombat` controla preparação inimiga, tiros, vida, dano e derrota, sem relógio próprio de parede. Tentativas oficiais de combate podem terminar com `completed` aos sessenta segundos ou `defeat` antes disso; abandono não é elegível. Na derrota, os índices de score recebem o fator de exposição `elapsedActiveSeconds / 60`. Registros sem vida/dano só continuam válidos nos contextos anteriores.
+
+Esquiva carrega `pathHint` e `hintDuration` no ataque normalizado; esses campos alteram a previsão visual de disparos móveis. Avisos de áreas e feixes permanecem. Capacidade e cadeias de lançamento são limitadas por nível, e as admissões continuam passando pelas sondas de escape. Veja [escolhas e validação rc.7](PLAYER_FEEDBACK_RC7.md).

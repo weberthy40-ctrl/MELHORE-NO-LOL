@@ -4,7 +4,8 @@ export function disposeObject(group) {
   group.traverse(node => {
     if (node.isSkinnedMesh && node.skeleton) resources.add(node.skeleton);
     if (node.isInstancedMesh) resources.add(node);
-    if (node.geometry) resources.add(node.geometry);
+    // THREE.Sprite shares its built-in quad across actors and scenes.
+    if (node.geometry && !node.isSprite) resources.add(node.geometry);
     if (node.material) for (const material of [node.material].flat()) resources.add(material);
   });
   for (const resource of resources) resource.dispose();

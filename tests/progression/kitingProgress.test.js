@@ -21,7 +21,7 @@ it('uses only the three recent static scores per level for rating and all record
 });
 function rounds(hits=12){return KITING_PRESETS.map((p,i)=>({...p,origin:'diagnostic',modality:'kiting',diagnosticVersion:KITING_DIAGNOSTIC_VERSION,attemptId:`r${i}`,index:i+1,durationTarget:20,activeSeconds:20,endReason:'diagnostic-time',complete:true,accepted:hits,shots:hits,hits,cancellations:0,totalDistanceMoved:hits,rhythmOpportunities:Math.max(0,hits-1),rhythmCycles:Math.max(0,hits-1),histogram:[hits,0,0,0]}));}
 it('calculates a distinct 20-second diagnostic with ordered real presets and four windows',()=>{
- const data=rounds(),original=JSON.stringify(data),r=calculateKitingGuidedAssessment(data);expect(r.status).toBe('recommended');expect(r.recommendedStartingLevel).toBeGreaterThanOrEqual(1);expect(r.perAttempt[0].targetHits20).toBe(18/3);expect(r.perAttempt[0].consistency).toBe(.25);expect(JSON.stringify(data)).toBe(original);
+ const data=rounds(),original=JSON.stringify(data),r=calculateKitingGuidedAssessment(data);expect(r.status).toBe('recommended');expect(r.recommendedStartingLevel).toBeGreaterThanOrEqual(1);expect(r.perAttempt[0].targetHits20).toBe(28/3);expect(r.perAttempt[0].consistency).toBe(.25);expect(JSON.stringify(data)).toBe(original);
  const distributed=rounds();distributed.forEach(r=>{r.histogram=[3,3,3,3];});expect(calculateKitingGuidedAssessment(distributed).perAttempt[0].qi).toBeGreaterThan(r.perAttempt[0].qi);
  const flow=createKitingAssessmentFlow();flow.start();for(let i=0;i<3;i++){flow.running();expect(flow.finishRound(data[i])).toBe(true);if(i<2)flow.next();}expect(flow.snapshot().state).toBe('completed');
  for(const result of data)expect(()=>createAttemptRecord(result,{})).toThrow();

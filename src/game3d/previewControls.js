@@ -22,6 +22,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
   function pose(dt=0) {
     if(running()) movement.update(dt);
     const snapshot=movement.snapshot(),combat=exercise?.kind==='kiting'?exercise.snapshot():null;
+    if(combat?.maxHealth)character.setHealth?.(combat.health/combat.maxHealth);
     character.setPose(snapshot.position,combat?.phase==='windup'?Math.atan2(combat.target.position.x-snapshot.position.x,combat.target.position.z-snapshot.position.z):snapshot.angle);
     const center=controller.update(snapshot.position,running()?pan:{x:0,z:0},dt,preferences), view=controller.snapshot();
     const fit=Math.max(1,1/camera.aspect);
@@ -57,7 +58,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
   function flush(){if(last!==null)tickFrame(window.performance.now(),false);}
   function down(event) {
     if(!running()||![0,2].includes(event.button))return;
-    flush();if(disposed||!running())return;
+    if(exercise?.kind!=='precision')flush();if(disposed||!running())return;
     const rect=canvas.getBoundingClientRect();
     if(rect.width<=0||rect.height<=0||event.clientX<rect.left||event.clientY<rect.top||event.clientX>rect.left+rect.width||event.clientY>rect.top+rect.height)return;
     cursor.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
@@ -69,8 +70,10 @@ export function attachPreviewControls({container,renderer,camera,character,rende
         const aim=raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:movement.snapshot().position;
         if(exercise.click(aim))movement.stop();
       }else{
-        const hit=raycaster.intersectObjects(visuals.clickTargets(),false)[0],valid=hit&&(!visuals.acceptHit||visuals.acceptHit(raycaster,hit));
-        if(valid)exercise.hit(hit.object.userData.targetId);else exercise.miss();
+        const hit=raycaster.intersectObjects(visuals.clickTargets(),false)[0],valid=hit&&(!visuals.acceptHit||visuals.acceptHit(raycaster,hit)),targetId=valid?hit.object.userData.targetId:null;
+        // Pick the displayed pose, then catch up the clock before accepting the target identity.
+        flush();if(disposed||!running())return;
+        if(valid)exercise.hit(targetId);else exercise.miss();
       }
       visuals.sync(exercise.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
