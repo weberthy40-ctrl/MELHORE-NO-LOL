@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createMovement,safeDelta,DODGE_MOVEMENT_SPEED } from '../training/movement.js';
+import { createMovement,safeDelta,DODGE_MOVEMENT_SPEED,KITING_MOVEMENT_SPEED } from '../training/movement.js';
 import { createCameraController,edgeIntent } from './cameraController.js';
 import { loadPreferences } from '../settings/preferences.js';
 import { loadCameraSettings } from '../settings/cameraSettings.js';
@@ -8,7 +8,7 @@ import { CAMERA } from './cameraConfig.js';
 export function attachPreviewControls({container,renderer,camera,character,render,onError=()=>{},session,exercise,visuals,feedback,onTick=()=>{},onStep=()=>{},onVisualStep=()=>{},requestFrame,cancelFrame}) {
   const document=container.ownerDocument, window=document.defaultView, canvas=renderer.domElement;
   const world=!['precision','reflex'].includes(exercise?.kind),dodge=Boolean(exercise)&&!['precision','reflex','kiting'].includes(exercise.kind);
-  const movement=createMovement(dodge?{speed:DODGE_MOVEMENT_SPEED}:{}), controller=createCameraController();
+  const movement=createMovement(dodge?{speed:DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController();
   const raycaster=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-ARENA.groundY);
   const cursor=new THREE.Vector2(), point=new THREE.Vector3();
   let disposed=false, frame=null, last=null, pan={x:0,z:0},flashRemaining=0,pointerKnown=false;

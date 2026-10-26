@@ -13,7 +13,7 @@ describe('admission and difficulty',()=>{
   });
   it('has ten fully populated profiles with monotonic pressure and safe fallback',()=>{
     expect(DIFFICULTIES).toHaveLength(10);
-    for(const profile of DIFFICULTIES){expect(validateDifficulty(profile)).toBe(profile);expect(Object.keys(profile.weights)).toHaveLength(4);}
+    for(const profile of DIFFICULTIES){expect(validateDifficulty(profile)).toBe(profile);expect(Object.keys(profile.weights)).toHaveLength(5);}
     expect(difficultyFor(1).interval).toBeGreaterThan(difficultyFor(5).interval);
     expect(difficultyFor(5).interval).toBeGreaterThan(difficultyFor(10).interval);
     for(const invalid of [0,11,NaN,Infinity,'bad'])expect(difficultyFor(invalid).level).toBe(1);

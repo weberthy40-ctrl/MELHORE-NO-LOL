@@ -217,3 +217,10 @@ Preferências de interface/gráficos/áudio têm schema 1. Contraste e fonte só
 VFX: quatro anéis reutilizáveis, sem raycast e sem loop próprio, atualizados no delta ativo; Leve desativa. Membros do personagem têm animação procedural consumindo movimento/windup/recuperação. Proxies de raycast na pose neutra isolam animação de oclusão lógica. Pose raiz, alcance, colisão e timestamps permanecem sob domínio do treinamento.
 
 Ownership: um renderer e um RAF por cena; listeners e recursos exclusivos são liberados em dispose. O frame verifica descarte após callbacks, pois um resultado pode desmontar a própria cena. Falha ou perda de WebGL deixa saída funcional. Teste de dez remontagens mede callbacks, canvas e heap, sem afirmar FPS ou memória de GPU não medidos.
+
+
+## Habilidades e grupos a partir da rc.6
+
+A esquiva usa `createAttackData` para normalizar o ataque antes de testar a admissão e inseri-lo na simulação. As formas `bolt`, `beam`, `circle` e `ring` compartilham as funções de geometria com a telemetria. `config.ttl` é a duração ativa; o snapshot normalizado armazena `ttl` como duração total, incluindo `windup`. Colisão e medição são recortadas ao intervalo ativo, e o evento de aviso qualifica a ameaça sem aplicar dano. A posição de `caster` fica fora da arena; o alvo e a direção anunciados são fixos no mundo.
+
+Precisão mista usa `sequenceVersion: clear-group-v2`: acertos retiram alvos, e apenas zerar o grupo sorteia o padrão seguinte. O prazo marca `overdue` uma vez sem retirar o alvo; `misses` continua contando cliques errados, separado de `expiredTargets`. Registros anteriores permanecem válidos. Ondas de kiting usam `configVersion: kiting-waves-v2` para registrar as novas velocidades; o validador ainda aceita a configuração anterior sem esse campo. Veja [feedback e validação rc.6](PLAYER_FEEDBACK_RC6.md).

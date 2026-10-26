@@ -33,10 +33,12 @@ it('overlaps waves before the current enemy dies, scales pressure and freezes on
  const high=createKitingPractice({variant:'waves',level:10,rng:createRandom(19),playerPosition:()=>({x:12,z:16})});high.start();advance(high,30);expect(high.snapshot().targets).toHaveLength(6);expect(high.snapshot().config.targetSpeed).toBeGreaterThan(p.snapshot().config.targetSpeed);
  const before=new Map(high.snapshot().targets.map(t=>[t.id,t.position]));high.update(.01);for(const t of high.snapshot().targets){const prev=before.get(t.id);if(prev)expect(Math.hypot(t.position.x-prev.x,t.position.z-prev.z)).toBeLessThanOrEqual(high.snapshot().config.targetSpeed*.01+1e-7);}
 });
-it('randomizes all four precision patterns, varies group size and keeps expirations distinct from misses',()=>{
+it('clears each precision group before choosing another pattern and retains overdue targets until hit',()=>{
  for(const level of [1,10]){const config=precisionDifficulty(level,'mixed'),p=createPrecisionPractice({...config,rng:createRandom(53)});expect(p.start()).toBe(true);const seen=new Set();
-  for(let i=0;i<2500;i++){p.update(.01);const s=p.snapshot();seen.add(s.pattern);expect(s.targets.length).toBe(s.pattern.startsWith('multi')?(level===1?2:5):1);expect(s.targets.every(t=>t.moving===s.pattern.endsWith('moving'))).toBe(true);}
-  expect(seen.size).toBe(4);expect(p.snapshot().patternsSeen).toHaveLength(4);expect(p.snapshot().expired).toBeGreaterThan(0);expect(p.snapshot().misses).toBe(0);
+  for(let group=0;group<8;group++){const initial=p.snapshot();seen.add(initial.pattern);expect(initial.targets.length).toBe(initial.pattern.startsWith('multi')?(level===1?2:5):1);for(let i=0;i<800;i++)p.update(.01);expect(p.snapshot().targets.map(t=>t.id)).toEqual(initial.targets.map(t=>t.id));p.miss();expect(p.snapshot().pattern).toBe(initial.pattern);
+   for(const [i,target]of initial.targets.entries()){expect(p.hit(target.id)).toBe(true);if(i<initial.targets.length-1){expect(p.snapshot().pattern).toBe(initial.pattern);expect(p.snapshot().targets).toHaveLength(initial.targets.length-i-1);}}
+  }
+  expect(seen.size).toBe(4);expect(p.snapshot().patternsSeen).toHaveLength(4);expect(p.snapshot().expired).toBeGreaterThan(0);expect(p.snapshot().misses).toBe(8);expect(p.snapshot().groupsCompleted).toBe(8);
  }
 });
 it('uses bounded Flash, cancels walking and persists configurable, distinct keys with legacy defaults',()=>{

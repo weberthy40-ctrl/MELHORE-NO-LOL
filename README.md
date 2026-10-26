@@ -1,10 +1,10 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.5**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC5.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.6**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC6.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
-- **Esquiva:** quatro ataques com origens aleatórias ao redor do jogador, nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
-- **Precisão:** uma sequência mista de alvos estáticos, móveis e grupos; quantidade, velocidade, tamanho e prazo variam com o nível.
-- **Kiting:** começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até seis inimigos. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
+- **Esquiva:** cinco habilidades com conjuração e aviso antes do impacto, lançadas por personagens fora da arena, nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
+- **Precisão:** uma sequência mista de alvos estáticos, móveis e grupos; o padrão só muda depois de acertar todos os alvos do grupo. Cliques errados e atrasos são contados; quantidade, velocidade, tamanho e prazo variam com o nível.
+- **Kiting:** começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até seis inimigos. Jogador a 8 u/s e perseguidores de 4,5 a 7,65 u/s, conforme o nível. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
 - **Reflexos:** um desafio integrado de Q/W/E/R, Espaço, F/J e mouse, sem setas. Verde pede clique esquerdo, azul pede direito e vermelho pede não responder; símbolos e texto acompanham as cores.
 - **DPI:** estimativa por contagens brutas e distância medida com régua; comparação de DPIs com três rodadas por valor. O campo de referência do LoL usa 0–100, padrão 50.
 

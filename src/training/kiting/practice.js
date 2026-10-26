@@ -57,7 +57,7 @@ export function createKitingPractice({variant='static',level=1,rng=createRandom(
  moveCommand(){if(!running())return false;return cancel('Cancelado por movimento');},
  update(delta,previous=playerPosition(),next=playerPosition()){
   if(!running())return;const dt=safeDelta(delta);if(!dt)return;time+=dt;messageTime=Math.max(0,messageTime-dt);
-  const moved=Math.hypot(next.x-previous.x,next.z-previous.z);if(Number.isFinite(moved)&&moved<=MOVEMENT_SPEED*dt+1e-7){distance+=moved;if(lastHit!==null)between+=moved;}
+  const moved=Math.hypot(next.x-previous.x,next.z-previous.z);if(Number.isFinite(moved)&&moved<=(config.playerSpeed??MOVEMENT_SPEED)*dt+1e-7){distance+=moved;if(lastHit!==null)between+=moved;}
   manageWaves();moveEnemies(dt,next);cooldown=Math.max(0,cooldown-dt);
   if(phase==='windup'){
    remaining=Math.max(0,remaining-dt);if(remaining<=1e-10){const enemy=enemies.find(e=>e.id===lockedId);

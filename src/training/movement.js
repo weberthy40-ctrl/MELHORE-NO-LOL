@@ -2,6 +2,7 @@ import { ARENA, isInsideArena } from '../game3d/spatial.js';
 export const safeDelta = dt => Number.isFinite(dt) && dt > 0 ? Math.min(dt,0.1) : 0;
 export const MOVEMENT_SPEED = 11;
 export const DODGE_MOVEMENT_SPEED = 8;
+export const KITING_MOVEMENT_SPEED = 8;
 export function createMovement({ position = ARENA.center, speed = MOVEMENT_SPEED } = {}) {
   if (!isInsideArena(position) || !Number.isFinite(speed) || speed <= 0) throw new TypeError('Invalid movement configuration.');
   let current = {...position}, target = null, angle = 0;

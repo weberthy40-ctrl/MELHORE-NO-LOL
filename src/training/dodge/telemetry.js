@@ -1,6 +1,5 @@
 import { DODGE_MOVEMENT_SPEED } from '../movement.js';
-import { sweptCircle } from './collision.js';
-import { PLAYER_RADIUS } from './projectiles.js';
+import { trajectoryTouches } from './geometry.js';
 import { readonlySnapshot } from '../snapshot.js';
 export const METRICS_VERSION='dodge-metrics-v1';
 const KEYS=['qualified','dodged','hit','ignored','distance','movementSeconds','stationarySeconds'];
@@ -18,10 +17,10 @@ export function createDodgeTelemetry({session,mode,level,events}) {
   function accept(event){return !final&&!disposed&&event.attemptId===attemptId;}
   const unsubscribes=[
     events.on('dodge:spawn',event=>{if(!accept(event))return;const id=Number(event.id.split('-').at(-1));if(!Number.isInteger(id)||id<=highestId)return;highestId=id;emitted++;active.set(event.id,{qualified:false});}),
+    events.on('dodge:warning',event=>{if(accept(event)&&active.has(event.id)&&trajectoryTouches(event,1)){qualify(event.id);risk=true;}}),
     events.on('dodge:trajectory',event=>{
       if(!accept(event)||!active.has(event.id))return;
-      const start={x:event.from.x-event.playerFrom.x,z:event.from.z-event.playerFrom.z},end={x:event.to.x-event.playerTo.x,z:event.to.z-event.playerTo.z};
-      if(sweptCircle(start,end,PLAYER_RADIUS+event.radius+1)!==null){qualify(event.id);risk=true;}
+      if(trajectoryTouches(event,1)){qualify(event.id);risk=true;}
     }),
     events.on('dodge:damage',event=>{if(!accept(event))return;const item=qualify(event.attackId);if(!item)return;hit++;bucket().hit++;active.delete(event.attackId);}),
     events.on('dodge:impact',event=>{if(!accept(event))return;const item=qualify(event.id);if(!item)return;ignored++;bucket().ignored++;active.delete(event.id);}),

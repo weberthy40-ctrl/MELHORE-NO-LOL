@@ -1,50 +1,47 @@
 import * as THREE from 'three';
 import { VARIANTS } from '../training/dodge/projectiles.js';
-const COLORS={fast:0xffd64f,hook_linear:0x44edff,slow:0xff65ce,aoe_zone:0xd49bff};
-// The translucent halo has a minimum screen size; the bright core keeps the logical radius.
-export function projectileHaloSize(radius,depth,fov,viewportHeight){
- const pixel=2*Math.max(.1,depth)*Math.tan(fov*Math.PI/360)/Math.max(1,viewportHeight);
- return Math.max(radius*4,pixel*26);
-}
-export function createDodgeVisuals(scene,{camera,container}={}){
- const group=new THREE.Group();scene.add(group);const owned=new Set(),active=new Map();let disposed=false;
- const own=r=>{owned.add(r);return r;};
- const pixels=new Uint8Array(64*64*4);
- for(let y=0;y<64;y++)for(let x=0;x<64;x++){const r=Math.hypot(x-31.5,y-31.5)/31.5,i=(y*64+x)*4;pixels[i]=pixels[i+1]=pixels[i+2]=255;pixels[i+3]=Math.round(Math.max(0,1-r)**2*190);}
- const haloMap=own(new THREE.DataTexture(pixels,64,64));haloMap.needsUpdate=true;
- const basic=(color,opacity=1)=>own(new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthTest:false,depthWrite:false,toneMapped:false}));
- const dark=basic(0x08101d),white=basic(0xfff9e8),assets=Object.fromEntries(Object.entries(VARIANTS).map(([id,v])=>[id,{
-  geometry:own(id==='aoe_zone'?new THREE.CircleGeometry(v.radius,64):id==='hook_linear'?new THREE.TorusGeometry(v.radius*.7,v.radius*.4,8,20,Math.PI*1.6):new THREE.SphereGeometry(v.radius,16,10)),
-  material:basic(COLORS[id],id==='aoe_zone'?.28:1),glow:basic(COLORS[id],.85),trail:basic(COLORS[id],.72),
-  halo:own(new THREE.SpriteMaterial({color:COLORS[id],map:haloMap,transparent:true,opacity:.8,depthTest:false,depthWrite:false,toneMapped:false})),
- }]));
- const portalGeometry=own(new THREE.RingGeometry(.45,.58,40)),areaEdge=own(new THREE.RingGeometry(1.93,2,64)),trailGeometry=own(new THREE.CylinderGeometry(.015,.12,1,8)),coreGeometry=own(new THREE.SphereGeometry(1,12,8)),cableMaterial=own(new THREE.LineBasicMaterial({color:0xb4f6ff,transparent:true,opacity:.9,toneMapped:false,depthTest:false,depthWrite:false}));
- const yAxis=new THREE.Vector3(0,1,0),viewPoint=new THREE.Vector3();
- function remove(id){const e=active.get(id);if(!e)return;e.root.removeFromParent();e.cable?.geometry.dispose();active.delete(id);}
- function mesh(geometry,material,order){const m=new THREE.Mesh(geometry,material);m.renderOrder=order;m.raycast=()=>{};return m;}
- return {sync(snapshot){
-  if(disposed)return;const live=new Set(snapshot.projectiles.map(p=>p.id));for(const id of active.keys())if(!live.has(id))remove(id);
+import { createCharacter } from './character.js';
+// Screen-space glow improves readability without increasing the collision radius.
+export function projectileHaloSize(radius,depth,fov,viewportHeight){const pixel=2*Math.max(.1,depth)*Math.tan(fov*Math.PI/360)/Math.max(1,viewportHeight);return Math.max(radius*4,pixel*26);}
+export function createDodgeVisuals(scene,{camera,container,reducedMotion=false}={}){
+ const group=new THREE.Group();group.name='Dodge spells';scene.add(group);const owned=new Set(),active=new Map(),effectPool=new Map(),casterPool=[];let disposed=false,assets=null,lastTime=0;
+ const own=r=>{owned.add(r);return r;},basic=(color,opacity=1)=>own(new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity,side:THREE.DoubleSide,depthWrite:false,depthTest:false,toneMapped:false}));
+ const post=own(new THREE.CylinderGeometry(.8,1,1,12)),sphere=own(new THREE.SphereGeometry(1,18,12)),box=own(new THREE.BoxGeometry(1,1,1)),disk=own(new THREE.CircleGeometry(1,64)),ring=own(new THREE.RingGeometry(.96,1,64)),cageRing=own(new THREE.TorusGeometry(1,.07,8,64)),column=own(new THREE.CylinderGeometry(1,1,1,32,1,true)),cone=own(new THREE.ConeGeometry(1,1,10));
+ const white=basic(0xfff9de),trailGeometry=own(new THREE.CylinderGeometry(.13,.8,1,12));
+ const pixels=new Uint8Array(64*64*4);for(let y=0;y<64;y++)for(let x=0;x<64;x++){const r=Math.hypot(x-31.5,y-31.5)/31.5,i=(y*64+x)*4;pixels[i]=pixels[i+1]=pixels[i+2]=255;pixels[i+3]=Math.round(Math.max(0,1-r)**2*190);}const haloMap=own(new THREE.DataTexture(pixels,64,64));haloMap.needsUpdate=true;
+ const energyPixels=new Uint8Array(64*128*4);for(let y=0;y<128;y++)for(let x=0;x<64;x++){const i=(y*64+x)*4;energyPixels[i]=energyPixels[i+1]=energyPixels[i+2]=255;energyPixels[i+3]=Math.round(Math.sin(Math.PI*y/127)*(.3+.7*Math.abs(Math.sin(x/64*Math.PI*8+y*.025))**3)*180);}const energyMap=own(new THREE.DataTexture(energyPixels,64,128));energyMap.needsUpdate=true;
+ const styles=Object.fromEntries(Object.entries(VARIANTS).map(([id,v])=>[id,{solid:basic(v.color),column:Object.assign(basic(v.color,.8),{map:energyMap}),soft:basic(v.color,.15),glow:basic(v.color,.45),halo:own(new THREE.SpriteMaterial({color:v.color,map:haloMap,transparent:true,opacity:.85,depthWrite:false,depthTest:false,toneMapped:false}))}]));
+ const axis=new THREE.Vector3(0,1,0),direction=new THREE.Vector3(),viewPoint=new THREE.Vector3();
+ const legend=container?.ownerDocument?.createElement('p');if(legend){legend.className='dodge-spell-legend';legend.textContent='Aviso colorido → impacto luminoso  ·  Gaiola: desvie da borda';container.append(legend);}
+ function mesh(geometry,material,parent){const m=new THREE.Mesh(geometry,material);m.raycast=()=>{};m.renderOrder=100;parent.add(m);return m;}
+ function floor(geometry,material,parent){const m=mesh(geometry,material,parent);m.rotation.x=-Math.PI/2;return m;}
+ function make(variant){
+  const root=new THREE.Group(),warning=new THREE.Group(),effect=new THREE.Group(),s=styles[variant];root.add(warning,effect);const lane=mesh(box,s.soft,warning),guide=mesh(box,s.glow,warning),warningDisk=floor(disk,s.soft,warning),edge=floor(ring,s.solid,warning),warningCage=floor(cageRing,s.solid,warning);
+  const body=mesh(sphere,s.solid,effect),core=mesh(sphere,white,effect),halo=new THREE.Sprite(s.halo);halo.raycast=()=>{};effect.add(halo);const trail=mesh(trailGeometry,s.glow,effect),beam=mesh(box,s.glow,effect),beamCore=mesh(box,white,effect),impact=floor(ring,s.solid,effect),pillar=mesh(column,s.column,effect),cage=floor(cageRing,s.solid,effect),curtain=mesh(column,s.soft,effect);
+  const posts=Array.from({length:8},()=>mesh(VARIANTS[variant].shape==='ring'?post:cone,s.solid,effect)),caps=Array.from({length:8},()=>mesh(sphere,white,effect)),runes=Array.from({length:8},()=>floor(cone,s.glow,warning));const orb=mesh(sphere,s.solid,root),aura=floor(ring,s.glow,root);group.add(root);
+  body.renderOrder=118;core.renderOrder=119;trail.renderOrder=115;halo.renderOrder=110;return {root,warning,effect,lane,guide,warningDisk,edge,warningCage,body,core,halo,trail,beam,beamCore,impact,pillar,cage,curtain,posts,caps,runes,orb,aura,caster:null};
+ }
+ function retire(id){const e=active.get(id);if(!e)return;e.root.visible=false;if(e.caster){e.caster.group.removeFromParent();casterPool.push(e.caster);e.caster=null;}if(!effectPool.has(e.variant))effectPool.set(e.variant,[]);effectPool.get(e.variant).push(e);active.delete(id);}
+ function lanePose(m,p,width,height){m.position.set(p.origin.x+p.direction.x*p.length/2,height/2+.04,p.origin.z+p.direction.z*p.length/2);m.rotation.y=Math.atan2(p.direction.x,p.direction.z);m.scale.set(width,height,p.length);}
+ return {applyAssets(value){assets=value;for(const actor of [...casterPool,...[...active.values()].map(e=>e.caster).filter(Boolean)])actor.applyAssets(value);const inUse=[...active.values()].filter(e=>e.caster).length;while(casterPool.length+inUse<8){const actor=createCharacter({enemy:true,caster:true,scale:.95,reducedMotion});actor.applyAssets(value);casterPool.push(actor);}},sync(snapshot){
+  if(disposed)return;const time=snapshot.elapsed??lastTime+.016,dt=Math.max(0,Math.min(.1,time-lastTime));lastTime=time;const ids=new Set(snapshot.projectiles.map(p=>p.id));for(const id of active.keys())if(!ids.has(id))retire(id);
   for(const p of snapshot.projectiles){
-   const isArea=p.variant==='aoe_zone';
-   if(!active.has(p.id)){
-    const asset=assets[p.variant],root=new THREE.Group(),body=mesh(asset.geometry,asset.material,isArea?102:118),portal=mesh(portalGeometry,asset.glow,101);root.add(body,portal);portal.rotation.x=-Math.PI/2;portal.position.set(p.origin.x,.055,p.origin.z);
-    let edge,cable,outline,core,halo,trail;
-    if(isArea){body.rotation.x=-Math.PI/2;edge=mesh(areaEdge,asset.glow,103);edge.rotation.x=-Math.PI/2;edge.position.set(p.origin.x,.065,p.origin.z);root.add(edge);}
-    else{
-     outline=mesh(asset.geometry,dark,117);core=mesh(coreGeometry,white,119);halo=new THREE.Sprite(asset.halo);halo.renderOrder=110;halo.raycast=()=>{};trail=mesh(trailGeometry,asset.trail,115);root.add(outline,core,halo,trail);
-    }
-    if(p.variant==='hook_linear'){const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));cable=new THREE.Line(geometry,cableMaterial);cable.renderOrder=109;cable.raycast=()=>{};root.add(cable);}
-    group.add(root);active.set(p.id,{root,body,portal,edge,cable,outline,core,halo,trail});
+   if(!active.has(p.id)){const e=effectPool.get(p.variant)?.pop()??make(p.variant);e.variant=p.variant;e.root.visible=true;if(p.caster){const actor=casterPool.pop()??createCharacter({enemy:true,caster:true,scale:.95,reducedMotion});if(assets)actor.applyAssets(assets);e.caster=actor;e.root.add(actor.group);}active.set(p.id,e);}
+   const e=active.get(p.id),shape=p.shape??(p.variant==='aoe_zone'?'circle':'bolt'),waiting=p.phase==='warning',progress=p.windup?Math.min(1,p.age/p.windup):1,pulse=reducedMotion?1:1+Math.sin(time*9)*.035,s=styles[p.variant];e.warning.visible=waiting;e.effect.visible=!waiting;
+   for(const key of ['lane','guide','warningDisk','edge','warningCage','body','core','halo','trail','beam','beamCore','impact','pillar','cage','curtain'])e[key].visible=false;for(const m of [...e.posts,...e.caps,...e.runes])m.visible=false;
+   if(e.caster){const aim=p.shape==='bolt'||p.shape==='beam'?{x:p.caster.x+p.direction.x,z:p.caster.z+p.direction.z}:p.origin;e.caster.setPose(p.caster,Math.atan2(aim.x-p.caster.x,aim.z-p.caster.z));e.caster.animate({attackPhase:waiting?'windup':null},dt);}
+   e.aura.visible=Boolean(p.caster);if(p.caster){e.aura.position.set(p.caster.x,.06,p.caster.z);e.aura.scale.setScalar((waiting?1.1+progress*.3:1)*pulse);}
+   e.orb.visible=Boolean(p.caster)&&waiting;e.orb.material=s.solid;if(e.orb.visible){const t=['circle','ring'].includes(shape)?progress:0;e.orb.position.set(p.caster.x+(p.origin.x-p.caster.x)*t,1.9+Math.sin(t*Math.PI)*6,p.caster.z+(p.origin.z-p.caster.z)*t);e.orb.scale.setScalar(.25+progress*.2);}
+   if(shape==='bolt'||shape==='beam'){
+    const path={...p,length:shape==='beam'?p.length:p.range};e.lane.visible=e.guide.visible=waiting;lanePose(e.lane,path,p.radius*2,.035);lanePose(e.guide,path,.055,.055);
+    if(shape==='beam'){e.beam.visible=e.beamCore.visible=!waiting;lanePose(e.beam,p,p.radius*2,1.25);lanePose(e.beamCore,p,p.radius*1.3,.62);}
+    else{e.body.visible=e.core.visible=e.halo.visible=!waiting;e.body.position.set(p.position.x,.95,p.position.z);e.body.rotation.y=Math.atan2(p.direction.x,p.direction.z);e.body.scale.set(p.radius,p.radius*.85,p.radius*2.1);e.core.position.copy(e.body.position);e.core.scale.set(p.radius*.45,p.radius*.45,p.radius*1.25);e.core.rotation.copy(e.body.rotation);e.halo.position.copy(e.body.position);const depth=camera?-viewPoint.copy(e.body.position).applyMatrix4(camera.matrixWorldInverse).z:24,size=projectileHaloSize(p.radius,depth,camera?.fov??44,container?.clientHeight??768);e.halo.scale.set(size,size,1);const length=Math.min(p.distance??0,Math.max(1.2,p.speed*.09));e.trail.visible=!waiting&&length>.02;e.trail.position.set(p.position.x-p.direction.x*length/2,.95,p.position.z-p.direction.z*length/2);e.trail.scale.set(p.radius*.7,length,p.radius*.7);direction.set(p.direction.x,0,p.direction.z);e.trail.quaternion.setFromUnitVectors(axis,direction);}
+   }else{
+    e.warningDisk.visible=waiting&&shape==='circle';e.edge.visible=waiting&&shape==='circle';e.warningCage.visible=waiting&&shape==='ring';for(const m of [e.warningDisk,e.edge,e.warningCage,e.impact,e.cage]){m.position.set(p.origin.x,.055,p.origin.z);m.scale.setScalar(p.radius);}
+    for(const [i,m]of e.runes.entries()){const a=i*Math.PI/4+(reducedMotion?0:time*.15);m.visible=waiting;m.position.set(p.origin.x+Math.sin(a)*p.radius,.07,p.origin.z+Math.cos(a)*p.radius);m.scale.setScalar(.17);m.rotation.z=-a;}
+    if(shape==='ring'){e.cage.visible=e.curtain.visible=!waiting;e.curtain.position.set(p.origin.x,1.2,p.origin.z);e.curtain.scale.set(p.radius,2.4,p.radius);for(const [i,m]of e.posts.entries()){const a=i*Math.PI/4;m.visible=!waiting;m.position.set(p.origin.x+Math.sin(a)*p.radius,1.45,p.origin.z+Math.cos(a)*p.radius);m.scale.set(.15,2.7,.15);const cap=e.caps[i];cap.visible=!waiting;cap.position.set(m.position.x,2.85,m.position.z);cap.scale.setScalar(.17);}}
+    else{e.impact.visible=e.pillar.visible=!waiting;e.pillar.position.set(p.origin.x,p.variant==='artillery'?3:1.2,p.origin.z);e.pillar.scale.set(p.variant==='artillery'?.8:p.radius*.75,p.variant==='artillery'?6:2.4,p.variant==='artillery'?.8:p.radius*.75);if(p.variant!=='artillery')for(const [i,m]of e.posts.entries()){const a=i*Math.PI/4;m.visible=!waiting;m.position.set(p.origin.x+Math.sin(a)*p.radius*.6,1.3,p.origin.z+Math.cos(a)*p.radius*.6);m.scale.set(.4,(1.5+(i%3)*.6)*pulse,.4);}e.core.visible=!waiting;e.core.position.set(p.origin.x,.25,p.origin.z);e.core.scale.set(p.radius*.4,.32,p.radius*.4);}
    }
-   const e=active.get(p.id);e.body.position.set(p.position.x,isArea?.05:.95,p.position.z);e.portal.visible=p.age<.35;e.portal.scale.setScalar(1+p.age*1.8);
-   if(p.variant==='fast'){e.body.scale.set(1,1,2.4);e.body.rotation.y=Math.atan2(p.direction.x,p.direction.z);}
-   if(!isArea){
-    e.outline.position.copy(e.body.position);e.outline.rotation.copy(e.body.rotation);e.outline.scale.copy(e.body.scale).multiplyScalar(1.4);
-    e.core.position.copy(e.body.position);e.core.scale.setScalar(p.radius*.48);e.halo.position.copy(e.body.position);
-    const depth=camera?-viewPoint.copy(e.body.position).applyMatrix4(camera.matrixWorldInverse).z:24,size=projectileHaloSize(p.radius,depth,camera?.fov??44,container?.clientHeight??768);e.halo.scale.set(size,size,1);
-    const length=Math.min(p.distance??0,Math.max(1,p.speed*.08));e.trail.visible=length>.02;e.trail.position.set(p.position.x-p.direction.x*length/2,.95,p.position.z-p.direction.z*length/2);e.trail.scale.y=length;e.trail.quaternion.setFromUnitVectors(yAxis,new THREE.Vector3(p.direction.x,0,p.direction.z));
-   }
-   if(e.cable){const a=e.cable.geometry.attributes.position;a.setXYZ(0,p.origin.x,.95,p.origin.z);a.setXYZ(1,p.position.x,.95,p.position.z);a.needsUpdate=true;e.cable.geometry.computeBoundingSphere();}
   }
- },dispose(){if(disposed)return;disposed=true;for(const id of active.keys())remove(id);group.removeFromParent();group.clear();for(const resource of owned)resource.dispose();owned.clear();}};
+ },dispose(){if(disposed)return;disposed=true;for(const id of active.keys())retire(id);for(const actor of casterPool)actor.dispose();casterPool.length=0;effectPool.clear();group.removeFromParent();group.clear();for(const r of owned)r.dispose();owned.clear();legend?.remove();}};
 }

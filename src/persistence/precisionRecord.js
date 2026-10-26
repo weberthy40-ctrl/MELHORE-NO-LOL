@@ -7,6 +7,7 @@ import { StorageError,assertRecordData } from './storageError.js';
 export function validatePrecisionRecord(r){
  assertRecordData(r);
  const m=r?.metrics,s=r?.score;
+ if(m?.groupsCompleted!==undefined&&(!Number.isInteger(m.groupsCompleted)||m.groupsCompleted<0||m.groupsCompleted>m.hits))throw new StorageError('Grupos concluídos inválidos.','INVALID_RECORD');
  if(m?.patternsSeen!==undefined&&(!Array.isArray(m.patternsSeen)||m.patternsSeen.length>4||new Set(m.patternsSeen).size!==m.patternsSeen.length||m.patternsSeen.some(v=>!['single-static','single-moving','multi-static','multi-moving'].includes(v))))throw new StorageError('Padrões de treino inválidos.','INVALID_RECORD');
  if(m?.expiredTargets!==undefined&&(!Number.isInteger(m.expiredTargets)||m.expiredTargets<0))throw new StorageError('Alvos expirados inválidos.','INVALID_RECORD');
  if(r?.recordSchemaVersion!==1||r.modality!=='precision'||r.mode!=='timed'||r.endReason!=='completed'||typeof r.attemptId!=='string'||!r.attemptId.trim()||!Object.hasOwn(PRECISION_VARIANTS,r.variant)||!Number.isInteger(r.level)||r.level<1||r.level>10||!Number.isFinite(Date.parse(r.completedAt))||!m||!s)throw new StorageError('Registro de Precisão inválido.','INVALID_RECORD');
