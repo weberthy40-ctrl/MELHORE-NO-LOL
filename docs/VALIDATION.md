@@ -113,3 +113,11 @@ Detalhes funcionais e fórmulas: `ARENA_REVISION.md`. Resultados oficiais antigo
 - IndexedDB: bloqueio/upgrade, migração, round-trip das quatro modalidades, conflito, rollback de quota e seis conquistas permanentes passaram.
 - Build servido estaticamente em **`/MELHORE-NO-LOL/`**: versão rc.3, JS/CSS, sete GLBs e seis inimigos carregaram sem erro JS. Confirma os caminhos relativos usados pelo GitHub Pages.
 - Balanceamento com jogadores e desempenho no computador do usuário continuam sujeitos ao teste humano. Os modelos são CC0 com fontes, hashes e licenças incluídas; detalhes em `VISUAL_COMBAT_REVISION.md`.
+
+## Projéteis e resumo — 1.0.0-rc.4
+
+- `npm test -- --maxWorkers=2`: **177 testes em 38 arquivos**, todos aprovados. Lint e build também passaram.
+- Cobertura nova: halo com diâmetro mínimo de 26 pixels quando a câmera afasta, recursos visuais liberados uma vez, dados físicos preservados; derrota Normal e Sobrevivência com replay/menu no diálogo, foco no replay e nova sessão ao reiniciar.
+- Chromium real em 1366×768: após morrer nos dois modos, o resumo abriu na camada modal, HUD atrás oculto, foco inicial correto e Tab restrito ao painel. Hit test e cliques reais confirmaram Jogar novamente iniciando outra tentativa e Voltar ao menu retornando ao início.
+- Em 390×640, as ações permaneceram inteiramente dentro da tela, com rolagem separada para o conteúdo. Capturas inspecionadas para projéteis e resumo. Nenhum erro JS registrado no roteiro.
+- Raios, velocidades, colisão e pontuação não foram modificados nesta revisão. O rastro, o contorno e o halo são somente apresentação.

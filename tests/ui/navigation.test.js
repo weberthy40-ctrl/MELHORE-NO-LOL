@@ -36,3 +36,14 @@ describe('navigation', () => {
     resolve({mountPreview:factory}); await pending; await Promise.resolve(); expect(factory).not.toHaveBeenCalled(); nav.dispose();
   });
 });
+for(const [mode,lives]of [['normal',3],['survival',1]])it(`puts replay and menu inside the central result after ${mode} defeat`,async()=>{
+ let frame;const loadPreview=async()=>({mountPreview(_stage,options){frame=options;return {dispose(){}};}});
+ const {root,core}=mount(loadPreview);go(`/play/dodge/${mode}/5`);await Promise.resolve();await Promise.resolve();
+ const lose=()=>{const {session,onStep,onTick}=frame;for(let i=0;i<31;i++)session.update(.1);
+  for(let hit=1;hit<=lives;hit++){for(let i=0;i<10;i++){session.update(.1);onStep(.1,{x:0,z:0},{x:0,z:0});}const event={attemptId:session.snapshot().id,id:`projectile-${hit}`,variant:'fast'};core.events.emit('dodge:spawn',event);core.events.emit('dodge:impact',event);onStep(0,{x:0,z:0},{x:0,z:0});onTick();}
+ };
+ lose();const dialog=root.querySelector('dialog.result-metrics'),actions=dialog.querySelector('.result-actions');expect(dialog.open).toBe(true);expect(dialog.textContent).toContain('Derrota');expect(root.querySelector('.session-hud').hidden).toBe(true);
+ const replay=actions.querySelector('button');expect(replay.textContent).toBe('Jogar novamente');expect(actions.querySelector('a').hash).toBe('#/');expect(actions.textContent).toContain('Voltar ao menu');expect(document.activeElement).toBe(replay);
+ const id=frame.session.snapshot().id;replay.click();await Promise.resolve();await Promise.resolve();expect(frame.session.snapshot().id).not.toBe(id);expect(root.querySelector('.result-metrics').open).toBe(false);expect(root.querySelector('.session-hud').hidden).toBe(false);
+ lose();const menu=root.querySelector('.result-actions a');go(menu.hash.slice(1));expect(root.querySelector('dialog')).toBeNull();expect(root.querySelector('h1').textContent).toContain('Mecânica afiada');
+});

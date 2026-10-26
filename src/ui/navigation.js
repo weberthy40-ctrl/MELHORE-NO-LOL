@@ -96,27 +96,31 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
       const diagnostics=element(document,'p','status-note','');
       const updateClock=updateSession;updateSession=()=>{updateClock();if(exercise){const s=exercise.snapshot();diagnostics.textContent=`Diagnóstico em memória: ${s.shots} disparos · ${s.impacts} impactos`;}};
       const replay=element(document,'button','button primary','Jogar novamente');replay.type='button';replay.hidden=true;replay.addEventListener('click',()=>render());
-      const resultMetrics=element(document,'section','result-metrics','');resultMetrics.hidden=true;let shownResult=false;
+      const resultMetrics=element(document,'dialog','result-metrics','');resultMetrics.hidden=true;resultMetrics.setAttribute('aria-labelledby','dodge-result-title');resultMetrics.addEventListener('cancel',event=>event.preventDefault());let shownResult=false;
       const outcome=element(document,'p','result-message','');outcome.setAttribute('aria-live','polite');
       const updateTechnical=updateSession;updateSession=()=>{
         updateTechnical();if(!rules)return;rules.evaluate();const current=rules.snapshot();
         diagnostics.textContent=`Vidas: ${current.lives}/${current.initialLives} · ${current.mode==='normal'?'Tempo restante':'Tempo sobrevivido'}: ${(current.mode==='normal'?Math.max(0,60-current.elapsed):current.elapsed).toFixed(1)} s`;
         if(telemetry?.isFinal()&&!shownResult){
-          shownResult=true;resultMetrics.hidden=false;const m=telemetry.snapshot(),score=calculateDodgeScore(m);
-          resultMetrics.append(element(document,'h2','','Métricas da tentativa'),element(document,'p','muted',`Tempo ativo: ${m.elapsedActiveSeconds.toFixed(1)} s · Ameaças: ${m.threatsQualified} · Evitadas: ${m.threatsDodged} · Impactos válidos: ${m.validHits} · Distância: ${m.totalDistanceMoved.toFixed(1)} u · Pendentes: ${m.threatsUnresolved}`));
-          resultMetrics.append(element(document,'h2','',score.status==='scored'?`Pontuação desta tentativa: ${score.score}/100`:'Pontuação indisponível nesta tentativa'));
-          if(score.status==='scored')for(const c of score.components)resultMetrics.append(element(document,'p','muted',`${c.name}: ${c.contribution.toFixed(1)} / ${c.weight}`));
-          else resultMetrics.append(element(document,'p','status-note',score.reasons.join(' ')));
-          if(score.status==='scored')mountSaveAttempt({container:resultMetrics,repository,metrics:m,score,core,isActive:()=>active&&revision===renderRevision});
-          if(score.smallSample)resultMetrics.append(element(document,'p','status-note','Amostra pequena de ameaças resolvidas.'));
-          if(score.capFactor<1)resultMetrics.append(element(document,'p','status-note','Nota limitada pela exposição curta antes da derrota.'));
-          resultMetrics.append(element(document,'p','status-note','Fórmula provisória. A nota desta tentativa não representa seu nível de habilidade.'));
+          shownResult=true;resultMetrics.hidden=false;const m=telemetry.snapshot(),score=calculateDodgeScore(m),resultContent=element(document,'div','result-content');
+          const title=element(document,'h2','result-title',current.outcome==='victory'?'Vitória!':current.outcome==='defeat'?'Fim de treino — Derrota':current.outcome==='error'?'Treino interrompido':'Treino encerrado');title.id='dodge-result-title';resultMetrics.append(title,resultContent);
+          resultContent.append(element(document,'h2','','Métricas da tentativa'),element(document,'p','muted',`Tempo ativo: ${m.elapsedActiveSeconds.toFixed(1)} s · Ameaças: ${m.threatsQualified} · Evitadas: ${m.threatsDodged} · Impactos válidos: ${m.validHits} · Distância: ${m.totalDistanceMoved.toFixed(1)} u · Pendentes: ${m.threatsUnresolved}`));
+          resultContent.append(element(document,'h2','',score.status==='scored'?`Pontuação desta tentativa: ${score.score}/100`:'Pontuação indisponível nesta tentativa'));
+          if(score.status==='scored')for(const c of score.components)resultContent.append(element(document,'p','muted',`${c.name}: ${c.contribution.toFixed(1)} / ${c.weight}`));
+          else resultContent.append(element(document,'p','status-note',score.reasons.join(' ')));
+          if(score.status==='scored')mountSaveAttempt({container:resultContent,repository,metrics:m,score,core,isActive:()=>active&&revision===renderRevision});
+          if(score.smallSample)resultContent.append(element(document,'p','status-note','Amostra pequena de ameaças resolvidas.'));
+          if(score.capFactor<1)resultContent.append(element(document,'p','status-note','Nota limitada pela exposição curta antes da derrota.'));
+          resultContent.append(element(document,'p','status-note','Fórmula provisória. A nota desta tentativa não representa seu nível de habilidade.'));
+          const actions=element(document,'div','result-actions');replay.hidden=false;replay.autofocus=true;exit.textContent='Voltar ao menu';actions.append(replay,exit);resultMetrics.append(actions);hud.hidden=true;
+          if(typeof resultMetrics.showModal==='function')resultMetrics.showModal();else resultMetrics.setAttribute('open','');replay.focus();
+
         }
         replay.hidden=!current.outcome;pause.hidden=Boolean(current.outcome);
         outcome.textContent=current.outcome?`${current.outcome==='victory'?'Vitória':current.outcome==='defeat'?'Derrota':current.outcome==='error'?'Treino interrompido por erro':'Abandonado'} · ${current.elapsed.toFixed(1)} s · ${current.lives} vidas restantes`:'';
       };
       hud.append(status,pause,exit,diagnostics,replay,outcome);screen.insertBefore(hud,screen.querySelector('.stage'));screen.append(resultMetrics);
-      cleanupScreen=core.events.on('session:changed',updateSession);session.start();updateSession();
+      const unsubscribe=core.events.on('session:changed',updateSession);cleanupScreen=()=>{unsubscribe();if(resultMetrics.open)resultMetrics.close?.();};session.start();updateSession();
     }
     if (['/preview','/demo'].includes(route.path)||isDodge) loadPreview().then(({ mountPreview }) => {
       if (!active || revision !== renderRevision) return;

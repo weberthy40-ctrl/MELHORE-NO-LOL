@@ -20,3 +20,6 @@ Revisão de experiência `1.0.0-rc.2`: arena ocupa o viewport; câmera próxima;
 
 
 Revisão `1.0.0-rc.3`: modelos KayKit CC0 com animações, água, ruínas e sombras por qualidade; esquiva lança de origens aleatórias dentro do corredor, a 7,5–11,5 u do jogador; kiting tem 2–6 inimigos, esquerdo em qualquer chão solicita ataque a um alvo elegível, direito move, A somente mostra alcance. Consulte VISUAL_COMBAT_REVISION.md.
+
+
+Correção `1.0.0-rc.4`: projéteis com núcleo brilhante, contorno escuro, rastro e halo de no mínimo 26 px de diâmetro; efeitos visíveis sobre o cenário. Resultado de Esquiva usa diálogo modal com Jogar novamente e Voltar ao menu no rodapé fixo do painel; métricas rolam separadamente.

@@ -23,3 +23,10 @@ Os GLBs de personagens foram reduzidos de aproximadamente 3,6 MB para 0,48/0,54 
 Chão pintado com pedras menores e selo central; canais laterais com movimento de água; árvores e vegetação instanciadas; pilares, bandeiras, muros e ruínas. Sombras: Alto 2048 px, Médio 1024 px, Leve sem sombras e com menos ruínas. Movimento da água e animações usam o mesmo loop da sessão, sem RAF extra. Se os modelos não carregarem, a representação procedural mantém o treino utilizável. A opção de redução de movimento congela as animações dos personagens.
 
 Os registros anteriores permanecem legíveis. Registros de kiting sem `targetCount` mantêm o contexto anterior; novos registros guardam a população do nível. Dados e pontuações anteriores não são recalculados. Compare versões e contextos equivalentes.
+
+
+## Legibilidade e resumo — 1.0.0-rc.4
+
+Projéteis móveis usam cores sem influência da iluminação, contorno escuro, centro claro e rastro proporcional à velocidade. O halo tem pelo menos 26 pixels de diâmetro, calculado pela projeção da câmera; é um indicador visual, não a área de colisão. Efeitos móveis são desenhados sobre personagens e cenário para não desaparecerem atrás deles. Raios, velocidades e regras de colisão permanecem os mesmos.
+
+Ao terminar Normal ou Sobrevivência, o resumo abre como diálogo modal. Jogar novamente e Voltar ao menu saem do HUD e passam ao rodapé do resumo. A área de métricas tem rolagem própria, mantendo as ações visíveis; foco inicial no replay e navegação por teclado dentro do diálogo. O HUD atrás fica oculto até a próxima tentativa.

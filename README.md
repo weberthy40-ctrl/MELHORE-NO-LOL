@@ -1,6 +1,6 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.3**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.4**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
 - **Esquiva:** quatro ataques com origens aleatórias ao redor do jogador, nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
 - **Precisão:** um ou três alvos, estáticos ou móveis; prática técnica e sessões oficiais de 60 segundos.

@@ -63,7 +63,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
     observer = ResizeObserverClass ? new ResizeObserverClass(resize) : undefined; observer?.observe(container);
     document.addEventListener('visibilitychange',resize); document.defaultView?.addEventListener('resize',resize);
     renderer.domElement.addEventListener('webglcontextlost',lost); resize();
-    if (exercise) visuals=exercise.kind==='precision'?createPrecisionVisuals(scene,camera,exercise):exercise.kind==='kiting'?createKitingVisuals(scene):exercise.kind==='reflex'?{sync(){},dispose(){}}:createDodgeVisuals(scene);
+    if (exercise) visuals=exercise.kind==='precision'?createPrecisionVisuals(scene,camera,exercise):exercise.kind==='kiting'?createKitingVisuals(scene):exercise.kind==='reflex'?{sync(){},dispose(){}}:createDodgeVisuals(scene,{camera,container});
     if(exercise)visuals.sync(exercise.snapshot(),{x:0,z:0});
     if(exercise)feedback=createFeedbackVisuals({scene,events,attemptId:session?.snapshot().id,enabled:graphics.effects,reducedMotion,position:()=>exercise.kind==='kiting'?exercise.snapshot().target.position:input?.movement.snapshot().position??{x:0,z:0}});
     container.dataset.visuals='basic';
