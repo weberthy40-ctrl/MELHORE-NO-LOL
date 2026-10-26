@@ -79,3 +79,11 @@ it('keeps movement and session time in real seconds at five frames per second',(
  controls.movement.moveTo({x:0,z:18});callback(0);for(let frame=1;frame<=5;frame++)callback(frame*200);
  expect(session.snapshot().elapsed).toBeCloseTo(1);expect(controls.movement.snapshot().position.z).toBeCloseTo(11);controls.dispose();session.dispose();
 });
+it('uses A only for the range display and attacks from an ordinary floor click without ray-selecting a body',()=>{
+ vi.spyOn(document,'hidden','get').mockReturnValue(false);const session=createSession({countdown:0});session.start();const canvas=document.createElement('canvas'),container=document.createElement('div');container.append(canvas);
+ vi.spyOn(canvas,'getBoundingClientRect').mockReturnValue({left:0,top:0,width:800,height:500});const click=vi.fn(()=>true),visuals={sync:vi.fn(),setRangeVisible:vi.fn(),clickTargets:vi.fn()},exercise={kind:'kiting',click,update:vi.fn(),snapshot:()=>({})};
+ const controls=attachPreviewControls({container,renderer:{domElement:canvas},camera:new THREE.PerspectiveCamera(44,1.6,.1,160),character:{setPose:vi.fn()},session,exercise,visuals,requestFrame:()=>1,cancelFrame:vi.fn(),render:vi.fn()});
+ window.dispatchEvent(new KeyboardEvent('keydown',{key:'a',code:'KeyA'}));expect(click).not.toHaveBeenCalled();expect(visuals.setRangeVisible).toHaveBeenLastCalledWith(true);window.dispatchEvent(new KeyboardEvent('keyup',{key:'a',code:'KeyA'}));
+ canvas.dispatchEvent(new MouseEvent('pointerdown',{button:0,clientX:750,clientY:440}));expect(click).toHaveBeenCalledOnce();expect(click.mock.calls[0][0]).toMatchObject({x:expect.any(Number),z:expect.any(Number)});expect(visuals.clickTargets).not.toHaveBeenCalled();
+ controls.dispose();session.dispose();
+});

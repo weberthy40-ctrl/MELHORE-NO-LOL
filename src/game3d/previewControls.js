@@ -4,12 +4,12 @@ import { createCameraController,edgeIntent } from './cameraController.js';
 import { loadCameraSettings } from '../settings/cameraSettings.js';
 import { ARENA } from './spatial.js';
 import { CAMERA } from './cameraConfig.js';
-export function attachPreviewControls({container,renderer,camera,character,render,onError=()=>{},session,exercise,visuals,feedback,onTick=()=>{},onStep=()=>{},requestFrame,cancelFrame}) {
+export function attachPreviewControls({container,renderer,camera,character,render,onError=()=>{},session,exercise,visuals,feedback,onTick=()=>{},onStep=()=>{},onVisualStep=()=>{},requestFrame,cancelFrame}) {
   const document=container.ownerDocument, window=document.defaultView, canvas=renderer.domElement;
   const movement=createMovement(), controller=createCameraController();
   const raycaster=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-ARENA.groundY);
   const cursor=new THREE.Vector2(), point=new THREE.Vector3();
-  let disposed=false, frame=null, last=null, pan={x:0,z:0},attackMove=false;
+  let disposed=false, frame=null, last=null, pan={x:0,z:0};
   let preferences;
   try {preferences=loadCameraSettings(window.localStorage);} catch {preferences=loadCameraSettings(null);}
   const status=document.createElement('p');status.className='preview-instructions';status.setAttribute('aria-live','polite');container.append(status);
@@ -24,7 +24,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     const precision=exercise?.kind==='precision';
     camera.position.set(precision?0:center.x+CAMERA.x*view.zoom*fit,precision?34:CAMERA.y*view.zoom*fit,precision ? .001 : center.z+CAMERA.z*view.zoom*fit);
     camera.lookAt(precision?0:center.x,0,precision?0:center.z);camera.updateMatrixWorld();
-    status.textContent=precision?'ESQUERDO · acertar os alvos   /   ESC · pausar':`DIREITO · mover   /   ${exercise?.kind==='kiting'?'ESQUERDO · atacar   /   A · alcance + ataque   /   ':''}Y · câmera ${view.locked?'travada':'livre'}   /   RODA · zoom   /   ESC · pausar`;
+    status.textContent=precision?'ESQUERDO · acertar os alvos   /   ESC · pausar':`DIREITO · mover   /   ${exercise?.kind==='kiting'?'ESQUERDO · atacar   /   A · mostrar alcance   /   ':''}Y · câmera ${view.locked?'travada':'livre'}   /   RODA · zoom   /   ESC · pausar`;
   }
   function tick(time) {
     try { tickFrame(time); } catch(error) { api.dispose(); onError(error); }
@@ -39,13 +39,13 @@ export function attachPreviewControls({container,renderer,camera,character,rende
       const activeDelta=session?session.snapshot().elapsed-elapsedBefore:safeDelta(frameDelta/steps);
       const previous=movement.snapshot().position;pose(activeDelta);if(!running())visuals?.setRangeVisible?.(false);
       if(running()&&exercise){exercise.update(activeDelta,previous,movement.snapshot().position);visuals.sync(exercise.snapshot(),movement.snapshot().position);}
-      const nextPosition=movement.snapshot().position;character.animate?.({moving:Math.hypot(nextPosition.x-previous.x,nextPosition.z-previous.z)>1e-6,attackPhase:exercise?.kind==='kiting'?exercise.snapshot().phase:null,state:session?.snapshot().state??'running'},activeDelta);feedback?.update(activeDelta);onStep(activeDelta,previous,nextPosition);if(disposed)return;onTick();if(disposed)return;
+      const nextPosition=movement.snapshot().position;character.animate?.({moving:Math.hypot(nextPosition.x-previous.x,nextPosition.z-previous.z)>1e-6,attackPhase:exercise?.kind==='kiting'?exercise.snapshot().phase:null,state:session?.snapshot().state??'running'},activeDelta);feedback?.update(activeDelta);onVisualStep(activeDelta);onStep(activeDelta,previous,nextPosition);if(disposed)return;onTick();if(disposed)return;
     }
     render();frame=requestFrame(tick);
   }
 
   function start() {if(!disposed&&!document.hidden&&frame===null){last=null;frame=requestFrame(tick);}}
-  function suspend() {attackMove=false;visuals?.setRangeVisible?.(false);pan={x:0,z:0};last=null;session?.pause();}
+  function suspend() {visuals?.setRangeVisible?.(false);pan={x:0,z:0};last=null;session?.pause();}
   function visibility() {suspend();if(document.hidden){if(frame!==null)cancelFrame(frame);frame=null;}else start();}
   function pointer(event) {const rect=canvas.getBoundingClientRect();pan=edgeIntent(event.clientX-rect.left,event.clientY-rect.top,rect.width,rect.height);}
   function down(event) {
@@ -56,33 +56,29 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     pose();raycaster.setFromCamera(cursor,camera);
     if(event.button===0){
       if(!['precision','kiting'].includes(exercise?.kind))return;
-      const hit=raycaster.intersectObjects(visuals.clickTargets(),false)[0];
-      const valid=hit&&(!visuals.acceptHit||visuals.acceptHit(raycaster,hit));
       if(exercise.kind==='kiting'){
-        // Attack-move uses a ground point close to the enemy, rather than requiring a pixel-perfect body click.
-        let id=valid?hit.object.userData.targetId:null;
-        if(!id&&attackMove&&raycaster.ray.intersectPlane(plane,point)){
-          const target=exercise.snapshot().target;
-          if(target&&Math.hypot(point.x-target.position.x,point.z-target.position.z)<=3)id=target.id;
-        }
-        if(exercise.click(id))movement.stop();
+        // Every left click on the arena requests one attack; A only displays range.
+        const aim=raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:movement.snapshot().position;
+        if(exercise.click(aim))movement.stop();
+      }else{
+        const hit=raycaster.intersectObjects(visuals.clickTargets(),false)[0],valid=hit&&(!visuals.acceptHit||visuals.acceptHit(raycaster,hit));
+        if(valid)exercise.hit(hit.object.userData.targetId);else exercise.miss();
       }
-      else if(valid)exercise.hit(hit.object.userData.targetId);else exercise.miss();
       visuals.sync(exercise.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
     if(exercise?.kind==='precision'||exercise?.kind==='reflex')return;
-    if(raycaster.ray.intersectPlane(plane,point)&&movement.moveTo({x:Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,point.x)),z:Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,point.z))})){exercise?.moveCommand?.();onTick();}
+    if(raycaster.ray.intersectPlane(plane,point)&&movement.moveTo({x:Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,point.x)),z:Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,point.z))})){exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().target);onTick();}
   }
   function context(event){event.preventDefault();}
   function leave(){pan={x:0,z:0};}
   function wheel(event) {if(event.ctrlKey||event.metaKey||event.altKey||!Number.isFinite(event.deltaY)||event.deltaY===0)return;event.preventDefault();controller.wheel(event.deltaY,event.deltaMode);pose();render();}
   function key(event) {
     if(event.repeat||event.ctrlKey||event.altKey||event.metaKey||editable(event.target))return;
-    if(event.code==='KeyA'&&exercise?.kind==='kiting'&&running()){attackMove=true;visuals.setRangeVisible(true);render();}
+    if(event.code==='KeyA'&&exercise?.kind==='kiting'&&running()){visuals.setRangeVisible(true);render();}
     if(event.key.toLowerCase()==='y') {controller.toggle();pose();render();}
     if(event.key==='Escape'&&session){event.preventDefault();if(session.snapshot().state==='paused')session.resume();else session.pause();}
   }
-  function keyup(event){if(event.code==='KeyA'){attackMove=false;visuals?.setRangeVisible?.(false);}}
+  function keyup(event){if(event.code==='KeyA'){visuals?.setRangeVisible?.(false);}}
   window.addEventListener('keyup',keyup);
   canvas.addEventListener('pointerdown',down);canvas.addEventListener('contextmenu',context);canvas.addEventListener('pointermove',pointer);canvas.addEventListener('pointerleave',leave);canvas.addEventListener('wheel',wheel,{passive:false});
   window.addEventListener('keydown',key);window.addEventListener('blur',suspend);document.addEventListener('visibilitychange',visibility);

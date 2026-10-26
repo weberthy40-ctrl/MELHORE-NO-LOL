@@ -1,0 +1,37 @@
+{
+  "author": "Kay Lousberg / KayKit",
+  "license": "CC0-1.0",
+  "sources": [
+    {
+      "repository": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "commit": "672074b73ba276876a19e8816ecdc5241817ab47",
+      "files": {
+        "ranger.glb": "addons/kaykit_character_pack_adventures/Characters/gltf/Rogue_Hooded.glb",
+        "knight.glb": "addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb"
+      },
+      "modifications": "Kept Idle, Running_A, 1H_Ranged_Shoot and Hit_A; removed unused animation accessors and binary buffer views."
+    },
+    {
+      "repository": "https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0",
+      "commit": "b0ca9bd96a8072ab36a3a5464f00ed1e06a16d07",
+      "directory": "addons/kaykit_dungeon_remastered/Assets/gltf/",
+      "files": [
+        "barrier.gltf.glb",
+        "pillar_decorated.gltf.glb",
+        "rubble_large.gltf.glb",
+        "banner_patternA_blue.gltf.glb",
+        "torch_lit.gltf.glb"
+      ],
+      "modifications": "Renamed to .glb; geometry and textures unchanged."
+    }
+  ],
+  "sha256": {
+    "banner_patternA_blue.glb": "041c272b889fad4ae82d1b73817fe988759cb16129183a86fe5560e123eab75d",
+    "barrier.glb": "2c6a1b89de1c87778c7ae9afc17fa9eabc4aa4148f3b8748f062b5c8ec7f6c00",
+    "knight.glb": "33dab742ed617a9f9f0e5b4f0252f2f65b261dfcc27bcd36e588be3011fd1f38",
+    "pillar_decorated.glb": "eecf7d454a1b6767a113e2490cb1536134abea0b57329a50cf2250d3ed8e2f65",
+    "ranger.glb": "4e9c27b348a727aa55925e59b5d227e49b70ffb4e9c45d36e5b434ec96b9f470",
+    "rubble_large.glb": "0292da1b5788a5a52b616d5d27d3270c676a5fbf9e921b6dd3dc30364d355b54",
+    "torch_lit.glb": "45fcfeb3b129722019d42aef0acae8f6c5f8f6dbdf5d3346ceea1f084b69b396"
+  }
+}

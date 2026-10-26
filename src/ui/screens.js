@@ -35,7 +35,7 @@ export function createScreen(document, route) {
   } else if (route.path.startsWith('/timed/kiting')) {
     title='Treino cronometrado — Kiting';description='Ataque e movimente manualmente durante 60 segundos ativos.';
   } else if (route.path==='/practice/kiting') {
-    title='Prática técnica — Kiting';description='Experimente os três alvos, sem nota ou histórico.';
+    title='Prática técnica — Kiting';description='Três exercícios com grupos de inimigos, sem nota ou histórico.';
   } else if (route.path.startsWith('/timed/precision')) {
     title='Treino cronometrado — Precisão de clique';description='Escolha variante e nível. Clique nos alvos durante 60 segundos efetivos.';
   } else if (route.mode) {

@@ -250,3 +250,5 @@ summary { cursor:pointer; color:#bfd4b2; }
 .training-screen .assessment>.muted { position:relative;z-index:1;max-width:750px;font-size:.85rem;background:#0c171ee8;padding:.5rem;border-radius:.3rem; }
 .hero-art { width:100%; }
 h1[tabindex='-1']:focus { outline:none; }
+.stage::after { content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 45%,#06101333 100%); }
+.stage[data-visuals='loading']::before { content:'Carregando cenário…';position:absolute;right:1.5rem;bottom:4rem;z-index:1;color:#d2e3c9;font-size:.7rem;letter-spacing:.08em;pointer-events:none; }

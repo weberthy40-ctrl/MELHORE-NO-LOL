@@ -17,3 +17,6 @@ Aceitação final: veja validacao/105-criterios-lancamento.md. A implementação
 
 
 Revisão de experiência `1.0.0-rc.2`: arena ocupa o viewport; câmera próxima; cenário com superfície pintada e vegetação agrupada por instâncias; personagens articulados; movimento 11 u/s e física em subpassos. Precisão tem fundo independente, alvos maiores e expiração. Kiting abre com perseguição e ataque no primeiro clique. Reflexo e avaliação abrem com desafio misto. Perfil usa quatro cartões. DPI tem medição física assistida e comparação por rodadas. Consulte ARENA_REVISION.md para fórmulas e limites de validação.
+
+
+Revisão `1.0.0-rc.3`: modelos KayKit CC0 com animações, água, ruínas e sombras por qualidade; esquiva lança de origens aleatórias dentro do corredor, a 7,5–11,5 u do jogador; kiting tem 2–6 inimigos, esquerdo em qualquer chão solicita ataque a um alvo elegível, direito move, A somente mostra alcance. Consulte VISUAL_COMBAT_REVISION.md.

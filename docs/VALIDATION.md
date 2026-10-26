@@ -103,3 +103,13 @@ O ZIP foi extraído em diretório separado, sem node_modules ou dist. Nessa extr
 - O passo físico do DPI depende de régua e hardware e permanece pendente de teste humano; as fórmulas, rejeições e repetição são testadas automaticamente. Balanceamento e aceitação artística continuam sujeitos ao próximo teste do jogador.
 
 Detalhes funcionais e fórmulas: `ARENA_REVISION.md`. Resultados oficiais antigos permanecem salvos; o rebalanceamento limita comparações entre versões.
+
+## Visual e combate — 1.0.0-rc.3
+
+- **174 testes / 38 arquivos**, todos passaram (`npm test -- --maxWorkers=2`); lint sem avisos e build de produção aprovados. Inclui origens nos oito setores, tentativas limitadas, trajetórias fixas, escape independente nos dez níveis, escolha de um alvo por clique, preparação sem redirecionamento, perseguição de todos os inimigos, legado sem população e aplicação imediata da pose Idle.
+- Chromium: cliques reais em chão vazio confirmaram ataques nos níveis 1 (dois inimigos) e 10 (seis). A pressionado não gerou ataques; direito não acrescentou ataques. Esquiva com origens aleatórias foi renderizada sem erro JS. Capturas inspecionadas para mapa, personagens e alcance.
+- Smoke: cinco rotas principais, 40 níveis e quatro avaliações passaram. Dez reentradas em **Leve**, aguardando modelos prontos: um RAF em cena e zero RAF/canvas após sair; heap após GC passou de 11,1 para 11,7 MB entre ciclos 2 e 10. Presets Leve/Médio/Alto renderizaram com DPR 1/1,4/1,75. Sem overflow nos menus em 1366×768, 1920×1080 e 390×844.
+- A primeira sequência de reentradas em Alto excedeu o timeout de 15 s do CDP no Chromium por software desta máquina. O smoke final fixa Leve para o teste de recursos e verifica os três presets separadamente. Isso não é um benchmark de FPS ou de memória da GPU.
+- IndexedDB: bloqueio/upgrade, migração, round-trip das quatro modalidades, conflito, rollback de quota e seis conquistas permanentes passaram.
+- Build servido estaticamente em **`/MELHORE-NO-LOL/`**: versão rc.3, JS/CSS, sete GLBs e seis inimigos carregaram sem erro JS. Confirma os caminhos relativos usados pelo GitHub Pages.
+- Balanceamento com jogadores e desempenho no computador do usuário continuam sujeitos ao teste humano. Os modelos são CC0 com fontes, hashes e licenças incluídas; detalhes em `VISUAL_COMBAT_REVISION.md`.

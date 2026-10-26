@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { ARENA,isInsideArena } from './spatial.js';
+import { createAnimatedModel } from './sceneAssets.js';
 import { disposeObject } from './resources.js';
 /** Original articulated sentinel; geometry is cosmetic and does not define the collision radius. */
 export function createCharacter({position=ARENA.center,rotation=0,scale=1,reducedMotion=false,enemy=false}={}){
@@ -38,13 +39,18 @@ export function createCharacter({position=ARENA.center,rotation=0,scale=1,reduce
  const pixels=new Uint8Array(64*8*4);for(let y=0;y<8;y++)for(let x=0;x<64;x++){const i=(y*64+x)*4,border=y===0||y===7||x===0||x===63||x%8===0;pixels[i]=border?14:enemy?237:104;pixels[i+1]=border?24:enemy?85:223;pixels[i+2]=border?21:enemy?126:79;pixels[i+3]=255;}
  const barTexture=new THREE.DataTexture(pixels,64,8);barTexture.needsUpdate=true;barTexture.magFilter=THREE.NearestFilter;
  const health=new THREE.Sprite(new THREE.SpriteMaterial({map:barTexture,depthTest:false}));health.position.set(0,2.95,0);health.scale.set(1.5,.18,1);health.raycast=()=>{};group.add(health);
- let disposed=false,phase=0;
+ let disposed=false,phase=0,animated=null;
  function setPose({x,z},angle=group.rotation.y){if(![x,z,angle].every(Number.isFinite))throw new TypeError('Invalid visual pose.');group.position.set(x,ARENA.groundY,z);group.rotation.y=angle;}
  setPose(position,rotation);group.scale.setScalar(scale);
- return {group,setPose,animate({moving=false,attackPhase,state='running'}={},delta=0){
+ return {group,setPose,applyAssets(assets){
+  if(disposed||animated)return;const nextModel=createAnimatedModel(enemy?assets.knight:assets.ranger,{enemy});const original=new THREE.Group();for(const child of [...group.children])if(child.userData.rest){group.remove(child);original.add(child);}disposeObject(original);limbs.length=0;
+  animated=nextModel;group.add(animated.root);
+  const proxy=new THREE.Mesh(new THREE.CapsuleGeometry(.55,1.35,4,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));proxy.position.y=1.25;proxy.userData.rest=true;group.add(proxy);group.userData.model=enemy?'knight':'ranger';
+ },animate({moving=false,attackPhase,state='running'}={},delta=0){
   if(disposed||state==='paused'||delta<=0&&['running','countdown'].includes(state))return;
   if(reducedMotion||!['running','countdown'].includes(state)){for(const limb of limbs)limb.mesh.rotation.x=0;return;}
+  if(animated){animated.update({moving,attackPhase,reducedMotion},delta);return;}
   phase+=Math.min(.1,Math.max(0,delta))*13;
   for(const limb of limbs)limb.mesh.rotation.x=(moving?Math.sin(phase)*.44*limb.side*(limb.arm?-1:1):0)+(limb.arm?(attackPhase==='windup'?-.75:attackPhase==='recovery'?.25:0):0);
- },dispose(){if(disposed)return;disposed=true;disposeObject(group);barTexture.dispose();limbs.length=0;}};
+ },dispose(){if(disposed)return;disposed=true;animated?.dispose();disposeObject(group);barTexture.dispose();limbs.length=0;}};
 }

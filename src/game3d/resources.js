@@ -2,6 +2,7 @@
 export function disposeObject(group) {
   const resources = new Set();
   group.traverse(node => {
+    if (node.isSkinnedMesh && node.skeleton) resources.add(node.skeleton);
     if (node.isInstancedMesh) resources.add(node);
     if (node.geometry) resources.add(node.geometry);
     if (node.material) for (const material of [node.material].flat()) resources.add(material);

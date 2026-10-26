@@ -1,10 +1,10 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena e personagens originais. **Versão candidata 1.0.0-rc.2**: revisão da experiência de jogo após os blocos 001–105. Veja [o que mudou](docs/ARENA_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.3**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
-- **Esquiva:** quatro ataques nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
+- **Esquiva:** quatro ataques com origens aleatórias ao redor do jogador, nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
 - **Precisão:** um ou três alvos, estáticos ou móveis; prática técnica e sessões oficiais de 60 segundos.
-- **Kiting:** alvo parado, móvel e perseguidor; seleção e ataques manuais, preparação, cancelamento por movimento, recuperação e alcance.
+- **Kiting:** 2–6 inimigos de acordo com o nível; esquerdo em qualquer ponto solicita um ataque a um inimigo no alcance, direito move e A exibe o alcance. Alvos parados, móveis e perseguidores.
 - **Reflexos:** desafio misto como padrão, com Q/W/E/R, Espaço, F, setas e inibição; variantes específicas continuam disponíveis. A avaliação guiada também usa sinais variados.
 - **DPI:** estimativa por contagens brutas e distância medida com régua; comparação de DPIs com três rodadas por valor. O campo de referência do LoL usa 0–100, padrão 50.
 
@@ -44,7 +44,7 @@ Não abra `index.html` diretamente pelo explorador de arquivos. O projeto usa ES
 | Mover câmera livre | Bordas da arena, conforme preferência |
 | Pausar/retomar | ESC ou botão; perda de foco pausa |
 | Acertar alvos de Precisão | Clique esquerdo |
-| Selecionar / solicitar ataque de Kiting | Um clique esquerdo no inimigo prepara o ataque |
+| Selecionar / solicitar ataque de Kiting | Clique esquerdo em qualquer ponto da arena: ataca um inimigo no alcance, próximo do cursor |
 | Cancelar preparação de Kiting | Comando de movimento com clique direito |
 | Ver alcance de Kiting | Segurar A |
 | Responder em Reflexos | Q/W/E/R, Espaço, F ou setas; aguarde nos sinais de inibição |
@@ -92,7 +92,7 @@ A evidência e os limites estão em [VALIDATION.md](docs/VALIDATION.md), [RELEAS
 | `src/settings`, `src/audio`, `src/tools` | Preferências, áudio e ferramenta de mouse |
 | `tests`, `scripts` | Testes puros, de interface e de navegador |
 
-A arte é procedural e original, sem assets oficiais de outros jogos ou downloads em runtime. Consulte [ARCHITECTURE.md](docs/ARCHITECTURE.md) para fórmulas, versões e contratos.
+O cenário combina arte procedural própria e modelos KayKit de Kay Lousberg, licenciados em CC0 e servidos pelo próprio site. Modelos, licenças e origem estão em `public/assets/kaykit`; veja [os créditos e modificações](docs/VISUAL_COMBAT_REVISION.md). Consulte [ARCHITECTURE.md](docs/ARCHITECTURE.md) para fórmulas, versões e contratos.
 
 ## Distribuir
 
