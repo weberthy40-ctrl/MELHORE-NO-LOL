@@ -1,8 +1,8 @@
 const weights=Object.freeze({fast:1,slow:1,hook_linear:1,aoe_zone:1});
 export const DIFFICULTIES=Object.freeze([
-  [1,2.4,2,.08,7], [2,2.2,2,.12,6.8], [3,2,3,.17,6.6],
-  [4,1.85,3,.23,6.4], [5,1.7,3,.29,6.2], [6,1.55,4,.35,6],
-  [7,1.4,4,.42,5.8], [8,1.25,4,.49,5.6], [9,1.1,5,.56,5.4], [10,1,5,.62,5.2],
+  [1,1.1,3,.12,5], [2,1,3,.18,4.8], [3,.9,4,.24,4.5],
+  [4,.8,4,.32,4], [5,.7,5,.40,3.6], [6,.60,5,.48,3.2],
+  [7,.51,6,.56,2.8], [8,.43,6,.64,2.5], [9,.35,7,.72,2.2], [10,.28,8,.8,1.8],
 ].map(([level,interval,capacity,comboChance,peakCooldown])=>Object.freeze({level,interval,capacity,comboChance,peakCooldown,comboDelay:.3,horizon:1.2,reaction:.18,weights})));
 export function difficultyFor(level=1){return DIFFICULTIES.find(p=>p.level===level)??DIFFICULTIES[0];}
 export function validateDifficulty(p){

@@ -4,7 +4,7 @@ import { openBrowserPage,pause } from './cdp.js';
 const page=await openBrowserPage();const measurements=[],graphics=[];let originalPreferences;
 try{
  originalPreferences=await page.evaluate("localStorage.getItem('moba-training:preferences:v1')");
- await page.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:1,mobile:false});assert.equal(await page.evaluate("document.querySelector('h1').textContent"),'MOBA Training');
+ await page.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:1,mobile:false});assert.equal(await page.evaluate("document.querySelector('h1').textContent"),'Mecânica afiada.\nJogo diferente.');
  for(const path of ['/levels','/diagnostics','/profile','/settings','/dpi']){await page.go(path);assert.equal(await page.evaluate("document.querySelectorAll('main').length"),1);assert.equal(await page.evaluate("document.documentElement.scrollWidth>innerWidth"),false,`Sem overflow em ${path}`);}
  await page.go('/levels');assert.equal(await page.evaluate("document.querySelectorAll('.level').length"),40);await page.go('/diagnostics');assert.equal(await page.evaluate("document.querySelectorAll('a[href^=\"#/assessment/\"]').length"),4);
  // Record the loop owned by a scene; the wrapper itself never retains completed callbacks.

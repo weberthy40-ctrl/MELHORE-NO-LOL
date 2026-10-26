@@ -8,7 +8,7 @@ it('reuses the real reaction engine for three short stages and resets the transi
  const view=mountReflexAssessment({screen,core,loadPreview:async()=>({mountPreview(_stage,options){current=options;return {dispose};}})});screen.querySelector('button').click();await flush();
  for(let round=0;round<3;round++){
   const {session,exercise,onTick}=current;let visibleAt=null;
-  for(let frame=0;frame<245;frame++){clock+=100;session.update(.1);exercise.update(.1);onTick();const p=exercise.snapshot();if(p.phase==='cue-visible'){visibleAt??=clock;if(clock-visibleAt>=200)exercise.respond('Space',clock);}else visibleAt=null;}
+  for(let frame=0;frame<245;frame++){clock+=100;session.update(.1);exercise.update(.1);onTick();const p=exercise.snapshot();if(p.phase==='cue-visible'){visibleAt??=clock;if(clock-visibleAt>=200)exercise.snapshot().cue?.answer&&exercise.respond(exercise.snapshot().cue.answer,clock);}else visibleAt=null;}
   if(round<2){[...screen.querySelectorAll('button')].find(b=>b.textContent==='Próxima tentativa').click();await flush();}
  }
  expect(screen.textContent).toContain('Nível inicial sugerido: 9/10');expect(screen.textContent).toContain('não altera sua classificação');expect(dispose).toHaveBeenCalledTimes(3);[...screen.querySelectorAll('button')].find(b=>b.textContent==='Refazer avaliação').click();expect(screen.textContent).not.toContain('9/10');view.dispose();core.dispose();screen.remove();

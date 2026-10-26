@@ -72,3 +72,10 @@ it('holds A only in active Kiting, clears on release/blur, and never schedules a
  const input=document.createElement('input');document.body.append(input);input.dispatchEvent(new KeyboardEvent('keydown',{key:'a',code:'KeyA',bubbles:true}));expect(visuals.setRangeVisible).toHaveBeenLastCalledWith(false);input.remove();window.dispatchEvent(new Event('blur'));expect(session.snapshot().state).toBe('paused');expect(visuals.setRangeVisible).toHaveBeenLastCalledWith(false);
  callback(0);expect(requestFrame).toHaveBeenCalledTimes(1);session.dispose();
 });
+it('keeps movement and session time in real seconds at five frames per second',()=>{
+ vi.spyOn(document,'hidden','get').mockReturnValue(false);const session=createSession({countdown:0});session.start();let callback;
+ const canvas=document.createElement('canvas'),container=document.createElement('div');container.append(canvas);
+ const controls=attachPreviewControls({container,renderer:{domElement:canvas},camera:new THREE.PerspectiveCamera(44,1.6,.1,160),character:{setPose:vi.fn()},render:vi.fn(),session,requestFrame:fn=>{callback=fn;return 1;},cancelFrame:vi.fn()});
+ controls.movement.moveTo({x:0,z:18});callback(0);for(let frame=1;frame<=5;frame++)callback(frame*200);
+ expect(session.snapshot().elapsed).toBeCloseTo(1);expect(controls.movement.snapshot().position.z).toBeCloseTo(11);controls.dispose();session.dispose();
+});

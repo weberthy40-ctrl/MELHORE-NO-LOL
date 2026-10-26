@@ -8,12 +8,15 @@ export function createScreen(document, route) {
     const home = createFoundationView(document);
     home.classList.add('home');
     const panel = home.querySelector('section');
-    panel.append(element(document, 'h2', 'hero-title', 'Cada movimento conta.'));
-    panel.append(element(document, 'p', 'muted', 'Um espaço para desenvolver suas mecânicas, no seu ritmo.'));
-    const actions = element(document, 'div', 'actions');
-    actions.append(link(document, 'Explorar modalidades →', '/levels', 'button primary'), link(document, 'Descubra seu nível', '/diagnostics', 'button'));
-    actions.append(link(document, 'Seu perfil', '/profile', 'button'));
-    panel.append(actions,element(document,'p','status-note',`Versão candidata ${GAME_VERSION} · Progresso salvo neste dispositivo.`));
+    panel.replaceChildren(element(document,'span','eyebrow','SEU PRÓXIMO NÍVEL COMEÇA AQUI'),element(document,'h1','','Mecânica afiada.\nJogo diferente.'),element(document,'p','foundation__message','Velocidade, precisão e controle. Entre na arena e transforme cada treino em evolução.'));
+    const actions=element(document,'div','actions');actions.append(link(document,'Entrar na arena →','/levels','button primary'),link(document,'Descobrir meu nível','/diagnostics','button'));panel.append(actions);
+    const art=element(document,'div','hero-art');art.setAttribute('aria-hidden','true');art.append(element(document,'span','hero-art__label','CAMPO DE TREINAMENTO'),element(document,'span','hero-art__cross','✦'),element(document,'span','hero-art__caption','FOCO. MOVIMENTO. EXECUÇÃO.'));home.append(art);
+    const grid=element(document,'div','home-modes');
+    for(const [index,mode]of MODALITIES.entries()){
+      const card=link(document,'',`/train/${mode.id}/1`,'home-mode');card.dataset.mode=mode.id;card.append(element(document,'span','eyebrow',`0${index+1} / ${mode.icon}`),element(document,'h2','',mode.title),element(document,'p','muted',mode.description),element(document,'span','home-mode__action','Treinar agora →'));grid.append(card);
+    }
+    panel.querySelector('h1').id='foundation-title';
+    home.append(grid,element(document,'p','home-footer',`MOBA TRAINING · ${GAME_VERSION} · Seu progresso fica neste dispositivo.`));
     return home;
   }
   const main = element(document, 'main', 'screen');
@@ -50,7 +53,7 @@ export function createScreen(document, route) {
   } else if(route.path==='/practice/precision'){
     title='Prática técnica — Precisão de clique';description='Clique com o botão esquerdo nos alvos. As quatro variantes são práticas sem nota ou histórico.';
   } else if(route.path==='/assessment/reflex'){
-    title='Avaliação guiada — Reflexos e Reação';description='Reação Simples: três etapas de 20 segundos, nos níveis 3, 6 e 9.';
+    title='Avaliação guiada — Reflexos e Reação';description='Sinais variados: habilidades, setas e freio em três etapas de 20 segundos, nos níveis 3, 6 e 9.';
   } else if(route.path==='/assessment/kiting'){
     title='Avaliação guiada — Kiting';description='Três exercícios curtos, separados do histórico e da classificação oficial.';
   } else if(route.path==='/assessment/precision'){
@@ -68,11 +71,11 @@ export function createScreen(document, route) {
     title=({'/history/dodge':'Histórico de Esquiva','/records/dodge':'Recordes de Esquiva','/evolution/dodge':'Evolução de Esquiva','/achievements/dodge':'Conquistas de Esquiva'})[route.path]??title;
     description='Dados salvos neste dispositivo. Nenhuma comparação entre jogadores.';
   } else if (route.path === '/profile') {
-    title = 'Seu perfil'; description = 'Consulte seus treinos salvos neste dispositivo. A classificação estima habilidade; não bloqueia os níveis.';
+    title = 'Sua evolução'; description = 'Quatro habilidades. Um jogador cada vez melhor.';
   } else if (route.path === '/settings') {
     title = 'Configurações'; description = 'Ajuste o movimento da câmera livre pelas bordas. As preferências são aplicadas na próxima abertura da prévia.';
   } else if (route.path === '/dpi') {
-    title = 'DPI e sensibilidade'; description = 'Ferramenta manual e teste local de consistência do ponteiro. Sem classificação oficial.';
+    title = 'Encontre seu DPI'; description = 'Meça o movimento. Compare o controle. Escolha com evidência.';
   }
   const heading = element(document, 'h1', '', title); heading.tabIndex = -1;
   main.append(heading, element(document, 'p', 'lead', description));
@@ -93,9 +96,6 @@ export function createScreen(document, route) {
     }
     main.append(grid);
     if (route.path === '/levels') main.append(link(document, 'DPI e sensibilidade — ferramenta independente →', '/dpi', 'tool-card'));
-  }
-  if(route.path==='/profile'){
-    for(const [id,name]of [['dodge','Esquiva'],['precision','Precisão de Clique'],['kiting','Kiting'],['reflex','Reflexos e Reação']]){const links=element(document,'section','profile-links');links.append(element(document,'h2','',name));for(const [text,path]of [['Histórico','history'],['Recordes','records'],['Evolução','evolution'],['Conquistas','achievements']])links.append(link(document,text,`/${path}/${id}`,'button'));main.append(links);}
   }
   if(route.modality==='reflex'&&!route.timed)main.append(link(document,'Abrir prática técnica de Reflexos','/practice/reflex','button'),link(document,'Treino cronometrado (60 s)',`/timed/reflex/${route.level}`,'button primary'));
   if(route.modality==='kiting'&&!route.timed)main.append(link(document,'Abrir prática técnica de Kiting','/practice/kiting','button'),link(document,'Treino cronometrado (60 s)',`/timed/kiting/${route.level}`,'button primary'));

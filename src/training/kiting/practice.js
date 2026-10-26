@@ -1,5 +1,6 @@
 import { readonlySnapshot } from '../snapshot.js';
 import { safeDelta } from '../movement.js';
+import { MOVEMENT_SPEED } from '../movement.js';
 import { isInsideArena } from '../../game3d/spatial.js';
 import { createRandom } from '../../core/random.js';
 import { kitingDifficulty } from './difficulty.js';
@@ -28,7 +29,7 @@ export function createKitingPractice({variant='static',level=1,rng=createRandom(
  }
  return {kind:'kiting',snapshot,
  start(){if(state!=='idle')return false;state='active';return true;},
- click(id){if(!running())return false;if(id!=='kiting-target'){selected=false;cancel('Cancelado: seleção removida');return false;}if(!selected){selected=true;lastAction='Alvo selecionado';messageTime=.3;return false;}
+ click(id){if(!running())return false;if(id!=='kiting-target'){selected=false;cancel('Cancelado: seleção removida');return false;}selected=true;
   if(phase!=='ready'||cooldown>1e-10)return false;
   if(!inAttackRange(playerPosition(),target,config.attackRange)){lastAction='Fora de alcance';messageTime=.5;return false;}
   accepted++;sequence++;phase='windup';remaining=config.windupDuration;cooldown=config.attackInterval;lastAction='Preparando ataque';messageTime=0;notify('intention');return true;
@@ -36,7 +37,7 @@ export function createKitingPractice({variant='static',level=1,rng=createRandom(
  moveCommand(){if(!running())return false;return cancel('Cancelado por movimento');},
  update(delta,previous=playerPosition(),next=playerPosition()){
   if(!running())return;const dt=safeDelta(delta);if(!dt)return;time=Math.min(duration,time+dt);messageTime=Math.max(0,messageTime-dt);
-  const moved=Math.hypot(next.x-previous.x,next.z-previous.z);if(Number.isFinite(moved)&&moved<=7*dt+1e-7){distance+=moved;if(lastHit!==null)between+=moved;}
+  const moved=Math.hypot(next.x-previous.x,next.z-previous.z);if(Number.isFinite(moved)&&moved<=MOVEMENT_SPEED*dt+1e-7){distance+=moved;if(lastHit!==null)between+=moved;}
   moveTarget(dt,next);cooldown=Math.max(0,cooldown-dt);
   if(phase==='windup'){
    remaining=Math.max(0,remaining-dt);if(remaining<=1e-10){

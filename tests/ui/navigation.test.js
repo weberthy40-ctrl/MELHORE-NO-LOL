@@ -26,7 +26,7 @@ describe('navigation', () => {
     expect(root.querySelectorAll('.level')).toHaveLength(0);
   });
   it('handles browser location changes and unknown pages', () => {
-    const {root,nav} = mount(); go('/profile'); expect(root.textContent).toContain('Consulte seus treinos salvos neste dispositivo');
+    const {root,nav} = mount(); go('/profile'); expect(root.textContent).toContain('Quatro habilidades. Um jogador cada vez melhor.');
     go('/unknown'); expect(root.textContent).toContain('Página não encontrada');
     nav.dispose(); go('/levels'); expect(root.children).toHaveLength(0);
   });

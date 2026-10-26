@@ -2,12 +2,13 @@ import { it,expect } from 'vitest';
 import { createRandom } from '../../src/core/random.js';
 import { createTechnicalDodge } from '../../src/training/dodge/technicalDodge.js';
 import { difficultyFor } from '../../src/training/dodge/difficulty.js';
+import { MOVEMENT_SPEED } from '../../src/training/movement.js';
 import { ARENA } from '../../src/game3d/spatial.js';
 import { PLAYER_RADIUS } from '../../src/training/dodge/projectiles.js';
 // Independent fine-step oracle: actual speed, rectangular boundary and no safety margin.
 function escapeWitness(player,threats){
  for(let direction=0;direction<=16;direction++){const angle=direction*Math.PI/8;let safe=true;
-  for(let step=0;step<=240&&safe;step++){const t=step*.005,travel=7*Math.max(0,t-.18),x=Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,player.x+(direction===16?0:Math.sin(angle)*travel))),z=Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,player.z+(direction===16?0:Math.cos(angle)*travel)));
+  for(let step=0;step<=240&&safe;step++){const t=step*.005,travel=MOVEMENT_SPEED*Math.max(0,t-.18),x=Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,player.x+(direction===16?0:Math.sin(angle)*travel))),z=Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,player.z+(direction===16?0:Math.cos(angle)*travel)));
    for(const threat of threats){if(threat.age+t>=threat.ttl||(threat.variant!=='aoe_zone'&&threat.distance+threat.speed*t>=threat.range))continue;const dx=threat.position.x+threat.direction.x*threat.speed*t-x,dz=threat.position.z+threat.direction.z*threat.speed*t-z;if(dx*dx+dz*dz<=(PLAYER_RADIUS+threat.radius)**2){safe=false;break;}}
   }if(safe)return true;
  }return false;

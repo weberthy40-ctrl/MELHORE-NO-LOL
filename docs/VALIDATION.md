@@ -91,3 +91,15 @@ Relatórios finais: [099](validacao/099-linha-de-base.md), [100](validacao/100-f
 ### Verificação da distribuição
 
 O ZIP foi extraído em diretório separado, sem node_modules ou dist. Nessa extração, npm ci instalou 150 pacotes; os mesmos 158 testes passaram, assim como lint, build e audit (zero vulnerabilidades). O preview do build extraído passou pelo teste real de navegador, inclusive dez remontagens e os três viewports. Em DPR 2, o mesmo canvas de 1168,75 pixels CSS usou larguras internas 1169/1636/2045 em Leve/Médio/Alto, confirmando diferenças reais sem alteração da área CSS. A preferência anterior foi restaurada ao terminar o teste. CRC e comparação byte a byte validam o pacote final; os últimos ajustes de documentação não alteram os fontes testados.
+
+## Revisão da experiência — 1.0.0-rc.2
+
+- `npm test -- --maxWorkers=2`: **165 testes em 37 arquivos**, todos passaram.
+- `npm run lint`: passou, sem avisos. `npm run build`: passou; chunk Three continua carregado sob demanda e gera o aviso de tamanho já conhecido.
+- `npm run test:browser`: passou em Chromium. Cinco rotas principais, 40 níveis, quatro avaliações; dez reentradas com um RAF em cena e nenhum RAF/canvas após sair. Heap após GC foi de aproximadamente 9,1 para 9,7 MB entre ciclos 2 e 10. Presets gráficos respeitaram DPR 1/1,4/1,75; menus verificados em 1366×768, 1920×1080 e 390×844.
+- `npm run test:storage`: passou; upgrade bloqueado recuperado, migração, quatro modalidades no round-trip, conflitos preservados, rollback de quota e seis conquistas permanentes.
+- Interação Chromium real em 1024×768: kiting abriu no perseguidor; primeiro clique confirmou um ataque; A + clique no terreno próximo confirmou o segundo. Precisão aceitou clique real no alvo; reflexo abriu na variante mista; perfil exibiu quatro cartões; dez cliques no teste DPI produziram uma rodada real, sem recomendar com apenas uma amostra. Início, perfil, DPI e configurações também ficaram sem overflow horizontal em 390×844. Nenhum erro JS foi registrado nesse roteiro.
+- Inspeção visual dos novos início, arena, precisão e perfil. Uma falha de integração no cartão de Esquiva, causada por esquemas diferentes dos resumos, foi corrigida e coberta por teste.
+- O passo físico do DPI depende de régua e hardware e permanece pendente de teste humano; as fórmulas, rejeições e repetição são testadas automaticamente. Balanceamento e aceitação artística continuam sujeitos ao próximo teste do jogador.
+
+Detalhes funcionais e fórmulas: `ARENA_REVISION.md`. Resultados oficiais antigos permanecem salvos; o rebalanceamento limita comparações entre versões.

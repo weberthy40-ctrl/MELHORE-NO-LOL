@@ -14,10 +14,10 @@ export function reflectedPosition(x,direction,min,max,speed,delta){
  return {x:phase<=span?min+phase:max-(phase-span),direction:phase<span?1:-1};
 }
 /** Target data and counters are independent of DOM, renderer and official persistence. */
-export function createPrecisionPractice({variant='single-static',rng=createRandom(),radius=.7,speed=2,playerPosition=()=>ARENA.center,clock,events,attemptId}={}){
- const config=PRECISION_VARIANTS[variant];if(!Object.hasOwn(PRECISION_VARIANTS,variant)||!Number.isFinite(radius)||radius<=0||radius>2||!Number.isFinite(speed)||speed<0)throw new TypeError('Invalid precision configuration.');
- let state='idle',hits=0,misses=0,sequence=0,targets=[],fallback=false,visible=()=>true,histogram=Array(6).fill(0);
- const snapshot=()=>readonlySnapshot({kind:'precision',state,variant,hits,misses,clicksEligible:hits+misses,accuracy:hits+misses?hits/(hits+misses):null,targets,fallback,histogram:clock?histogram:null});
+export function createPrecisionPractice({variant='single-static',rng=createRandom(),radius=1,speed=6,maxLifetime=null,playerPosition=()=>ARENA.center,clock,events,attemptId}={}){
+ const config=PRECISION_VARIANTS[variant];if(!Object.hasOwn(PRECISION_VARIANTS,variant)||!Number.isFinite(radius)||radius<=0||radius>2||!Number.isFinite(speed)||speed<0||(maxLifetime!==null&&(!Number.isFinite(maxLifetime)||maxLifetime<.3)))throw new TypeError('Invalid precision configuration.');
+ let state='idle',hits=0,misses=0,expired=0,sequence=0,targets=[],fallback=false,visible=()=>true,histogram=Array(6).fill(0);
+ const snapshot=()=>readonlySnapshot({kind:'precision',state,variant,hits,misses,expired,clicksEligible:hits+misses,accuracy:hits+misses?hits/(hits+misses):null,targets,fallback,histogram:clock?histogram:null});
  function valid(candidate){
    const {position,minX,maxX}=candidate,player=playerPosition();
    if(!isInsideArena(position)||minX<ARENA.bounds.minX+radius||maxX>ARENA.bounds.maxX-radius||Math.abs(position.z)>ARENA.length/2-radius)return false;
@@ -30,7 +30,7 @@ export function createPrecisionPractice({variant='single-static',rng=createRando
      let x,z;
      if(preferFirst&&attempt===0){x=-3;z=-3;}else{const rx=rng(),rz=rng();if(![rx,rz].every(n=>Number.isFinite(n)&&n>=0&&n<1))throw new TypeError('Invalid target RNG.');x=(rx-.5)*12;z=(rz-.5)*24;}
      const moving=config.moving&&!staticFallback;
-     const candidate={position:{x,z},radius,moving,minX:x-(moving?2:0),maxX:x+(moving?2:0),direction:1};
+     const candidate={age:0,position:{x,z},radius,moving,minX:x-(moving?2:0),maxX:x+(moving?2:0),direction:1};
      if(valid(candidate)){const target={...candidate,id:`target-${++sequence}`};targets.push(target);return true;}
    }
    if(config.moving&&config.count===1&&!staticFallback){fallback=true;return spawn(preferFirst,true);}
@@ -40,9 +40,9 @@ export function createPrecisionPractice({variant='single-static',rng=createRando
    start(){if(state!=='idle')return false;for(let i=0;i<config.count;i++)if(!spawn(i===0))break;fallback=fallback||targets.length<config.count;state=targets.length?'active':'stopped';return targets.length>0;},
    hit(id){if(state!=='active'||!targets.some(t=>t.id===id))return false;if(clock){const time=clock();if(!Number.isFinite(time)||time<0||time>60)throw new TypeError('Invalid hit time.');histogram[Math.min(5,Math.floor(time/10))]++;}const position={...targets.find(t=>t.id===id).position};targets=targets.filter(t=>t.id!==id);hits++;if(!spawn())fallback=true;events?.emit('precision:hit',readonlySnapshot({attemptId,targetId:id,position}));return true;},
    miss(){if(state!=='active')return false;misses++;return true;},
-   update(delta){if(state!=='active')return;for(const target of targets)if(target.moving){const next=reflectedPosition(target.position.x,target.direction,target.minX,target.maxX,speed,delta);target.position.x=next.x;target.direction=next.direction;}},
+   update(delta){if(state!=='active')return;const dt=safeDelta(delta);for(const target of [...targets]){if(maxLifetime!==null)target.age+=dt;if(maxLifetime!==null&&target.age>=maxLifetime){targets=targets.filter(t=>t.id!==target.id);expired++;if(!spawn())fallback=true;continue;}if(target.moving){const next=reflectedPosition(target.position.x,target.direction,target.minX,target.maxX,speed,delta);target.position.x=next.x;target.direction=next.direction;}}},
    stop(){if(state==='disposed')return;state='stopped';targets=[];},
-   reset(){if(state==='disposed')return;state='idle';hits=misses=0;histogram=Array(6).fill(0);targets=[];fallback=false;},
+   reset(){if(state==='disposed')return;state='idle';hits=misses=expired=0;histogram=Array(6).fill(0);targets=[];fallback=false;},
    dispose(){state='disposed';targets=[];},
  };
 }

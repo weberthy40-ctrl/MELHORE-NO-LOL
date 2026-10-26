@@ -25,10 +25,10 @@ describe('fundação da aplicação', () => {
 
     expect(application.core.state.getState().lifecycle).toBe('running');
     expect(root.querySelector('main h1')?.textContent).toBe(
-      'MOBA Training',
+      'Mecânica afiada.\nJogo diferente.',
     );
     expect(root.querySelector('main p')?.textContent).toBe(
-      'Treine suas mecânicas. Acompanhe sua evolução, no seu ritmo.',
+      'Velocidade, precisão e controle. Entre na arena e transforme cada treino em evolução.',
     );
     expect(root.querySelector('main').getAttribute('aria-labelledby')).toBe(
       root.querySelector('h1').id,

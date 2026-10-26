@@ -7,5 +7,5 @@ export const KITING_LEVELS=readonlySnapshot([
 ].map(([movingSpeed,pursuitSpeed,staticReference,movingReference,spacingReference],i)=>({level:i+1,movingSpeed,pursuitSpeed,decisionInterval:4-i*.15,references:{static:staticReference,moving:movingReference,spacing:spacingReference},minSampleHits:6})));
 export function kitingDifficulty(level,variant){
  if(!Number.isInteger(level)||level<1||level>10||!Object.hasOwn(KITING_VARIANTS,variant))throw new TypeError('Invalid kiting difficulty.');
- const p=KITING_LEVELS[level-1];return readonlySnapshot({...KITING_RULES,level,variant,targetSpeed:variant==='static'?0:variant==='moving'?p.movingSpeed:p.pursuitSpeed,decisionInterval:p.decisionInterval,referenceHits:p.references[variant],minSampleHits:p.minSampleHits});
+ const p=KITING_LEVELS[level-1];return readonlySnapshot({...KITING_RULES,level,variant,attackInterval:.85-(level-1)*.025,windupDuration:.22-(level-1)*.006,targetSpeed:variant==='static'?0:variant==='moving'?p.movingSpeed:4+(level-1)*.3,decisionInterval:p.decisionInterval,referenceHits:p.references[variant],minSampleHits:p.minSampleHits});
 }

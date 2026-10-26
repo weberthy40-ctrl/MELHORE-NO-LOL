@@ -18,14 +18,15 @@ export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,r
  let active=true,generation=0,current=null;
  function clean(){generation++;current?.preview?.dispose();current?.attempt?.dispose();current?.exercise.dispose();current?.session.dispose();current=null;}
  function setup(autoStart=false){
-   clean();const token=generation;const chosenLevel=Number(levelSelect.value),config=timed?precisionDifficulty(chosenLevel,select.value):{};
+   clean();const token=generation;const chosenLevel=Number(levelSelect.value),config=precisionDifficulty(timed?chosenLevel:4,select.value);
    result.hidden=true;result.replaceChildren();select.disabled=levelSelect.disabled=false;
    const session=createSession({countdown:timed?3:0,timeLimit:timed?60:null,events:core.events,metadata:{origin:timed?'precision-official':'precision-practice',level:timed?chosenLevel:null,variant:select.value}});
    let movement;const exercise=createPrecisionPractice({...config,events:core.events,attemptId:session.snapshot().id,clock:timed?()=>session.snapshot().elapsed:undefined,variant:select.value,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0]),playerPosition:()=>movement?.snapshot().position??{x:0,z:0}});
    const attempt=timed?createPrecisionAttempt({session,practice:exercise,level:chosenLevel,variant:select.value}):null;let summarized=false;
    current={session,exercise,attempt};start.disabled=restart.disabled=pause.disabled=true;abandon.disabled=true;notice.textContent='Preparando arena...';
    function update(){if(!active||token!==generation)return;const s=exercise.snapshot(),phase=session.snapshot().state;
-     hud.textContent=`${timed?`Nível ${chosenLevel} · ${phase==='countdown'?`Começar em ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:`Tempo restante: ${Math.max(0,60-session.snapshot().elapsed).toFixed(1)} s`} · `:''}${PRECISION_VARIANTS[s.variant].label} · Acertos: ${s.hits} · Erros: ${s.misses} · Cliques válidos: ${s.clicksEligible} · Precisão observada: ${s.accuracy===null?'—':(s.accuracy*100).toFixed(1)+'%'} · Alvos ativos: ${s.targets.length}${phase==='paused'?' · Pausado':''}`;
+     hud.textContent=`${phase==='countdown'?`COMEÇA EM ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:phase==='paused'?'PAUSADO':`${Math.max(0,60-session.snapshot().elapsed).toFixed(0)}s`}   •   ${s.hits} ACERTOS   •   ${s.misses} ERROS   •   ${s.expired} PERDIDOS   •   ${s.accuracy===null?'—':(s.accuracy*100).toFixed(0)+'%'}`;
+
      if(s.fallback)notice.textContent='Espaço limitado: quantidade ou movimento dos alvos reduzidos para manter posições seguras. Ajuste a câmera e reinicie se necessário.';
      const completed=attempt?.evaluate();
      if(completed&&!summarized){summarized=true;result.hidden=false;pause.disabled=true;abandon.disabled=true;select.disabled=levelSelect.disabled=false;
@@ -47,7 +48,7 @@ export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,r
    Promise.resolve().then(loadPreview).then(({mountPreview})=>{
      if(!active||token!==generation)return;const preview=mountPreview(stage,{events:core.events,session,exercise,onTick:update,onError});
      if(!active||token!==generation){preview.dispose();return;}current.preview=preview;movement=preview.movement;
-     start.disabled=false;restart.disabled=false;notice.textContent=timed?'Treino de 60 segundos efetivos. Tamanho e velocidade mudam gradualmente com o nível. Resultados oficiais são salvos neste dispositivo após a conclusão.': 'Prática técnica sem nota ou histórico. Esquerdo: alvo; direito: movimento; ESC: pausa. A câmera pode ser ajustada; alvos existentes não são teleportados para acompanhar o enquadramento.';
+     start.disabled=false;restart.disabled=false;notice.textContent=timed?`Alvos maiores, reposição imediata. Acerte em até ${config.maxLifetime.toFixed(2)} s; alvos expirados são substituídos. Nível ${chosenLevel}: ${config.speed.toFixed(1)} u/s.`: 'Prática técnica sem nota ou histórico. Esquerdo: alvo; direito: movimento; ESC: pausa. A câmera pode ser ajustada; alvos existentes não são teleportados para acompanhar o enquadramento.';
      if(autoStart)begin();else update();
    }).catch(onError);
  }

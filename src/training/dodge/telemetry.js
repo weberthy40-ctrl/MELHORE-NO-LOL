@@ -1,3 +1,4 @@
+import { MOVEMENT_SPEED } from '../movement.js';
 import { sweptCircle } from './collision.js';
 import { PLAYER_RADIUS } from './projectiles.js';
 import { readonlySnapshot } from '../snapshot.js';
@@ -36,7 +37,7 @@ export function createDodgeTelemetry({session,mode,level,events}) {
     step(dt,from,to){
       if(final||disposed)return;
       if(Number.isFinite(dt)&&dt>0&&dt<=.1+1e-8&&[from?.x,from?.z,to?.x,to?.z].every(Number.isFinite)){
-        const moved=Math.hypot(to.x-from.x,to.z-from.z),measured=moved<=7*dt+1e-6?moved:0,seconds=Math.min(dt,measured/7);
+        const moved=Math.hypot(to.x-from.x,to.z-from.z),measured=moved<=MOVEMENT_SPEED*dt+1e-6?moved:0,seconds=Math.min(dt,measured/MOVEMENT_SPEED);
         distance+=measured;movementSeconds+=seconds;stationarySeconds+=dt-seconds;if(risk)riskDistance+=measured;
         let start=session.snapshot().elapsed-dt;
         while(start<session.snapshot().elapsed-1e-10){const end=Math.min(session.snapshot().elapsed,(Math.floor((start+1e-8)/5)+1)*5),share=(end-start)/dt,b=bucket(end);b.distance+=measured*share;b.movementSeconds+=seconds*share;b.stationarySeconds+=(dt-seconds)*share;start=end;}

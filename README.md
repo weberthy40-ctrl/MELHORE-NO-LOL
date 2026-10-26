@@ -1,18 +1,18 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena e personagens originais. **Versão candidata 1.0.0-rc.1**: implementações dos blocos 001–088 e revisão dos blocos 089–105. A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena e personagens originais. **Versão candidata 1.0.0-rc.2**: revisão da experiência de jogo após os blocos 001–105. Veja [o que mudou](docs/ARENA_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
 - **Esquiva:** quatro ataques nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
 - **Precisão:** um ou três alvos, estáticos ou móveis; prática técnica e sessões oficiais de 60 segundos.
 - **Kiting:** alvo parado, móvel e perseguidor; seleção e ataques manuais, preparação, cancelamento por movimento, recuperação e alcance.
-- **Reflexos:** Espaço, F/J, Go/No-Go e setas; práticas de 5/8/12/16 rodadas e treinos oficiais de 60 segundos.
-- **DPI:** calculadora manual e teste local de dez alvos, com comparação entre duas rodadas. Não mede DPI físico.
+- **Reflexos:** desafio misto como padrão, com Q/W/E/R, Espaço, F, setas e inibição; variantes específicas continuam disponíveis. A avaliação guiada também usa sinais variados.
+- **DPI:** estimativa por contagens brutas e distância medida com régua; comparação de DPIs com três rodadas por valor. O campo de referência do LoL usa 0–100, padrão 50.
 
 Todos os níveis 1–10 estão disponíveis. Cada modalidade tem histórico local, recordes por contexto, evolução, seis conquistas, classificação pessoal e avaliação guiada de três etapas de 20 segundos. A recomendação diagnóstica é provisória, fica em memória e não altera o Perfil. Não há score global, contas, backend, API Riot ou sincronização.
 
 ## Testar pelo navegador
 
-A publicação manual no GitHub Pages está preparada. Siga [estes dois passos](docs/PUBLISH.md) para ativar Pages e executar **Publicar site de teste**. O link do site só estará disponível após o deployment concluir; não é necessário baixar ZIP ou instalar Node para jogar no site publicado.
+O GitHub Pages atualiza automaticamente após um push em `main` que passe nos testes. A execução manual de **Publicar site de teste** continua disponível; veja [a configuração](docs/PUBLISH.md). O link do site só estará disponível após o deployment concluir; não é necessário baixar ZIP ou instalar Node para jogar no site publicado.
 
 ## Executar no Windows ou Linux
 
@@ -44,10 +44,10 @@ Não abra `index.html` diretamente pelo explorador de arquivos. O projeto usa ES
 | Mover câmera livre | Bordas da arena, conforme preferência |
 | Pausar/retomar | ESC ou botão; perda de foco pausa |
 | Acertar alvos de Precisão | Clique esquerdo |
-| Selecionar / solicitar ataque de Kiting | Primeiro clique esquerdo seleciona; outro prepara ataque |
+| Selecionar / solicitar ataque de Kiting | Um clique esquerdo no inimigo prepara o ataque |
 | Cancelar preparação de Kiting | Comando de movimento com clique direito |
 | Ver alcance de Kiting | Segurar A |
-| Responder em Reflexos | Espaço, F/J, F ou setas, conforme exercício |
+| Responder em Reflexos | Q/W/E/R, Espaço, F ou setas; aguarde nos sinais de inibição |
 
 Pausa, preparação e tempo sem foco não contam como tempo ativo. A retomada após perda de foco é explícita. Saída antecipada não salva conclusão oficial.
 

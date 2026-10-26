@@ -1,3 +1,4 @@
+import { mountProfile } from './profileScreen.js';
 import { mountAudioFeedback } from '../audio/feedback.js';
 import { mountBackup } from './backupScreen.js';
 import { loadPreferences,applyInterfacePreferences } from '../settings/preferences.js';
@@ -55,7 +56,11 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
     const route = resolveRoute(window.location.hash);
     const isDodge = route.path.startsWith('/dodge-tech') || Boolean(route.mode);
-    const screen = createScreen(document, route); host.replaceChildren(screen);
+    const screen = createScreen(document, route);
+    const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
+    shell.classList.toggle('is-training',training);shell.dataset.session='idle';
+    screen.classList.toggle('training-screen',training);screen.classList.toggle('profile-screen',route.path==='/profile');
+    host.replaceChildren(screen);
     for (const item of nav.children) {
       if (item.hash === `#${route.path}` || (route.modality && item.hash === '#/levels')) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');
@@ -71,9 +76,10 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     if(route.path==='/assessment/kiting'){const assessment=mountKitingAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
     if(route.path==='/assessment/precision'){const assessment=mountPrecisionAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
     if(route.path==='/assessment/dodge'){const assessment=mountDodgeAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
-    if(route.path==='/profile'||/^\/(history|records|evolution|achievements)\/(dodge|precision|kiting|reflex)$/.test(route.path)){
-      const modalities=route.path==='/profile'?['dodge','precision','kiting','reflex']:[route.path.split('/')[2]];
-      const views=modalities.map(modality=>mountDodgeData({screen,repository,modality,kind:route.path==='/profile'?'profile':route.path.split('/')[1]}));cleanupScreen=()=>views.forEach(view=>view.dispose());
+    if(route.path==='/profile'){const profile=mountProfile({screen,repository});cleanupScreen=()=>profile.dispose();}
+    if(/^\/(history|records|evolution|achievements)\/(dodge|precision|kiting|reflex)$/.test(route.path)){
+      const modalities=[route.path.split('/')[2]];
+      const views=modalities.map(modality=>mountDodgeData({screen,repository,modality,kind:route.path.split('/')[1]}));cleanupScreen=()=>views.forEach(view=>view.dispose());
     }
     let updateSession = () => {};
     if (route.path === '/demo' || isDodge) {
@@ -122,11 +128,12 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
       message.setAttribute('role', 'alert'); screen.append(message);
     });
   }
+  const stopSessionUI=core.events.on('session:changed',s=>{shell.dataset.session=s.state;});
   window.addEventListener('hashchange', render);
   render(false);
   return { dispose() {
     if (!active) return;
     active = false; revision++; preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
-    audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
+    stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
   } };
 }

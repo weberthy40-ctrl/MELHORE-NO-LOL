@@ -5,7 +5,7 @@ import { REFLEX_VARIANTS,REFLEX_CUES,reflexDifficulty } from './difficulty.js';
 /** A bounded balanced bag, randomly choosing among slots that do not exceed three repeats. */
 export function createCueBag(variant,rng){
  if(!Object.hasOwn(REFLEX_VARIANTS,variant))throw new TypeError('Invalid reflex variant.');
- const counts=variant==='simple'?{Space:5}:variant==='choice'?{KeyF:4,KeyJ:4}:variant==='inhibition'?{go:8,noGo:4}:{ArrowUp:4,ArrowDown:4,ArrowLeft:4,ArrowRight:4},bag=[];
+ const counts=variant==='mixed'?{Space:2,KeyQ:2,KeyW:2,KeyE:2,KeyR:2,ArrowUp:1,ArrowDown:1,ArrowLeft:1,ArrowRight:1,go:2,noGo:2}:variant==='simple'?{Space:5}:variant==='choice'?{KeyF:4,KeyJ:4}:variant==='inhibition'?{go:8,noGo:4}:{ArrowUp:4,ArrowDown:4,ArrowLeft:4,ArrowRight:4},bag=[];
  while(Object.values(counts).some(n=>n>0)){
   const choices=Object.keys(counts).filter(key=>{
    if(counts[key]===0)return false;if(variant==='simple')return true;

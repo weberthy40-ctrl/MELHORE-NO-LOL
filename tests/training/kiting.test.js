@@ -6,8 +6,9 @@ import { createSession } from '../../src/training/session.js';
 import { createKitingAttempt } from '../../src/training/kiting/attempt.js';
 import { calculateKitingScore } from '../../src/training/kiting/score.js';
 function tick(practice,seconds){for(let i=0;i<Math.round(seconds*100);i++)practice.update(.01);}
-it('selects first, confirms only after windup, respects inclusive range and prevents spam',()=>{
- const p=createKitingPractice();p.start();expect(p.click('kiting-target')).toBe(false);expect(p.snapshot().hits).toBe(0);expect(p.click('kiting-target')).toBe(true);expect(p.click('kiting-target')).toBe(false);tick(p,.24);expect(p.snapshot().hits).toBe(0);tick(p,.01);expect(p.snapshot().hits).toBe(1);expect(p.snapshot().shots).toBe(1);expect(p.click('kiting-target')).toBe(false);tick(p,.65);expect(p.click('kiting-target')).toBe(true);
+it('attacks on first click, confirms only after windup, respects inclusive range and prevents spam',()=>{
+ const p=createKitingPractice();p.start();expect(p.click('kiting-target')).toBe(true);expect(p.snapshot()).toMatchObject({selected:true,hits:0});expect(p.click('kiting-target')).toBe(false);const config=p.snapshot().config;tick(p,config.windupDuration-.01);expect(p.snapshot().hits).toBe(0);tick(p,.01);expect(p.snapshot().hits).toBe(1);expect(p.snapshot().shots).toBe(1);expect(p.click('kiting-target')).toBe(false);tick(p,config.attackInterval-config.windupDuration);expect(p.click('kiting-target')).toBe(true);
+
  expect(inAttackRange({x:0,z:0},{x:3,z:4},5)).toBe(true);expect(inAttackRange({x:0,z:0},{x:3,z:4.001},5)).toBe(false);expect(inAttackRange({x:NaN,z:0},{x:0,z:0},5)).toBe(false);
 });
 it('cancels before confirmation, preserves confirmed hits and freezes with pause or disposal',()=>{

@@ -6,12 +6,14 @@ export function validReflexMetrics(m,{official=true}={}){
  if(official&&(m.origin!=='official'||!m.terminal||m.endReason!=='completed'||m.elapsedActiveSeconds!==60))return false;
  let config;try{config=reflexDifficulty(m.level,m.variant);}catch{return false;}
  if(!m.config||Object.entries(config).some(([key,value])=>m.config[key]!==value))return false;
- const cues={simple:['Space'],choice:['KeyF','KeyJ'],inhibition:['go','noGo'],direction:['ArrowUp','ArrowDown','ArrowLeft','ArrowRight']}[m.variant];
+ const cues={mixed:['Space','KeyQ','KeyW','KeyE','KeyR','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','go','noGo'],simple:['Space'],choice:['KeyF','KeyJ'],inhibition:['go','noGo'],direction:['ArrowUp','ArrowDown','ArrowLeft','ArrowRight']}[m.variant];
  for(const [i,r]of m.rounds.entries()){
   if(r?.index!==i+1||!cues.includes(r.cue)||!['correct','wrong','missed','anticipated','inhibited','commission'].includes(r.status)||r.responseWindow!==config.responseWindow||!Number.isFinite(r.delayMs)||r.delayMs<config.waitMin||r.delayMs>config.waitMax)return false;
   const timed=['correct','wrong'].includes(r.status),acted=timed||r.status==='commission'||r.status==='anticipated';
   if(typeof r.presented!=='boolean'||r.presented===(r.status==='anticipated')||(acted?!REFLEX_VARIANTS[m.variant].keys.includes(r.response):r.response!==null)||(timed?(!Number.isFinite(r.reactionMs)||r.reactionMs<0||r.reactionMs>=config.responseWindow):r.reactionMs!==null))return false;
-  if(m.variant==='inhibition'){
+  if(m.variant==='mixed'){
+   if(r.status!=='anticipated'&&(r.cue==='noGo'?!['inhibited','commission'].includes(r.status):!['correct','wrong','missed'].includes(r.status)))return false;
+  }else if(m.variant==='inhibition'){
    if(r.status==='anticipated'||(r.cue==='noGo'?!['inhibited','commission'].includes(r.status):!['correct','missed'].includes(r.status)))return false;
   }else if(['inhibited','commission'].includes(r.status))return false;
   const expected=r.cue==='go'?'KeyF':r.cue;if(timed&&((r.status==='correct')!==(r.response===expected)))return false;

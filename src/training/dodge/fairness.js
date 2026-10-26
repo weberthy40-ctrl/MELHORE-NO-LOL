@@ -1,7 +1,8 @@
 import { ARENA,isInsideArena } from '../../game3d/spatial.js';
 import { sweptCircle } from './collision.js';
 import { PLAYER_RADIUS,VARIANTS } from './projectiles.js';
-export const SAFETY=Object.freeze({horizon:1.2,reaction:.18,step:.06,directions:16,margin:.15,speed:7});
+import { MOVEMENT_SPEED } from '../movement.js';
+export const SAFETY=Object.freeze({horizon:1.2,reaction:.18,step:.04,directions:16,margin:.15,speed:MOVEMENT_SPEED});
 /** Finite straight escape probes, never a proof of universal reachability. */
 export function hasEscape(player,threats,{horizon=SAFETY.horizon,reaction=SAFETY.reaction}={}) {
   if(!isInsideArena(player)||!Array.isArray(threats)||threats.length>20||!Number.isFinite(horizon)||horizon<=0||horizon>3||!Number.isFinite(reaction)||reaction<0)return false;

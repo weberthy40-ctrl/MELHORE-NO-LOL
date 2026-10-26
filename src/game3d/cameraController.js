@@ -26,6 +26,5 @@ export function edgeIntent(x,y,width,height) {
   if (![x,y,width,height].every(Number.isFinite) || width<=0 || height<=0 || x<0 || y<0 || x>width || y>height) return {x:0,z:0};
   const edge=Math.min(40,Math.max(15,Math.min(width,height)*0.07));
   const horizontal = x<edge?-1:x>width-edge?1:0, vertical=y<edge?-1:y>height-edge?1:0;
-  // Screen-right and screen-down projected into XZ for the fixed diagonal camera.
-  return {x:horizontal*0.789+vertical*0.614,z:-horizontal*0.614+vertical*0.789};
+  return {x:horizontal,z:vertical};
 }

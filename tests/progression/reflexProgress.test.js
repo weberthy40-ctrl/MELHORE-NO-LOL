@@ -13,3 +13,8 @@ it('has six derived achievements and rates only recent Reação Simples results'
  const records=Array.from({length:10},(_,i)=>record({id:`a${i}`,variant:['simple','choice','inhibition','direction'][i%4],level:10,date:`2026-10-${String(i+1).padStart(2,'0')}T00:00:00.000Z`}));const result=calculateReflexProgress([...records,...records]);expect(result.total).toBe(10);expect(result.achievements).toHaveLength(6);expect(result.achievements.every(a=>a.unlocked)).toBe(true);expect(result.rating.rating).toBe(10);
  records.push(record({id:'bad1',level:10,status:'missed',date:'2026-10-11T00:00:00.000Z'}),record({id:'bad2',level:10,status:'missed',date:'2026-10-12T00:00:00.000Z'}));expect(calculateReflexProgress(records).rating.rating).toBeNull();
 });
+it('uses mixed sessions as a separate reference after three samples without pooling simple results',()=>{
+ const sessions=[record({id:'simple-one',level:8}),record({id:'mixed-one',variant:'mixed',level:8}),record({id:'mixed-two',variant:'mixed',level:8})];
+ expect(calculateReflexProgress(sessions).rating.rating).toBeNull();sessions.push(record({id:'mixed-three',variant:'mixed',level:8}));
+ expect(calculateReflexProgress(sessions).rating).toMatchObject({rating:8,referenceVariant:'mixed'});
+});

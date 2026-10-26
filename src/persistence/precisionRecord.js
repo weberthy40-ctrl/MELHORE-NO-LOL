@@ -7,6 +7,7 @@ import { StorageError,assertRecordData } from './storageError.js';
 export function validatePrecisionRecord(r){
  assertRecordData(r);
  const m=r?.metrics,s=r?.score;
+ if(m?.expiredTargets!==undefined&&(!Number.isInteger(m.expiredTargets)||m.expiredTargets<0))throw new StorageError('Alvos expirados inválidos.','INVALID_RECORD');
  if(r?.recordSchemaVersion!==1||r.modality!=='precision'||r.mode!=='timed'||r.endReason!=='completed'||typeof r.attemptId!=='string'||!r.attemptId.trim()||!Object.hasOwn(PRECISION_VARIANTS,r.variant)||!Number.isInteger(r.level)||r.level<1||r.level>10||!Number.isFinite(Date.parse(r.completedAt))||!m||!s)throw new StorageError('Registro de Precisão inválido.','INVALID_RECORD');
  if(m.origin!=='official'||m.modality!=='precision'||!m.terminal||m.endReason!=='completed'||m.elapsedActiveSeconds!==60||m.metricsVersion!==PRECISION_METRICS_VERSION||s.scoringVersion!==PRECISION_SCORING_VERSION||s.metricsVersion!==PRECISION_METRICS_VERSION||s.status!=='scored'||!Number.isInteger(s.score)||s.score<0||s.score>100)throw new StorageError('Precisão não elegível para salvamento.','INELIGIBLE');
  if([m,s].some(v=>v.attemptId!==r.attemptId||v.variant!==r.variant||v.level!==r.level)||![m.hits,m.misses,m.clicksEligible].every(n=>Number.isInteger(n)&&n>=0)||m.hits+m.misses!==m.clicksEligible||!Array.isArray(m.histogram)||m.histogram.length!==6||!m.histogram.every(n=>Number.isInteger(n)&&n>=0)||m.histogram.reduce((n,h)=>n+h,0)!==m.hits)throw new StorageError('Métricas de Precisão contraditórias.','INVALID_RECORD');
