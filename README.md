@@ -10,6 +10,10 @@ Treinador web de mecânicas de MOBA, em português, com arena e personagens orig
 
 Todos os níveis 1–10 estão disponíveis. Cada modalidade tem histórico local, recordes por contexto, evolução, seis conquistas, classificação pessoal e avaliação guiada de três etapas de 20 segundos. A recomendação diagnóstica é provisória, fica em memória e não altera o Perfil. Não há score global, contas, backend, API Riot ou sincronização.
 
+## Testar pelo navegador
+
+A publicação manual no GitHub Pages está preparada. Siga [estes dois passos](docs/PUBLISH.md) para ativar Pages e executar **Publicar site de teste**. O link do site só estará disponível após o deployment concluir; não é necessário baixar ZIP ou instalar Node para jogar no site publicado.
+
 ## Executar no Windows ou Linux
 
 Instale **Node.js 24 LTS >=24.15.0 e <25**; a versão validada está em `.nvmrc` (24.19.0). Extraia o ZIP, abra o terminal na pasta que contém `package.json` e execute:
