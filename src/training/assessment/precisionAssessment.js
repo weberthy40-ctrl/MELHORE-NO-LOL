@@ -4,8 +4,8 @@ import { HIT_REFERENCES } from '../precision/score.js';
 import { createThreeRoundFlow } from './threeRoundFlow.js';
 import { recommendStartingLevel } from './recommendStartingLevel.js';
 export const PRECISION_DIAGNOSTIC_VERSION='precision-diagnostic-v1';
-// Same static-target exercise isolates size progression; no extrapolation to moving targets.
-export const PRECISION_PRESETS=readonlySnapshot([2,5,8].map(level=>({level,variant:'single-static',duration:20,...precisionDifficulty(level,'single-static'),targetHits20:HIT_REFERENCES['single-static'][level-1]/3})));
+// Every stage uses the unified mixed sequence with level-specific size, speed and deadlines.
+export const PRECISION_PRESETS=readonlySnapshot([2,5,8].map(level=>({level,variant:'mixed',duration:20,...precisionDifficulty(level,'mixed'),targetHits20:HIT_REFERENCES.mixed[level-1]/3})));
 export function validPrecisionDiagnostic(r,index){
  const preset=PRECISION_PRESETS[index];return Boolean(preset&&r?.origin==='diagnostic'&&r.diagnosticVersion===PRECISION_DIAGNOSTIC_VERSION&&typeof r.attemptId==='string'&&r.attemptId.trim()&&r.index===index+1&&r.level===preset.level&&r.variant===preset.variant&&r.radius===preset.radius&&r.speed===preset.speed&&r.durationTarget===20&&r.activeSeconds===20&&r.endReason==='diagnostic-time'&&r.complete===true&&[r.hits,r.misses,r.clicksEligible].every(n=>Number.isInteger(n)&&n>=0)&&r.hits+r.misses===r.clicksEligible&&(r.clicksEligible===0?r.accuracy===null:Number.isFinite(r.accuracy)&&Math.abs(r.accuracy-r.hits/r.clicksEligible)<1e-10));
 }

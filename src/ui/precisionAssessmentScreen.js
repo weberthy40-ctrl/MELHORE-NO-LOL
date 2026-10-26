@@ -10,7 +10,7 @@ export function mountPrecisionAssessment({screen,core,loadPreview=()=>import('..
  function button(text,action){const b=element(document,'button','button',text);b.type='button';b.addEventListener('click',action);return b;}
  function clean(){revision++;round?.preview?.dispose();round?.practice.dispose();round?.session.dispose();round=null;}
  function footer(){const actions=element(document,'div','actions');actions.append(button('Refazer avaliação',()=>{clean();flow.reset();intro();}),link(document,'Voltar ao menu','/','button'));return actions;}
- function intro(){host.replaceChildren(element(document,'p','lead','Três rodadas de 20 segundos ativos com um alvo estático. Dificuldades 2, 5 e 8: o tamanho diminui gradualmente. Esquerdo acerta; direito move; ESC pausa. Os resultados ficam apenas nesta visita.'),button('Iniciar avaliação',()=>{if(flow.start())begin();}));}
+ function intro(){host.replaceChildren(element(document,'p','lead','Três rodadas de 20 segundos ativos com uma sequência mista de alvos. Dificuldades 2, 5 e 8: tamanho, velocidade e pressão mudam com o nível. Esquerdo acerta; ESC pausa. Os resultados ficam apenas nesta visita.'),button('Iniciar avaliação',()=>{if(flow.start())begin();}));}
  function failure(error){if(!active)return;core.errors.report(error,{source:'assessment.precision'});clean();flow.fail();host.replaceChildren(element(document,'p','status-note','Avaliação interrompida. Não foi possível sugerir um nível.'),footer());}
  function summary(){
   const s=flow.snapshot(),completed=s.state==='completed';host.replaceChildren(element(document,'h2','',completed?'Resultado da avaliação — Precisão de Clique':`Resumo da tentativa ${s.results.length} de 3`));

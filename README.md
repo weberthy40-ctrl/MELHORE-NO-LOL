@@ -1,11 +1,11 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.4**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.5**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC5.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
 - **Esquiva:** quatro ataques com origens aleatórias ao redor do jogador, nos dez níveis; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
-- **Precisão:** um ou três alvos, estáticos ou móveis; prática técnica e sessões oficiais de 60 segundos.
-- **Kiting:** 2–6 inimigos de acordo com o nível; esquerdo em qualquer ponto solicita um ataque a um inimigo no alcance, direito move e A exibe o alcance. Alvos parados, móveis e perseguidores.
-- **Reflexos:** desafio misto como padrão, com Q/W/E/R, Espaço, F, setas e inibição; variantes específicas continuam disponíveis. A avaliação guiada também usa sinais variados.
+- **Precisão:** uma sequência mista de alvos estáticos, móveis e grupos; quantidade, velocidade, tamanho e prazo variam com o nível.
+- **Kiting:** começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até seis inimigos. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
+- **Reflexos:** um desafio integrado de Q/W/E/R, Espaço, F/J e mouse, sem setas. Verde pede clique esquerdo, azul pede direito e vermelho pede não responder; símbolos e texto acompanham as cores.
 - **DPI:** estimativa por contagens brutas e distância medida com régua; comparação de DPIs com três rodadas por valor. O campo de referência do LoL usa 0–100, padrão 50.
 
 Todos os níveis 1–10 estão disponíveis. Cada modalidade tem histórico local, recordes por contexto, evolução, seis conquistas, classificação pessoal e avaliação guiada de três etapas de 20 segundos. A recomendação diagnóstica é provisória, fica em memória e não altera o Perfil. Não há score global, contas, backend, API Riot ou sincronização.
@@ -40,14 +40,18 @@ Não abra `index.html` diretamente pelo explorador de arquivos. O projeto usa ES
 | --- | --- |
 | Mover o personagem | Clique direito na arena |
 | Câmera travada/livre | Y |
+| Centralizar no personagem, mantendo câmera livre e zoom | Espaço |
 | Aproximar/afastar | Roda do mouse |
 | Mover câmera livre | Bordas da arena, conforme preferência |
 | Pausar/retomar | ESC ou botão; perda de foco pausa |
 | Acertar alvos de Precisão | Clique esquerdo |
 | Selecionar / solicitar ataque de Kiting | Clique esquerdo em qualquer ponto da arena: ataca um inimigo no alcance, próximo do cursor |
-| Cancelar preparação de Kiting | Comando de movimento com clique direito |
+| Cancelar preparação de Kiting | Clique direito, parar ou Flash antes do disparo |
+| Parar o personagem | S (configurável) |
+| Flash na direção do cursor | D (configurável): até 4 unidades, 15 segundos ativos de recarga |
+| Tela cheia | Botão na arena; permanece ao jogar novamente |
 | Ver alcance de Kiting | Segurar A |
-| Responder em Reflexos | Q/W/E/R, Espaço, F ou setas; aguarde nos sinais de inibição |
+| Responder em Reflexos | Q/W/E/R, Espaço, F/J ou mouse; aguarde nos sinais de inibição |
 
 Pausa, preparação e tempo sem foco não contam como tempo ativo. A retomada após perda de foco é explícita. Saída antecipada não salva conclusão oficial.
 
@@ -72,6 +76,7 @@ Há verificações adicionais em Chromium real, sem dependências de automação
 
 ```sh
 npm run test:browser
+npm run test:gameplay
 npm run test:storage
 ```
 

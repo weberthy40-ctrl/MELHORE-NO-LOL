@@ -3,7 +3,7 @@ import { difficultyFor,validateDifficulty } from './difficulty.js';
 import { ARENA } from '../../game3d/spatial.js';
 import { createProjectiles,PLAYER_RADIUS,VARIANTS } from './projectiles.js';
 import { createSelector,createRandom } from './random.js';
-import { MOVEMENT_SPEED } from '../movement.js';
+import { DODGE_MOVEMENT_SPEED } from '../movement.js';
 export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficultyFor(level),interval=profile.interval,capacity=profile.capacity,events,attemptId=null,mode='technical',isRunning=()=>true,canSpawn=()=>true}={}) {
   validateDifficulty(profile);
   const options=Object.freeze({...profile,weights:Object.freeze({...profile.weights})});
@@ -21,10 +21,10 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
         if(isCombo)combo=null;else clock=0;
         attempts++;
         if(projectiles.snapshot().length>=capacity){rejected++;return;}
-        const variant=select(),origin=variant==='aoe_zone'?chooseAreaOrigin(player,projectiles.snapshot(),rng):chooseProjectileOrigin(player,rng);
+        const variant=select(),origin=variant==='aoe_zone'?chooseAreaOrigin(player,projectiles.snapshot(),rng):chooseProjectileOrigin(player,rng,{followPlayer:true});
         if(!origin){rejected++;return;}
         const lead=Math.min(.5,Math.hypot(player.x-origin.x,player.z-origin.z)/25)*(options.level-1)*.08;
-        const vx=Math.max(-MOVEMENT_SPEED,Math.min(MOVEMENT_SPEED,(player.x-previousPlayer.x)/dt)),vz=Math.max(-MOVEMENT_SPEED,Math.min(MOVEMENT_SPEED,(player.z-previousPlayer.z)/dt));
+        const vx=Math.max(-DODGE_MOVEMENT_SPEED,Math.min(DODGE_MOVEMENT_SPEED,(player.x-previousPlayer.x)/dt)),vz=Math.max(-DODGE_MOVEMENT_SPEED,Math.min(DODGE_MOVEMENT_SPEED,(player.z-previousPlayer.z)/dt));
         const angle=Math.atan2(player.x+vx*lead-origin.x,player.z+vz*lead-origin.z)+(rng()-.5)*.3;
         const direction={x:Math.sin(angle),z:Math.cos(angle)},base=VARIANTS[variant];
         const multiplier=1.3+(options.level-1)*.085;
@@ -43,7 +43,7 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
 /** Bounded candidate generation: area is active at birth, outside reaction margin. */
 export function chooseAreaOrigin(player,active,rng,{attempts=8,reaction=.35}={}) {
   if(![player?.x,player?.z,reaction].every(Number.isFinite)||reaction<0||!Number.isInteger(attempts)||attempts<1||attempts>64||!Array.isArray(active))throw new TypeError('Invalid area admission parameters.');
-  const radius=VARIANTS.aoe_zone.radius,margin=radius+PLAYER_RADIUS+MOVEMENT_SPEED*reaction;
+  const radius=VARIANTS.aoe_zone.radius,margin=radius+PLAYER_RADIUS+DODGE_MOVEMENT_SPEED*reaction;
   for(let i=0;i<attempts;i++) {
     const x=rng(),z=rng();if(![x,z].every(n=>Number.isFinite(n)&&n>=0&&n<1))throw new TypeError('Invalid RNG.');
     const candidate={x:(x-.5)*(ARENA.width-2*radius),z:(z-.5)*(ARENA.length-2*radius)};
@@ -55,12 +55,12 @@ export function chooseAreaOrigin(player,active,rng,{attempts=8,reaction=.35}={})
 }
 
 /** Spawns around the player, including the edges of the lane, never at point-blank range. */
-export function chooseProjectileOrigin(player,rng,{minDistance=7.5,maxDistance=11.5,attempts=12}={}){
+export function chooseProjectileOrigin(player,rng,{minDistance=7.5,maxDistance=11.5,attempts=12,followPlayer=false}={}){
  if(![player?.x,player?.z,minDistance,maxDistance].every(Number.isFinite)||minDistance<3||maxDistance<minDistance||!Number.isInteger(attempts)||attempts<1||attempts>64)throw new TypeError('Invalid origin parameters.');
  for(let i=0;i<attempts;i++){
   const a=rng(),r=rng();if(![a,r].every(n=>Number.isFinite(n)&&n>=0&&n<1))throw new TypeError('Invalid origin RNG.');
   const angle=a*Math.PI*2,d=minDistance+(maxDistance-minDistance)*r,candidate={x:player.x+Math.sin(angle)*d,z:player.z+Math.cos(angle)*d};
-  if(Math.abs(candidate.x)<=ARENA.width/2-.5&&Math.abs(candidate.z)<=ARENA.length/2-.5)return candidate;
+  if(followPlayer||Math.abs(candidate.x)<=ARENA.width/2-.5&&Math.abs(candidate.z)<=ARENA.length/2-.5)return candidate;
  }
  return null;
 }

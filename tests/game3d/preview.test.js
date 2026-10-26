@@ -8,7 +8,7 @@ describe('arena and character', () => {
   it('includes the boundary and rejects invalid/external coordinates', () => {
     expect(isInsideArena(ARENA.center)).toBe(true);
     expect(isInsideArena({x:ARENA.bounds.maxX,z:ARENA.bounds.minZ})).toBe(true);
-    for (const p of [null,{x:NaN,z:0},{x:10,z:0},{x:0,z:20}]) expect(isInsideArena(p)).toBe(false);
+    for (const p of [null,{x:NaN,z:0},{x:ARENA.bounds.maxX+1,z:0},{x:0,z:20}]) expect(isInsideArena(p)).toBe(false);
   });
   it('creates original meshes and disposes shared resources once', () => {
     const arena = createArena(); const resources = new Set();

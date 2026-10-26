@@ -42,7 +42,7 @@ export function createCharacter({position=ARENA.center,rotation=0,scale=1,reduce
  let disposed=false,phase=0,animated=null;
  function setPose({x,z},angle=group.rotation.y){if(![x,z,angle].every(Number.isFinite))throw new TypeError('Invalid visual pose.');group.position.set(x,ARENA.groundY,z);group.rotation.y=angle;}
  setPose(position,rotation);group.scale.setScalar(scale);
- return {group,setPose,applyAssets(assets){
+ return {group,setPose,setHealth(ratio){health.scale.x=1.5*Math.max(.02,Math.min(1,Number.isFinite(ratio)?ratio:1));},applyAssets(assets){
   if(disposed||animated)return;const nextModel=createAnimatedModel(enemy?assets.knight:assets.ranger,{enemy});const original=new THREE.Group();for(const child of [...group.children])if(child.userData.rest){group.remove(child);original.add(child);}disposeObject(original);limbs.length=0;
   animated=nextModel;group.add(animated.root);
   const proxy=new THREE.Mesh(new THREE.CapsuleGeometry(.55,1.35,4,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));proxy.position.y=1.25;proxy.userData.rest=true;group.add(proxy);group.userData.model=enemy?'knight':'ranger';

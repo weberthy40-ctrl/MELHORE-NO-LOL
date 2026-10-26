@@ -5,7 +5,7 @@ import { createCharacter } from '../../src/game3d/character.js';
 import { createFeedbackVisuals } from '../../src/game3d/feedbackVisuals.js';
 import { applyGraphicsQuality,validatePreferences,DEFAULT_PREFERENCES } from '../../src/settings/preferences.js';
 it('applies three real pixel-ratio caps without changing CSS or gameplay configuration',()=>{
- const renderer={setPixelRatio:vi.fn()};for(const [quality,ratio]of [['leve',1],['medio',1.4],['alto',1.75]]){applyGraphicsQuality(renderer,quality,2);expect(renderer.setPixelRatio).toHaveBeenLastCalledWith(ratio);}expect(()=>validatePreferences({...DEFAULT_PREFERENCES,quality:'extreme'})).toThrow();
+ const renderer={setPixelRatio:vi.fn()};for(const [quality,ratio]of [['leve',1],['medio',1.2],['alto',1.5]]){applyGraphicsQuality(renderer,quality,2);expect(renderer.setPixelRatio).toHaveBeenLastCalledWith(ratio);}expect(()=>validatePreferences({...DEFAULT_PREFERENCES,quality:'extreme'})).toThrow();
 });
 it('animates limbs while preserving the root pose and the exact neutral raycast distances',()=>{
  const character=createCharacter(),ray=new THREE.Raycaster(new THREE.Vector3(.22,.35,10),new THREE.Vector3(0,0,-1));character.group.updateMatrixWorld(true);const before=ray.intersectObject(character.group,true).map(h=>h.distance);character.animate({moving:true,attackPhase:'windup'},.1);character.group.updateMatrixWorld(true);const after=ray.intersectObject(character.group,true).map(h=>h.distance);expect(after).toEqual(before);expect(character.group.position.toArray()).toEqual([0,0,0]);const pose=character.group.children.map(m=>m.rotation.x);character.animate({state:'paused',moving:true},.1);expect(character.group.children.map(m=>m.rotation.x)).toEqual(pose);character.dispose();

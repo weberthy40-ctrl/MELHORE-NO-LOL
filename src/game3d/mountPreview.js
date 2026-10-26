@@ -1,3 +1,4 @@
+import { mountFullscreen } from './fullscreen.js';
 import { loadSceneAssets } from './sceneAssets.js';
 import { createFeedbackVisuals } from './feedbackVisuals.js';
 import { loadPreferences,GRAPHICS_PRESETS,applyGraphicsQuality } from '../settings/preferences.js';
@@ -18,7 +19,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
   cancelFrame = id => container.ownerDocument.defaultView.cancelAnimationFrame(id) } = {}) {
   mounted.get(container)?.dispose();
   const document = container.ownerDocument;let storage;try{storage=document.defaultView.localStorage;}catch{storage=null;}const preferences=loadPreferences(storage),graphics=GRAPHICS_PRESETS[preferences.quality],reducedMotion=preferences.motion==='reduced'||Boolean(document.defaultView.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-  let renderer, arena, character, observer, input, visuals, feedback, backdrop, disposed = false;
+  let renderer, arena, character, observer, input, visuals, feedback, backdrop,fullscreen,shadowElapsed=0, disposed = false;
   const scene = new THREE.Scene(); scene.background = new THREE.Color(exercise?.kind==='precision'?0x10142a:0x283e30);
   const camera = new THREE.PerspectiveCamera(CAMERA.fov, 1, CAMERA.near, CAMERA.far);
   camera.position.set(CAMERA.x, CAMERA.y, CAMERA.z); camera.lookAt(0,0,0);
@@ -36,7 +37,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
   function lost(event) { event.preventDefault(); input?.dispose(); fail(new Error('WebGL context lost.')); }
   const api = { get movement(){return input?.movement;}, dispose() {
     if (disposed) return; disposed = true;
-    input?.dispose(); observer?.disconnect(); document.removeEventListener('visibilitychange', resize);
+    input?.dispose();fullscreen?.dispose(); observer?.disconnect(); document.removeEventListener('visibilitychange', resize);
     document.defaultView?.removeEventListener('resize', resize);
     renderer?.domElement.removeEventListener('webglcontextlost', lost);
     backdrop?.dispose();feedback?.dispose();visuals?.dispose(); arena?.dispose(); character?.dispose(); renderer?.dispose(); renderer?.forceContextLoss?.();
@@ -59,18 +60,19 @@ export function mountPreview(container, { createRenderer = options => new THREE.
     if(arena)scene.fog=new THREE.FogExp2(0x18352e,.013);
     scene.add(new THREE.HemisphereLight(0xc5e4e1,0x3c392b,1.5));
     const light=new THREE.DirectionalLight(0xffe5b8,2.7);light.position.set(-12,26,12);scene.add(light);
-    if(arena&&renderer.shadowMap&&preferences.quality!=='leve'){renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;light.castShadow=true;light.shadow.mapSize.setScalar(preferences.quality==='alto'?2048:1024);Object.assign(light.shadow.camera,{left:-30,right:30,top:32,bottom:-32,near:1,far:85});light.shadow.bias=-.0002;light.shadow.normalBias=.04;}
+    if(arena&&renderer.shadowMap&&preferences.quality!=='leve'){renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;light.castShadow=true;light.shadow.mapSize.setScalar(preferences.quality==='alto'?1024:512);Object.assign(light.shadow.camera,{left:-30,right:30,top:32,bottom:-32,near:1,far:85});light.shadow.bias=-.0002;light.shadow.normalBias=.04;}
     observer = ResizeObserverClass ? new ResizeObserverClass(resize) : undefined; observer?.observe(container);
     document.addEventListener('visibilitychange',resize); document.defaultView?.addEventListener('resize',resize);
     renderer.domElement.addEventListener('webglcontextlost',lost); resize();
     if (exercise) visuals=exercise.kind==='precision'?createPrecisionVisuals(scene,camera,exercise):exercise.kind==='kiting'?createKitingVisuals(scene):exercise.kind==='reflex'?{sync(){},dispose(){}}:createDodgeVisuals(scene,{camera,container});
     if(exercise)visuals.sync(exercise.snapshot(),{x:0,z:0});
     if(exercise)feedback=createFeedbackVisuals({scene,events,attemptId:session?.snapshot().id,enabled:graphics.effects,reducedMotion,position:()=>exercise.kind==='kiting'?exercise.snapshot().target.position:input?.movement.snapshot().position??{x:0,z:0}});
+    fullscreen=mountFullscreen(container);
     container.dataset.visuals='basic';
     if(arena&&document.defaultView.CanvasRenderingContext2D){
-      container.dataset.visuals='loading';loadSceneAssets().then(assets=>{if(disposed)return;character.applyAssets(assets);visuals?.applyAssets?.(assets);arena.applyAssets(assets);container.dataset.visuals='ready';}).catch(()=>{if(!disposed)container.dataset.visuals='basic';});
+      container.dataset.visuals='loading';loadSceneAssets().then(assets=>{if(disposed)return;character.applyAssets(assets);visuals?.applyAssets?.(assets);arena.applyAssets(assets);if(renderer.shadowMap)renderer.shadowMap.needsUpdate=true;container.dataset.visuals='ready';renderer.render(scene,camera);}).catch(()=>{if(!disposed)container.dataset.visuals='basic';});
     }
-    if (controls) input = attachPreviewControls({container,renderer,camera,character,onError,session,exercise,visuals,feedback,onTick,onStep,onVisualStep:dt=>arena?.update(dt),requestFrame,cancelFrame,render:()=>renderer.render(scene,camera)});
+    if (controls) input = attachPreviewControls({container,renderer,camera,character,onError,session,exercise,visuals,feedback,onTick,onStep,onVisualStep:dt=>{arena?.update(dt);shadowElapsed+=dt;if(renderer.shadowMap&&shadowElapsed>=.05){renderer.shadowMap.needsUpdate=true;shadowElapsed=0;}},requestFrame,cancelFrame,render:()=>renderer.render(scene,camera)});
   } catch (error) {
     api.dispose(); renderer = undefined; arena = undefined; character = undefined; observer = undefined;
     disposed = false; mounted.set(container,api); fail(error);

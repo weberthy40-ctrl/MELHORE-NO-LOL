@@ -8,7 +8,7 @@ import { createSession } from '../training/session.js';
 import { element,link } from './elements.js';
 export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,repository,loadPreview=()=>import('../game3d/mountPreview.js')}){
  const document=screen.ownerDocument,window=document.defaultView,host=element(document,'section','precision-practice'),select=element(document,'select'),label=element(document,'label','','Variante ');
- for(const [id,variant]of Object.entries(PRECISION_VARIANTS)){const option=element(document,'option','',variant.label);option.value=id;select.append(option);}label.append(select);const controls=element(document,'div','data-controls');controls.append(label);
+ for(const [id,variant]of Object.entries(PRECISION_VARIANTS).filter(([id])=>id==='mixed')){const option=element(document,'option','',variant.label);option.value=id;select.append(option);}select.value='mixed';label.append(select);const controls=element(document,'div','data-controls');controls.append(label);
  const levelSelect=element(document,'select');for(let n=1;n<=10;n++){const option=element(document,'option','',String(n));option.value=String(n);levelSelect.append(option);}levelSelect.value=String(initialLevel);if(timed){const levelLabel=element(document,'label','','Nível ');levelLabel.append(levelSelect);controls.append(levelLabel);}
  const result=element(document,'section','precision-result');result.hidden=true;
  const start=element(document,'button','button primary',timed?'Iniciar treino':'Iniciar prática'),restart=element(document,'button','button',timed?'Reiniciar treino':'Reiniciar prática'),pause=element(document,'button','button','Pausar'),back=link(document,'Voltar','/levels','button');for(const b of [start,restart,pause])b.type='button';
@@ -25,7 +25,7 @@ export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,r
    const attempt=timed?createPrecisionAttempt({session,practice:exercise,level:chosenLevel,variant:select.value}):null;let summarized=false;
    current={session,exercise,attempt};start.disabled=restart.disabled=pause.disabled=true;abandon.disabled=true;notice.textContent='Preparando arena...';
    function update(){if(!active||token!==generation)return;const s=exercise.snapshot(),phase=session.snapshot().state;
-     hud.textContent=`${phase==='countdown'?`COMEÇA EM ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:phase==='paused'?'PAUSADO':`${Math.max(0,60-session.snapshot().elapsed).toFixed(0)}s`}   •   ${s.hits} ACERTOS   •   ${s.misses} ERROS   •   ${s.expired} PERDIDOS   •   ${s.accuracy===null?'—':(s.accuracy*100).toFixed(0)+'%'}`;
+     hud.textContent=`${phase==='countdown'?`COMEÇA EM ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:phase==='paused'?'PAUSADO':`${Math.max(0,60-session.snapshot().elapsed).toFixed(0)}s`}   •   ${PRECISION_VARIANTS[s.pattern]?.label??"Misto"}   •   ${s.hits} ACERTOS   •   ${s.misses} ERROS   •   ${s.expired} PERDIDOS   •   ${s.accuracy===null?'—':(s.accuracy*100).toFixed(0)+'%'}`;
 
      if(s.fallback)notice.textContent='Espaço limitado: quantidade ou movimento dos alvos reduzidos para manter posições seguras. Ajuste a câmera e reinicie se necessário.';
      const completed=attempt?.evaluate();
@@ -48,7 +48,7 @@ export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,r
    Promise.resolve().then(loadPreview).then(({mountPreview})=>{
      if(!active||token!==generation)return;const preview=mountPreview(stage,{events:core.events,session,exercise,onTick:update,onError});
      if(!active||token!==generation){preview.dispose();return;}current.preview=preview;movement=preview.movement;
-     start.disabled=false;restart.disabled=false;notice.textContent=timed?`Alvos maiores, reposição imediata. Acerte em até ${config.maxLifetime.toFixed(2)} s; alvos expirados são substituídos. Nível ${chosenLevel}: ${config.speed.toFixed(1)} u/s.`: 'Prática técnica sem nota ou histórico. Esquerdo: alvo; direito: movimento; ESC: pausa. A câmera pode ser ajustada; alvos existentes não são teleportados para acompanhar o enquadramento.';
+     start.disabled=false;restart.disabled=false;notice.textContent=timed?`Alvos maiores, reposição imediata. Acerte em até ${config.maxLifetime.toFixed(2)} s; alvos expirados são substituídos. Nível ${chosenLevel}: ${config.speed.toFixed(1)} u/s.`: 'Prática mista sem nota ou histórico. Alvos parados, móveis e grupos. Esquerdo: acertar; ESC: pausar.';
      if(autoStart)begin();else update();
    }).catch(onError);
  }

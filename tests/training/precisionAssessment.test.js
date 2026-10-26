@@ -9,7 +9,7 @@ it('advances exactly three validated rounds, with explicit transitions and cance
  expect(flow.snapshot().state).toBe('completed');expect(flow.next()).toBe(false);flow.reset();expect(flow.snapshot().results).toHaveLength(0);flow.cancel();expect(flow.start()).toBe(false);
 });
 it('uses real twenty-second metas and a deterministic diagnostic formula independent of official score',()=>{
- const data=rounds(),serialized=JSON.stringify(data),result=calculatePrecisionGuidedAssessment(data);expect(result.status).toBe('recommended');expect(result.recommendedStartingLevel).toBe(10);expect(result.perAttempt[0].targetHits20).toBe(44/3);expect(JSON.stringify(data)).toBe(serialized);expect(Object.isFrozen(result.perAttempt[0])).toBe(true);
+ const data=rounds(),serialized=JSON.stringify(data),result=calculatePrecisionGuidedAssessment(data);expect(result.status).toBe('recommended');expect(result.recommendedStartingLevel).toBe(10);expect(result.perAttempt[0].targetHits20).toBe(50/3);expect(JSON.stringify(data)).toBe(serialized);expect(Object.isFrozen(result.perAttempt[0])).toBe(true);
  expect(calculatePrecisionGuidedAssessment(rounds(6,6)).perAttempt[0].qi).toBeLessThan(calculatePrecisionGuidedAssessment(rounds(6)).perAttempt[0].qi);
  expect(calculatePrecisionGuidedAssessment(rounds(5)).perAttempt[0].qi).toBeLessThan(calculatePrecisionGuidedAssessment(rounds(10)).perAttempt[0].qi);
  expect(calculatePrecisionGuidedAssessment(rounds(0,5)).perAttempt[0].qi).toBe(0);

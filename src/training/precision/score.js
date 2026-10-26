@@ -3,6 +3,7 @@ import { PRECISION_METRICS_VERSION } from './attempt.js';
 import { readonlySnapshot } from '../snapshot.js';
 export const PRECISION_SCORING_VERSION='precision-score-v1';
 export const HIT_REFERENCES=Object.freeze({
+ mixed:Object.freeze([50,50,48,46,44,42,40,38,36,34]),
  'single-static':Object.freeze([45,44,43,42,40,38,36,34,32,30]),
  'single-moving':Object.freeze([35,34,33,32,30,28,27,25,24,22]),
  'multi-static':Object.freeze([55,54,53,52,50,48,46,44,42,40]),

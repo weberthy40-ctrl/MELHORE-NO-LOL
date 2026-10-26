@@ -31,13 +31,13 @@ export function createScreen(document, route) {
   } else if (route.path.startsWith('/timed/reflex')) {
     title='Treino cronometrado — Reflexos e Reação';description='Responda aos sinais visuais durante 60 segundos ativos.';
   } else if (route.path==='/practice/reflex') {
-    title='Prática técnica — Reflexos e Reação';description='Quatro exercícios de atenção e resposta visual, sem nota ou histórico.';
+    title='Prática técnica — Reflexos e Reação';description='Uma sequência de teclado e mouse, sem nota ou histórico.';
   } else if (route.path.startsWith('/timed/kiting')) {
     title='Treino cronometrado — Kiting';description='Ataque e movimente manualmente durante 60 segundos ativos.';
   } else if (route.path==='/practice/kiting') {
-    title='Prática técnica — Kiting';description='Três exercícios com grupos de inimigos, sem nota ou histórico.';
+    title='Prática técnica — Kiting';description='Ondas de inimigos com vida e reposição, sem nota ou histórico.';
   } else if (route.path.startsWith('/timed/precision')) {
-    title='Treino cronometrado — Precisão de clique';description='Escolha variante e nível. Clique nos alvos durante 60 segundos efetivos.';
+    title='Treino cronometrado — Precisão de clique';description='Alvos parados, móveis e grupos em uma sequência aleatória. Escolha o nível e treine por 60 segundos.';
   } else if (route.mode) {
     title = `Esquiva — ${route.mode==='normal'?'Normal':'Sobrevivência'} — Nível ${route.level}`;
     description = route.mode==='normal'?'Sobreviva por 60 segundos com três vidas.':'Uma vida. Tempo ilimitado. Sobreviva enquanto conseguir.';
@@ -51,9 +51,9 @@ export function createScreen(document, route) {
   } else if (route.path === '/preview') {
     title = 'Prévia técnica 3D'; description = 'Arena e personagem originais. Prévia técnica interativa — sem pontuação.';
   } else if(route.path==='/practice/precision'){
-    title='Prática técnica — Precisão de clique';description='Clique com o botão esquerdo nos alvos. As quatro variantes são práticas sem nota ou histórico.';
+    title='Prática técnica — Precisão de clique';description='Clique com o botão esquerdo nos alvos. O treino mistura alvos parados, móveis e grupos.';
   } else if(route.path==='/assessment/reflex'){
-    title='Avaliação guiada — Reflexos e Reação';description='Sinais variados: habilidades, setas e freio em três etapas de 20 segundos, nos níveis 3, 6 e 9.';
+    title='Avaliação guiada — Reflexos e Reação';description='Sinais variados: habilidades, mouse e freio em três etapas de 20 segundos, nos níveis 3, 6 e 9.';
   } else if(route.path==='/assessment/kiting'){
     title='Avaliação guiada — Kiting';description='Três exercícios curtos, separados do histórico e da classificação oficial.';
   } else if(route.path==='/assessment/precision'){

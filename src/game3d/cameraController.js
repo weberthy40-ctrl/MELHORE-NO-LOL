@@ -1,4 +1,4 @@
-import { ARENA } from './spatial.js';
+import { ARENA,isInsideArena } from './spatial.js';
 import { safeDelta } from '../training/movement.js';
 export const ZOOM = Object.freeze({min:0.65,max:1.6,initial:1});
 export function createCameraController() {
@@ -6,6 +6,7 @@ export function createCameraController() {
   return {
     snapshot:()=>Object.freeze({locked,zoom,center:Object.freeze({...center})}),
     toggle() {locked=!locked;},
+    recenter(position) {if(!isInsideArena(position))return false;center={...position};return true;},
     wheel(delta, mode=0) {
       if (!Number.isFinite(delta) || ![0,1,2].includes(mode)) return;
       const normalized = Math.max(-200,Math.min(200,delta*(mode===1?16:mode===2?500:1)));

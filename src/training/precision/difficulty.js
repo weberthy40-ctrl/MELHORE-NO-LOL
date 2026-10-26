@@ -5,5 +5,5 @@ export const PRECISION_LEVELS=Object.freeze([
 ].map(([level,radius,speed])=>Object.freeze({level,radius,speed})));
 export function precisionDifficulty(level,variant){
  const profile=PRECISION_LEVELS.find(p=>p.level===level);if(!profile||!Object.hasOwn(PRECISION_VARIANTS,variant))throw new TypeError('Escolha variante e nível 1–10 válidos.');
- return Object.freeze({...profile,maxLifetime:1.6-(level-1)*.105,speed:PRECISION_VARIANTS[variant].moving?profile.speed:0,variant});
+ return Object.freeze({...profile,patternSeconds:6-(level-1)*.2,maxLifetime:1.6-(level-1)*.105,speed:PRECISION_VARIANTS[variant].moving?profile.speed:0,variant});
 }

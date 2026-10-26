@@ -6,7 +6,7 @@ export const PRECISION_ACHIEVEMENTS=Object.freeze([
  ['good-aim','Boa Mira','Tenha pelo menos 20 cliques válidos e 80% de precisão.'],
  ['surgical','Mira Cirúrgica','Acerte todos os cliques em uma tentativa com pelo menos 20 cliques.'],
  ['highlight','Sessão de Destaque','Conclua uma tentativa com nota salva de pelo menos 80.'],
- ['versatile','Versátil','Conclua tentativas oficiais nas quatro variantes.'],
+ ['versatile','Versátil','Conclua uma sessão mista com os quatro padrões de alvo, ou as quatro variantes anteriores.'],
  ['explorer','Explorador da Precisão','Conclua tentativas oficiais em três dificuldades distintas.'],
 ].map(([id,title,description])=>Object.freeze({id,title,description})));
 const chronological=(a,b)=>Date.parse(a.completedAt)-Date.parse(b.completedAt)||(a.attemptId<b.attemptId?-1:a.attemptId>b.attemptId?1:0);
@@ -18,7 +18,7 @@ export function comparePrecisionRecord(a,b,{accuracy=true}={}){
 }
 /** Two record candidates/context permit a context-wide decision to omit unknown accuracy. */
 export function createPrecisionProgress(){
- const records=new Map(),evidence=new Map(),levelFirst=new Map(),variantFirst=new Map(),first=new Map();let total=0,sum=0,best=null,latest=null;
+ const records=new Map(),evidence=new Map(),mixedEvidence=new Map(),levelFirst=new Map(),variantFirst=new Map(),first=new Map();let total=0,sum=0,best=null,latest=null;
  function mark(id,record){if(!first.has(id)||chronological(record,first.get(id))<0)first.set(id,record);}
  function markGroup(map,key,record){if(!map.has(key)||chronological(record,map.get(key))<0)map.set(key,record);}
  return {add(record){
@@ -26,18 +26,19 @@ export function createPrecisionProgress(){
    const context=`${record.variant}:${record.level}`,measured=record.metrics.clicksEligible>0;
    if(!records.has(context))records.set(context,{accuracy:record,hits:record,comparable:measured});
    else{const r=records.get(context);r.comparable&&=measured;if(comparePrecisionRecord(record,r.accuracy)<0)r.accuracy=record;if(comparePrecisionRecord(record,r.hits,{accuracy:false})<0)r.hits=record;}
-   if(record.metrics.hits>=1)mark('first-hit',record);
+   if(record.variant==='mixed'&&record.metrics.patternsSeen?.length===4)mark('versatile',record);if(record.metrics.hits>=1)mark('first-hit',record);
    if(record.metrics.clicksEligible>=20&&record.metrics.hits/record.metrics.clicksEligible>=.8)mark('good-aim',record);
    if(record.metrics.clicksEligible>=20&&record.metrics.hits===record.metrics.clicksEligible)mark('surgical',record);
    if(record.score.score>=80)mark('highlight',record);markGroup(levelFirst,record.level,record);markGroup(variantFirst,record.variant,record);
-   if(record.variant==='single-static'){
-     if(!evidence.has(record.level))evidence.set(record.level,{count:0,recent:[]});const e=evidence.get(record.level);e.count++;e.recent.push(record);e.recent.sort((a,b)=>chronological(b,a));e.recent=e.recent.slice(0,3);
+   if(['single-static','mixed'].includes(record.variant)){
+     const pool=record.variant==='mixed'?mixedEvidence:evidence;if(!pool.has(record.level))pool.set(record.level,{count:0,recent:[]});const e=pool.get(record.level);e.count++;e.recent.push(record);e.recent.sort((a,b)=>chronological(b,a));e.recent=e.recent.slice(0,3);
    }
  },snapshot(){
-   const explorer=[...levelFirst.values()].sort(chronological)[2],versatile=[...variantFirst.values()].sort(chronological)[3];if(explorer)mark('explorer',explorer);if(versatile)mark('versatile',versatile);
-   const evidenceByLevel=Array.from({length:10},(_,index)=>{const level=index+1,e=evidence.get(level)??{count:0,recent:[]},scores=e.recent.map(r=>r.score.score),median=scores.length===3?[...scores].sort((a,b)=>a-b)[1]:null,passing=scores.filter(n=>n>=60).length;return {level,count:e.count,attemptIds:e.recent.map(r=>r.attemptId),scores,median,passing,demonstrated:scores.length===3&&median>=60&&passing>=2};});
+   const explorer=[...levelFirst.values()].sort(chronological)[2],versatile=[...variantFirst.values()].filter(r=>r.variant!=='mixed').sort(chronological)[3];if(explorer)mark('explorer',explorer);if(versatile)mark('versatile',versatile);
+   const reference=[...mixedEvidence.values()].some(e=>e.count>=3)?mixedEvidence:evidence;
+   const evidenceByLevel=Array.from({length:10},(_,index)=>{const level=index+1,e=reference.get(level)??{count:0,recent:[]},scores=e.recent.map(r=>r.score.score),median=scores.length===3?[...scores].sort((a,b)=>a-b)[1]:null,passing=scores.filter(n=>n>=60).length;return {level,count:e.count,attemptIds:e.recent.map(r=>r.attemptId),scores,median,passing,demonstrated:scores.length===3&&median>=60&&passing>=2};});
    const rating=evidenceByLevel.filter(e=>e.demonstrated).at(-1)?.level??null;
-   return readonlySnapshot({total,records:[...records.values()].map(r=>r.comparable?r.accuracy:r.hits),achievements:PRECISION_ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),stats:{total,bestScore:best,meanScore:total?sum/total:null,latestScore:latest?.score.score??null},rating:{ratingVersion:'1',rating,status:rating===null?'insufficient-data':'classified',referenceVariant:'single-static',evidenceByLevel,totalEligibleAttempts:[...evidence.values()].reduce((n,e)=>n+e.count,0)}});
+   return readonlySnapshot({total,records:[...records.values()].map(r=>r.comparable?r.accuracy:r.hits),achievements:PRECISION_ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),stats:{total,bestScore:best,meanScore:total?sum/total:null,latestScore:latest?.score.score??null},rating:{ratingVersion:'1',rating,status:rating===null?'insufficient-data':'classified',referenceVariant:reference===mixedEvidence?'mixed':'single-static',evidenceByLevel,totalEligibleAttempts:[...reference.values()].reduce((n,e)=>n+e.count,0)}});
  }};
 }
 export function calculatePrecisionProgress(attempts){const p=createPrecisionProgress(),seen=new Set();for(const r of attempts){if(seen.has(r?.attemptId))continue;seen.add(r?.attemptId);p.add(r);}return p.snapshot();}

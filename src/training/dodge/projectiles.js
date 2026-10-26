@@ -29,7 +29,7 @@ export function createProjectiles({capacity=8,isRunning=()=>true,onEvent=()=>{}}
       const impact=sweptCircle({x:p.position.x-previousPlayer.x,z:p.position.z-previousPlayer.z},{x:next.x-playerEnd.x,z:next.z-playerEnd.z},PLAYER_RADIUS+p.radius);
       p.position=next;p.age+=duration;p.distance+=p.speed*duration;
       if(impact!==null){onEvent(Object.freeze({type:'impact',id:p.id,variant:p.variant}));remove(p,'impact');}
-      else if(p.age>=p.ttl||(p.variant!=='aoe_zone'&&p.distance>=p.range)||Math.abs(next.x)>25||Math.abs(next.z)>30)remove(p,'expired');
+      else if(p.age>=p.ttl||(p.variant!=='aoe_zone'&&p.distance>=p.range))remove(p,'expired');
     }
   },clear(){for(const p of [...active.values()])remove(p,'disposed');}};
 }

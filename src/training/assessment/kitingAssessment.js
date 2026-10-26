@@ -3,7 +3,7 @@ import { kitingDifficulty } from '../kiting/difficulty.js';
 import { createThreeRoundFlow } from './threeRoundFlow.js';
 import { recommendStartingLevel } from './recommendStartingLevel.js';
 export const KITING_DIAGNOSTIC_VERSION='kiting-diagnostic-v1';
-export const KITING_PRESETS=readonlySnapshot(['static','moving','spacing'].map((variant,i)=>{const config=kitingDifficulty([2,5,8][i],variant);return {variant,level:config.level,duration:20,config,targetHits20:Math.max(1,config.referenceHits/3)};}));
+export const KITING_PRESETS=readonlySnapshot(['waves','waves','waves'].map((variant,i)=>{const config=kitingDifficulty([2,5,8][i],variant);return {variant,level:config.level,duration:20,config,targetHits20:Math.max(1,config.referenceHits/3)};}));
 export function validKitingDiagnostic(r,index){
  const preset=KITING_PRESETS[index];return Boolean(preset&&r?.origin==='diagnostic'&&r.modality==='kiting'&&r.diagnosticVersion===KITING_DIAGNOSTIC_VERSION&&typeof r.attemptId==='string'&&r.attemptId.trim()&&r.index===index+1&&r.level===preset.level&&r.variant===preset.variant&&r.durationTarget===20&&r.activeSeconds===20&&r.endReason==='diagnostic-time'&&r.complete===true&&r.config&&Object.entries(preset.config).every(([key,value])=>r.config[key]===value)&&[r.accepted,r.shots,r.hits,r.cancellations,r.rhythmOpportunities,r.rhythmCycles].every(n=>Number.isInteger(n)&&n>=0)&&r.hits<=r.shots&&r.shots+r.cancellations<=r.accepted&&r.rhythmOpportunities===Math.max(0,r.hits-1)&&r.rhythmCycles<=r.rhythmOpportunities&&Number.isFinite(r.totalDistanceMoved)&&r.totalDistanceMoved>=0&&Array.isArray(r.histogram)&&r.histogram.length===4&&r.histogram.every(n=>Number.isInteger(n)&&n>=0)&&r.histogram.reduce((n,h)=>n+h,0)===r.hits);
 }
