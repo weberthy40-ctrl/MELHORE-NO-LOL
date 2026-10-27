@@ -5,7 +5,7 @@ import { createKitingAttempt } from '../training/kiting/attempt.js';
 import { calculateKitingScore } from '../training/kiting/score.js';
 import { createSession } from '../training/session.js';
 import { createRandom } from '../core/random.js';
-import { element,link } from './elements.js';
+import { element,link,updateHud } from './elements.js';
 export function mountKiting({screen,core,timed=false,initialLevel=1,repository,loadPreview=()=>import('../game3d/mountPreview.js')}){
  const document=screen.ownerDocument,window=document.defaultView,host=element(document,'section','kiting-practice'),controls=element(document,'div','data-controls'),variant=element(document,'select'),level=element(document,'select');
  function button(text,action){const b=element(document,'button','button',text);b.type='button';b.addEventListener('click',action);return b;}
@@ -22,7 +22,7 @@ export function mountKiting({screen,core,timed=false,initialLevel=1,repository,l
   const session=createSession({countdown:3,timeLimit:timed?60:null,events:core.events,metadata:{origin:timed?'official':'technical',modality:'kiting',variant:chosen,level:chosenLevel}}),practice=createKitingPractice({variant:chosen,level:chosenLevel,events:core.events,attemptId:session.snapshot().id,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0]),isRunning:()=>session.snapshot().state==='running',playerPosition:()=>movement?.snapshot().position??{x:0,z:0}}),attempt=timed?createKitingAttempt({session,practice,variant:chosen,level:chosenLevel}):null;
   current={session,practice,attempt};start.disabled=restart.disabled=pause.disabled=abandon.disabled=true;variant.disabled=level.disabled=false;result.hidden=true;result.replaceChildren();notice.textContent='Preparando arena...';
   function update(){
-   if(!active||token!==revision)return;const s=session.snapshot(),p=practice.snapshot();hud.textContent=`${s.state==='countdown'?`COMEÇA EM ${Math.ceil(s.countdown-s.preparation)}`:s.state==='paused'?'PAUSADO':`${Math.max(0,60-s.elapsed).toFixed(0)}s`}   •   VIDA ${p.health}/${p.maxHealth}   •   ${p.kills} ABATES   •   ${p.targets.length} INIMIGOS   •   ${p.hits} ATAQUES   •   ${p.cancellations} CANCELADOS   •   ${p.lastAction}`;
+   if(!active||token!==revision)return;const s=session.snapshot(),p=practice.snapshot();updateHud(hud,`${s.state==='countdown'?`COMEÇA EM ${Math.ceil(s.countdown-s.preparation)}`:s.state==='paused'?'PAUSADO':`${Math.max(0,60-s.elapsed).toFixed(0)}s`}   •   VIDA ${p.health}/${p.maxHealth}   •   ${p.kills} ABATES   •   ${p.targets.length} INIMIGOS   •   ${p.hits} ATAQUES   •   ${p.cancellations} CANCELADOS   •   ${p.lastAction}`);
 
    bar.value=p.phase==='windup'?1-p.windupRemaining/config.windupDuration:p.phase==='recovery'?1-p.cooldown/config.attackInterval:0;pause.textContent=s.state==='paused'?'Retomar':'Pausar';
    if(!timed&&p.defeated&&s.state==='running')session.finish('defeat');const finished=attempt?.evaluate()??(!timed&&p.defeated?{...p,endReason:'defeat',elapsedActiveSeconds:s.elapsed}:null);if(finished&&!summarized){summarized=true;pause.disabled=abandon.disabled=true;variant.disabled=level.disabled=false;

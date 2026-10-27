@@ -4,7 +4,7 @@ import { kitingDifficulty } from './difficulty.js';
 export const KITING_SCORING_VERSION='kiting-score-v1';
 export function calculateKitingScore(metrics){
  const m=metrics??{};let config,components=[],activityGate=0;const reasons=[];
- try{config=kitingDifficulty(m.level,m.variant);}catch{reasons.push('Variante ou dificuldade inválida.');}
+ try{config=kitingDifficulty(m.level,m.variant,{combatVersion:m.config?.configVersion==='kiting-combat-v3'?3:4});}catch{reasons.push('Variante ou dificuldade inválida.');}
  if(m.origin!=='official'||m.modality!=='kiting'||m.metricsVersion!==KITING_METRICS_VERSION||!m.terminal||!((m.endReason==='completed'&&m.elapsedActiveSeconds===60)||(m.variant==='combat'&&m.endReason==='defeat'&&m.defeated===true&&m.health===0&&Number.isFinite(m.elapsedActiveSeconds)&&m.elapsedActiveSeconds>0&&m.elapsedActiveSeconds<=60))||typeof m.attemptId!=='string'||!m.attemptId.trim())reasons.push('Apenas sessão oficial completa de 60 segundos recebe nota.');
  if(![m.accepted,m.shots,m.hits,m.cancellations,m.rhythmOpportunities,m.rhythmCycles].every(n=>Number.isInteger(n)&&n>=0)||m.hits>m.shots||m.shots+m.cancellations>m.accepted||m.rhythmOpportunities!==Math.max(0,m.hits-1)||m.rhythmCycles>m.rhythmOpportunities||!Number.isFinite(m.totalDistanceMoved)||m.totalDistanceMoved<0||!Array.isArray(m.histogram)||m.histogram.length!==6||!m.histogram.every(n=>Number.isInteger(n)&&n>=0)||m.histogram.reduce((n,x)=>n+x,0)!==m.hits)reasons.push('Métricas inconsistentes.');
  if(!reasons.length){

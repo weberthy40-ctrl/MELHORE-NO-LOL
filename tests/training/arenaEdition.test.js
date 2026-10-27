@@ -24,7 +24,7 @@ it('recommends only repeated settings with equal conditions, using actual target
 it('expires slow precision targets without inventing clicks and applies a faster tenth level',()=>{
  const p=createPrecisionPractice({...precisionDifficulty(10,'single-moving'),rng:createRandom(4)});p.start();const id=p.snapshot().targets[0].id;for(let i=0;i<7;i++)p.update(.1);
  expect(p.snapshot()).toMatchObject({expired:1,hits:0,misses:0,clicksEligible:0});expect(p.snapshot().targets[0].id).not.toBe(id);expect(p.hit(id)).toBe(false);
- expect(precisionDifficulty(10,'single-moving').speed).toBeGreaterThan(10);expect(precisionDifficulty(10,'single-moving').radius).toBeGreaterThanOrEqual(.7);p.dispose();
+ expect(precisionDifficulty(10,'single-moving').speed).toBeGreaterThan(10);expect(precisionDifficulty(10,'single-moving').radius).toBeGreaterThanOrEqual(.45);p.dispose();
 });
 it('runs mixed cues, inhibitory rounds and exact timing through a savable official session',()=>{
  let clock=0;const session=createSession({countdown:0,timeLimit:60}),exercise=createReflexExercise({variant:'mixed',level:10,technical:false,rng:createRandom(2),now:()=>clock,isRunning:()=>session.snapshot().state==='running'}),attempt=createReflexAttempt({session,exercise});

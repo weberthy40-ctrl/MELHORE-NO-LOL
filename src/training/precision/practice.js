@@ -19,9 +19,9 @@ export function createPrecisionPractice({variant='single-static',rng=createRando
  const config=PRECISION_VARIANTS[variant];if(typeof rng!=='function'||!Number.isInteger(level)||level<1||level>10||!Object.hasOwn(PRECISION_VARIANTS,variant)||!Number.isFinite(radius)||radius<=0||radius>2||!Number.isFinite(speed)||speed<0||(maxLifetime!==null&&(!Number.isFinite(maxLifetime)||maxLifetime<.3)))throw new TypeError('Invalid precision configuration.');
  const patternsSeen=new Set();
  let pattern=variant==='mixed'?'single-static':variant,patternElapsed=0,bag=[],groupTotal=0,groupsCompleted=0,priority=false,orderErrors=0;
- const activeConfig=()=>{const c=PRECISION_VARIANTS[pattern];return {...c,count:variant==='mixed'?3+Math.floor((level-1)*5/9):c.count};};
+ const activeConfig=()=>{const c=PRECISION_VARIANTS[pattern];return {...c,count:variant==='mixed'?4+Math.floor((level-1)*6/9):c.count};};
  let state='idle',hits=0,misses=0,expired=0,sequence=0,targets=[],fallback=false,visible=()=>true,histogram=Array(6).fill(0);
- const snapshot=()=>readonlySnapshot({kind:'precision',state,variant,pattern,patternElapsed,patternsSeen:[...patternsSeen],sequenceVersion:variant==='mixed'?'clear-group-v3':'legacy',priority,orderErrors,nextTargetId:priority?targets[0]?.id??null:null,groupTotal,groupRemaining:targets.length,groupsCompleted,hits,misses,expired,clicksEligible:hits+misses,accuracy:hits+misses?hits/(hits+misses):null,targets,fallback,histogram:clock?histogram:null});
+ const snapshot=()=>readonlySnapshot({kind:'precision',state,variant,pattern,patternElapsed,patternsSeen:[...patternsSeen],sequenceVersion:variant==='mixed'?'clear-group-v4':'legacy',priority,orderErrors,nextTargetId:priority?targets[0]?.id??null:null,groupTotal,groupRemaining:targets.length,groupsCompleted,hits,misses,expired,clicksEligible:hits+misses,accuracy:hits+misses?hits/(hits+misses):null,targets,fallback,histogram:clock?histogram:null});
  function valid(candidate){
    const {position,minX,maxX,radius:r,minZ=position.z,maxZ=position.z}=candidate,player=playerPosition();
    if(!isInsideArena(position)||minX<ARENA.bounds.minX+r||maxX>ARENA.bounds.maxX-r||minZ<ARENA.bounds.minZ+r||maxZ>ARENA.bounds.maxZ-r)return false;
@@ -43,7 +43,7 @@ export function createPrecisionPractice({variant='single-static',rng=createRando
  }
  function changePattern(){
   if(!bag.length){bag=['single-static','single-moving','multi-static','multi-moving'];for(let i=bag.length-1;i>0;i--){const r=rng();if(!Number.isFinite(r)||r<0||r>=1)throw new TypeError('Invalid target RNG.');const j=Math.floor(r*(i+1));[bag[i],bag[j]]=[bag[j],bag[i]];}if(bag.at(-1)===pattern)[bag[0],bag[bag.length-1]]=[bag.at(-1),bag[0]];}
-  pattern=bag.pop();priority=(groupsCompleted+1)%3===0;patternElapsed=0;targets=[];for(let i=0;i<activeConfig().count;i++)if(!spawn(i===0))break;fallback=targets.length<activeConfig().count;groupTotal=targets.length;if(targets.length)patternsSeen.add(pattern);
+  pattern=bag.pop();priority=(groupsCompleted+1)%(level>=7?2:3)===0;patternElapsed=0;targets=[];for(let i=0;i<activeConfig().count;i++)if(!spawn(i===0))break;fallback=targets.length<activeConfig().count;groupTotal=targets.length;if(targets.length)patternsSeen.add(pattern);
  }
  return {kind:'precision',snapshot,setProjectionValidator(validator){if(state==='active')throw new Error('Cannot change spawn rules during practice.');if(typeof validator!=='function')throw new TypeError('A projection validator is required.');visible=validator;},
    start(){if(state!=='idle')return false;if(variant==='mixed')changePattern();else for(let i=0;i<config.count;i++)if(!spawn(i===0))break;fallback=fallback||targets.length<activeConfig().count;state=targets.length?'active':'stopped';if(targets.length)patternsSeen.add(pattern);return targets.length>0;},

@@ -7,11 +7,11 @@ export const VARIANTS=Object.freeze({
  hook_linear:Object.freeze({id:'hook_linear',speed:10,radius:.32,ttl:6,range:45,color:0x92d8f3}),
  aoe_zone:Object.freeze({id:'aoe_zone',speed:0,radius:2,ttl:3,range:0,color:0xc689f3,shape:'circle'}),
  slow:Object.freeze({id:'slow',speed:7,radius:.4,ttl:8,range:50,color:0xe89bdd}),
- arcane_bolt:Object.freeze({id:'arcane_bolt',label:'Disparo arcano',shape:'bolt',speed:25,radius:.5,windup:.65,ttl:5,range:100,color:0x43e5ff}),
- sun_beam:Object.freeze({id:'sun_beam',label:'Feixe solar',shape:'beam',speed:0,radius:.9,windup:1.15,ttl:.22,range:0,length:85,color:0xffd558}),
- artillery:Object.freeze({id:'artillery',label:'Bombardeio astral',shape:'circle',speed:0,radius:2.1,windup:1,ttl:.24,range:0,color:0x75a5ff}),
+ arcane_bolt:Object.freeze({id:'arcane_bolt',label:'Disparo arcano',shape:'bolt',speed:20,radius:.6,windup:.35,ttl:5,range:100,color:0x43e5ff}),
+ sun_beam:Object.freeze({id:'sun_beam',label:'Feixe solar',shape:'beam',speed:0,radius:1,windup:1.05,ttl:.22,range:0,length:40,color:0xffd558}),
+ artillery:Object.freeze({id:'artillery',label:'Bombardeio astral',shape:'circle',speed:0,radius:1.6,windup:1,ttl:.24,range:0,color:0x75a5ff}),
  flame_circle:Object.freeze({id:'flame_circle',label:'Pilar de fogo',shape:'circle',speed:0,radius:2.5,windup:1.15,ttl:.35,range:0,color:0xff9446}),
- cage:Object.freeze({id:'cage',label:'Gaiola sombria',shape:'ring',speed:0,radius:3.2,wallWidth:.22,windup:1.2,ttl:2.2,range:0,color:0xc58aff}),
+ cage:Object.freeze({id:'cage',label:'Gaiola sombria',shape:'ring',speed:0,radius:3.5,wallWidth:.35,windup:1.2,ttl:2.2,range:0,color:0xc58aff}),
 });
 export function createAttackData({origin,direction,variant='fast',config=VARIANTS[variant],caster=null}={}){
  const shape=config?.shape??VARIANTS[variant]?.shape??'bolt',windup=config?.windup??0,length=config?.length??0,wallWidth=config?.wallWidth??.22;

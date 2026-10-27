@@ -1,5 +1,6 @@
 import { sweptCircle } from './collision.js';
-export const PLAYER_RADIUS=.45;
+import { TRAINING_PLAYER_RADIUS } from './referenceScale.js';
+export const PLAYER_RADIUS=TRAINING_PLAYER_RADIUS;
 const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});
 export function pointSegmentDistance(p,a,b){const dx=b.x-a.x,dz=b.z-a.z,d=dx*dx+dz*dz,t=d?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/d)):0;return Math.hypot(p.x-a.x-dx*t,p.z-a.z-dz*t);}
 export function segmentDistance(a,b,c,d){

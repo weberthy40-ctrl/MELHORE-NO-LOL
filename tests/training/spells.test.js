@@ -25,14 +25,14 @@ it('makes the cage center safe and detects crossing the active wall without trea
  const escaped=createProjectiles({onEvent:e=>events.push(e)});escaped.spawn(cast('cage'));escaped.update(.6,zero,{x:5,z:0});escaped.update(.7,{x:5,z:0},{x:5,z:0});expect(events.filter(e=>e.type==='impact')).toHaveLength(1);
 });
 it('uses the visible beam width for grazing contacts, and the entire fast bolt sweep at low frame rates',()=>{
- for(const [x,hit]of [[1.34,true],[1.36,false]]){const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast('sun_beam'));p.update(1.2,{x,z:0},{x,z:0});expect(events.some(e=>e.type==='impact')).toBe(hit);}
+ for(const [x,hit]of [[1.64,true],[1.66,false]]){const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast('sun_beam'));p.update(1.2,{x,z:0},{x,z:0});expect(events.some(e=>e.type==='impact')).toBe(hit);}
  const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast('arcane_bolt'));p.update(1.7,zero,zero);expect(events.some(e=>e.type==='impact')).toBe(true);
 });
 it('freezes warning timers while paused and keeps an announced target fixed after player and camera movement',()=>{
  let running=true;const game=createTechnicalDodge({level:5,rng:createRandom(5),isRunning:()=>running});game.update(.7,zero,zero);const p=game.snapshot().projectiles[0];expect(p.phase).toBe('warning');expect(p.caster).toBeTruthy();running=false;const frozen=game.snapshot();game.update(5,zero,{x:8,z:8});expect(game.snapshot()).toEqual(frozen);running=true;game.update(.05,zero,{x:1,z:0});const current=game.snapshot().projectiles.find(x=>x.id===p.id);expect(current.origin).toEqual(p.origin);expect(current.caster).toEqual(p.caster);expect(current.direction).toEqual(p.direction);game.dispose();
 });
 it('admits warned spells with a reachable escape and rejects an already active circular overlap',()=>{
- const data={variant:'flame_circle',shape:'circle',position:zero,origin:zero,direction:dir,radius:2.5,speed:0,ttl:1.5,windup:1,age:0,distance:0,range:0};expect(hasEscape(zero,[data],{horizon:2.2})).toBe(true);expect(hasEscape(zero,[{...data,windup:0}])).toBe(false);
+ const data={variant:'flame_circle',shape:'circle',position:zero,origin:zero,direction:dir,radius:2.5,speed:0,ttl:1.5,windup:1.15,age:0,distance:0,range:0};expect(hasEscape(zero,[data],{horizon:2.2})).toBe(true);expect(hasEscape(zero,[{...data,windup:0}])).toBe(false);
 });
 it('keeps earlier wave records valid while storing the new pursuit speed with its configuration version',()=>{
  const session=createSession({countdown:0,timeLimit:60}),practice=createKitingPractice({variant:'waves'}),attempt=createKitingAttempt({session,practice,variant:'waves',level:1});session.start();practice.start();for(let i=0;i<601;i++){session.update(.1);attempt.evaluate();}const m=attempt.snapshot(),record=createKitingRecord(m,calculateKitingScore(m));expect(record.metrics.config).toMatchObject({configVersion:'kiting-waves-v2',playerSpeed:8,targetSpeed:4.5});const legacy={...record,metrics:{...m,config:kitingDifficulty(1,'waves',{legacy:true})}};expect(validateKitingRecord(legacy)).toBe(legacy);expect(kitingDifficulty(10,'waves').targetSpeed).toBeCloseTo(7.65);

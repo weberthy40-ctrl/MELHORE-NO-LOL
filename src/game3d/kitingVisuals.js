@@ -4,9 +4,9 @@ export function createKitingVisuals(scene){
  const group=new THREE.Group();scene.add(group);const enemies=new Map(),pool=[];
  const ringGeometry=new THREE.RingGeometry(.78,.86,64),ringMaterial=new THREE.MeshBasicMaterial({color:0xffbd74,side:THREE.DoubleSide,transparent:true,opacity:.9});
  const rangeGeometry=new THREE.RingGeometry(.995,1.005,96),rangeMaterial=new THREE.MeshBasicMaterial({color:0xa1f8d8,side:THREE.DoubleSide,transparent:true,opacity:.7}),range=new THREE.Mesh(rangeGeometry,rangeMaterial);range.rotation.x=-Math.PI/2;range.visible=false;range.raycast=()=>{};group.add(range);
- const bolt=new THREE.Mesh(new THREE.SphereGeometry(.11,12,8),new THREE.MeshBasicMaterial({color:0xffe8ad}));bolt.raycast=()=>{};bolt.visible=false;group.add(bolt);
- const trailGeometry=new THREE.CylinderGeometry(.025,.075,1,8),trailMaterial=new THREE.MeshBasicMaterial({color:0xffc66c,transparent:true,opacity:.6}),trail=new THREE.Mesh(trailGeometry,trailMaterial);trail.visible=false;trail.raycast=()=>{};group.add(trail);
- const enemyShotGeometry=new THREE.SphereGeometry(.23,12,8),enemyShotMaterial=new THREE.MeshBasicMaterial({color:0xff728d}),shotMeshes=new Map(),shotPool=[];
+ const bolt=new THREE.Mesh(new THREE.SphereGeometry(.16,12,8),new THREE.MeshBasicMaterial({color:0xffffce,toneMapped:false,depthTest:false}));bolt.raycast=()=>{};bolt.visible=false;group.add(bolt);
+ const trailGeometry=new THREE.CylinderGeometry(.04,.12,1,8),trailMaterial=new THREE.MeshBasicMaterial({color:0xffc66c,transparent:true,opacity:.8,toneMapped:false,depthWrite:false}),trail=new THREE.Mesh(trailGeometry,trailMaterial);trail.visible=false;trail.raycast=()=>{};group.add(trail);
+ const enemyShotGeometry=new THREE.SphereGeometry(.23,12,8),enemyShotMaterial=new THREE.MeshBasicMaterial({color:0xff728d,toneMapped:false,depthTest:false}),shotMeshes=new Map(),shotPool=[];
  let disposed=false,lastTime=0,assets=null;
  return {applyAssets(value){if(disposed)return;assets=value;for(const e of [...enemies.values(),...pool]){e.actor.applyAssets(value);if(e.kind==='ranged')e.actor.setAccent(0xff809b);}},sync(snapshot,player={x:0,z:0}){
   if(disposed)return;const dt=Math.max(0,snapshot.elapsed-lastTime);lastTime=snapshot.elapsed;

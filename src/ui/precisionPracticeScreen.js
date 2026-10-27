@@ -5,7 +5,7 @@ import { precisionDifficulty } from '../training/precision/difficulty.js';
 import { createPrecisionAttempt } from '../training/precision/attempt.js';
 import { createRandom } from '../training/dodge/random.js';
 import { createSession } from '../training/session.js';
-import { element,link } from './elements.js';
+import { element,link,updateHud } from './elements.js';
 export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,repository,loadPreview=()=>import('../game3d/mountPreview.js')}){
  const document=screen.ownerDocument,window=document.defaultView,host=element(document,'section','precision-practice'),select=element(document,'select'),label=element(document,'label','','Variante ');
  for(const [id,variant]of Object.entries(PRECISION_VARIANTS).filter(([id])=>id==='mixed')){const option=element(document,'option','',variant.label);option.value=id;select.append(option);}select.value='mixed';label.append(select);const controls=element(document,'div','data-controls');controls.append(label);
@@ -25,7 +25,7 @@ export function mountPrecisionPractice({screen,core,timed=false,initialLevel=1,r
    const attempt=timed?createPrecisionAttempt({session,practice:exercise,level:chosenLevel,variant:select.value}):null;let summarized=false;
    current={session,exercise,attempt};start.disabled=restart.disabled=pause.disabled=true;abandon.disabled=true;notice.textContent='Preparando arena...';
    function update(){if(!active||token!==generation)return;const s=exercise.snapshot(),phase=session.snapshot().state;
-     hud.textContent=`${phase==='countdown'?`COMEÇA EM ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:phase==='paused'?'PAUSADO':`${Math.max(0,60-session.snapshot().elapsed).toFixed(0)}s`}   •   ${s.priority?"ORDEM: "+s.targets[0]?.order+" → ":"LIVRE · "}${s.pattern==='single-moving'?'Órbitas':s.pattern==='multi-moving'?'Zigue-zague':s.pattern==='multi-static'?'Tamanhos variados':'Alvos fixos'}   •   GRUPO ${s.groupsCompleted+1} · ${s.groupRemaining}/${s.groupTotal} ALVOS RESTANTES   •   ${s.hits} ACERTOS   •   ${s.misses} ERROS (${s.orderErrors} DE ORDEM)   •   ${s.expired} ATRASADOS   •   ${s.accuracy===null?'—':(s.accuracy*100).toFixed(0)+'%'}`;
+     updateHud(hud,`${phase==='countdown'?`COMEÇA EM ${Math.ceil(session.snapshot().countdown-session.snapshot().preparation)}`:phase==='paused'?'PAUSADO':`${Math.max(0,60-session.snapshot().elapsed).toFixed(0)}s`}   •   ${s.priority&&s.targets.length?"ORDEM: "+s.targets[0].order+" → ":"LIVRE · "}${s.pattern==='single-moving'?'Órbitas':s.pattern==='multi-moving'?'Zigue-zague':s.pattern==='multi-static'?'Tamanhos variados':'Alvos fixos'}   •   GRUPO ${s.groupsCompleted+1} · ${s.groupRemaining}/${s.groupTotal} ALVOS RESTANTES   •   ${s.hits} ACERTOS   •   ${s.misses} ERROS (${s.orderErrors} DE ORDEM)   •   ${s.expired} ATRASADOS   •   ${s.accuracy===null?'—':(s.accuracy*100).toFixed(0)+'%'}`);
 
      if(s.fallback)notice.textContent='Espaço limitado: quantidade ou movimento dos alvos reduzidos para manter posições seguras. Ajuste a câmera e reinicie se necessário.';
      const completed=attempt?.evaluate();

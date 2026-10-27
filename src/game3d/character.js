@@ -33,7 +33,7 @@ export function createCharacter({position=ARENA.center,rotation=0,scale=1,reduce
  part(new THREE.SphereGeometry(.15,12,8),glow,.8,1.7,.6);
  const shield=sphere(.4,1,.95,.24,cloth,-.76,1.1,.23);shield.rotation.y=-.3;
  sphere(.15,1,1,.3,gold,-.76,1.1,.34);
- const ring=new THREE.Mesh(new THREE.RingGeometry(.47,.53,48),new THREE.MeshBasicMaterial({color:enemy?0xff709f:0x69e9cc,transparent:true,opacity:.7,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.035;ring.raycast=()=>{};group.add(ring);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(.62,.68,48),new THREE.MeshBasicMaterial({color:enemy?0xff709f:0x69e9cc,transparent:true,opacity:.7,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.035;ring.raycast=()=>{};group.add(ring);
  for(const child of group.children){if(child.userData.rest){child.updateMatrix();child.userData.rest.copy(child.matrix);}}
  const shadow=new THREE.Mesh(new THREE.CircleGeometry(.7,32),new THREE.MeshBasicMaterial({color:0x08100d,transparent:true,opacity:.24,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.02;shadow.raycast=()=>{};group.add(shadow);
  const pixels=new Uint8Array(64*8*4);for(let y=0;y<8;y++)for(let x=0;x<64;x++){const i=(y*64+x)*4,border=y===0||y===7||x===0||x===63||x%8===0;pixels[i]=border?14:enemy?237:104;pixels[i+1]=border?24:enemy?85:223;pixels[i+2]=border?21:enemy?126:79;pixels[i+3]=255;}

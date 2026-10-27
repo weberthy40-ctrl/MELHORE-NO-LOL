@@ -35,14 +35,14 @@ it('overlaps waves before the current enemy dies, scales pressure and freezes on
 });
 it('clears each precision group before choosing another pattern and retains overdue targets until hit',()=>{
  for(const level of [1,10]){const config=precisionDifficulty(level,'mixed'),p=createPrecisionPractice({...config,rng:createRandom(53)});expect(p.start()).toBe(true);const seen=new Set();
-  for(let group=0;group<8;group++){const initial=p.snapshot();seen.add(initial.pattern);expect(initial.targets.length).toBe(level===1?3:8);for(let i=0;i<800;i++)p.update(.01);expect(p.snapshot().targets.map(t=>t.id)).toEqual(initial.targets.map(t=>t.id));p.miss();expect(p.snapshot().pattern).toBe(initial.pattern);
+  for(let group=0;group<8;group++){const initial=p.snapshot();seen.add(initial.pattern);expect(initial.targets.length).toBe(level===1?4:10);for(let i=0;i<800;i++)p.update(.01);expect(p.snapshot().targets.map(t=>t.id)).toEqual(initial.targets.map(t=>t.id));p.miss();expect(p.snapshot().pattern).toBe(initial.pattern);
    for(const [i,target]of initial.targets.entries()){expect(p.hit(target.id)).toBe(true);if(i<initial.targets.length-1){expect(p.snapshot().pattern).toBe(initial.pattern);expect(p.snapshot().targets).toHaveLength(initial.targets.length-i-1);}}
   }
   expect(seen.size).toBe(4);expect(p.snapshot().patternsSeen).toHaveLength(4);expect(p.snapshot().expired).toBeGreaterThan(0);expect(p.snapshot().misses).toBe(8);expect(p.snapshot().groupsCompleted).toBe(8);
  }
 });
 it('uses bounded Flash, cancels walking and persists configurable, distinct keys with legacy defaults',()=>{
- const m=createMovement({speed:DODGE_MOVEMENT_SPEED});m.moveTo({x:0,z:18});m.update(.1);expect(m.snapshot().position.z).toBeCloseTo(.8);expect(m.blink({x:100,z:.8})).toBe(true);expect(m.snapshot().position.x).toBeCloseTo(4);expect(m.snapshot().target).toBeNull();m.blink({x:100,z:.8},100);expect(m.snapshot().position.x).toBe(13);expect(m.blink({x:100,z:.8})).toBe(false);
+ const m=createMovement({speed:DODGE_MOVEMENT_SPEED});m.moveTo({x:0,z:18});m.update(.1);expect(m.snapshot().position.z).toBeCloseTo(DODGE_MOVEMENT_SPEED*.1);expect(m.blink({x:100,z:DODGE_MOVEMENT_SPEED*.1})).toBe(true);expect(m.snapshot().position.x).toBeCloseTo(4);expect(m.snapshot().target).toBeNull();m.blink({x:100,z:DODGE_MOVEMENT_SPEED*.1},100);expect(m.snapshot().position.x).toBe(13);expect(m.blink({x:100,z:DODGE_MOVEMENT_SPEED*.1})).toBe(false);
  const legacy={...DEFAULT_PREFERENCES};delete legacy.stopKey;delete legacy.flashKey;expect(validatePreferences(legacy)).toMatchObject({stopKey:'KeyS',flashKey:'KeyD'});expect(validatePreferences({...legacy,stopKey:'KeyX',flashKey:'KeyF'})).toMatchObject({stopKey:'KeyX',flashKey:'KeyF'});expect(()=>validatePreferences({...legacy,stopKey:'KeyF',flashKey:'KeyF'})).toThrow();
 });
 it('moves new projectile origins with the player near map edges without shifting a projectile already launched',()=>{

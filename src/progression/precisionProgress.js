@@ -18,7 +18,7 @@ export function comparePrecisionRecord(a,b,{accuracy=true}={}){
 }
 /** Two record candidates/context permit a context-wide decision to omit unknown accuracy. */
 export function createPrecisionProgress(){
- const records=new Map(),evidence=new Map(),mixedEvidence=new Map(),levelFirst=new Map(),variantFirst=new Map(),first=new Map();let total=0,sum=0,best=null,latest=null;
+ const records=new Map(),evidence=new Map(),mixedEvidence=new Map(),competitiveEvidence=new Map(),levelFirst=new Map(),variantFirst=new Map(),first=new Map();let total=0,sum=0,best=null,latest=null;
  function mark(id,record){if(!first.has(id)||chronological(record,first.get(id))<0)first.set(id,record);}
  function markGroup(map,key,record){if(!map.has(key)||chronological(record,map.get(key))<0)map.set(key,record);}
  return {add(record){
@@ -31,18 +31,18 @@ export function createPrecisionProgress(){
    if(record.metrics.clicksEligible>=20&&record.metrics.hits===record.metrics.clicksEligible)mark('surgical',record);
    if(record.score.score>=80)mark('highlight',record);markGroup(levelFirst,record.level,record);markGroup(variantFirst,record.variant,record);
    if(['single-static','mixed'].includes(record.variant)){
-     const pool=record.variant==='mixed'?mixedEvidence:evidence;if(!pool.has(record.level))pool.set(record.level,{count:0,recent:[]});const e=pool.get(record.level);e.count++;e.recent.push(record);e.recent.sort((a,b)=>chronological(b,a));e.recent=e.recent.slice(0,3);
+     const pool=record.variant==='mixed'?(record.metrics.sequenceVersion==='clear-group-v4'?competitiveEvidence:mixedEvidence):evidence;if(!pool.has(record.level))pool.set(record.level,{count:0,recent:[]});const e=pool.get(record.level);e.count++;e.recent.push(record);e.recent.sort((a,b)=>chronological(b,a));e.recent=e.recent.slice(0,3);
    }
  },snapshot(){
    const explorer=[...levelFirst.values()].sort(chronological)[2],versatile=[...variantFirst.values()].filter(r=>r.variant!=='mixed').sort(chronological)[3];if(explorer)mark('explorer',explorer);if(versatile)mark('versatile',versatile);
-   const reference=[...mixedEvidence.values()].some(e=>e.count>=3)?mixedEvidence:evidence;
+   const reference=[...competitiveEvidence.values()].some(e=>e.count>=3)?competitiveEvidence:[...mixedEvidence.values()].some(e=>e.count>=3)?mixedEvidence:evidence;
    const evidenceByLevel=Array.from({length:10},(_,index)=>{const level=index+1,e=reference.get(level)??{count:0,recent:[]},scores=e.recent.map(r=>r.score.score),median=scores.length===3?[...scores].sort((a,b)=>a-b)[1]:null,passing=scores.filter(n=>n>=60).length;return {level,count:e.count,attemptIds:e.recent.map(r=>r.attemptId),scores,median,passing,demonstrated:scores.length===3&&median>=60&&passing>=2};});
    const rating=evidenceByLevel.filter(e=>e.demonstrated).at(-1)?.level??null;
-   return readonlySnapshot({total,records:[...records.values()].map(r=>r.comparable?r.accuracy:r.hits),achievements:PRECISION_ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),stats:{total,bestScore:best,meanScore:total?sum/total:null,latestScore:latest?.score.score??null},rating:{ratingVersion:'1',rating,status:rating===null?'insufficient-data':'classified',referenceVariant:reference===mixedEvidence?'mixed':'single-static',evidenceByLevel,totalEligibleAttempts:[...reference.values()].reduce((n,e)=>n+e.count,0)}});
+   return readonlySnapshot({total,records:[...records.values()].map(r=>r.comparable?r.accuracy:r.hits),achievements:PRECISION_ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),stats:{total,bestScore:best,meanScore:total?sum/total:null,latestScore:latest?.score.score??null},rating:{ratingVersion:'1',rating,status:rating===null?'insufficient-data':'classified',referenceConfig:reference===competitiveEvidence?'clear-group-v4':null,referenceVariant:[competitiveEvidence,mixedEvidence].includes(reference)?'mixed':'single-static',evidenceByLevel,totalEligibleAttempts:[...reference.values()].reduce((n,e)=>n+e.count,0)}});
  }};
 }
 export function calculatePrecisionProgress(attempts){const p=createPrecisionProgress(),seen=new Set();for(const r of attempts){if(seen.has(r?.attemptId))continue;seen.add(r?.attemptId);p.add(r);}return p.snapshot();}
 export function preparePrecisionEvolution(attempts,{variant='single-static',level=1,limit=30}={}){
  if(!PRECISION_VARIANTS[variant]||!Number.isInteger(level)||level<1||level>10||![10,30,100].includes(limit))throw new TypeError('Invalid precision evolution filters.');
- const seen=new Set();return readonlySnapshot(attempts.filter(r=>eligiblePrecision(r)&&r.variant===variant&&r.level===level&&!seen.has(r.attemptId)&&seen.add(r.attemptId)).sort((a,b)=>chronological(b,a)).slice(0,limit).reverse().map(r=>({attemptId:r.attemptId,date:r.completedAt,variant,level,value:r.score.score,accuracy:r.metrics.clicksEligible?r.metrics.hits/r.metrics.clicksEligible*100:null,score:r.score.score,outcome:r.endReason,scoringVersion:r.score.scoringVersion})));
+ const seen=new Set();return readonlySnapshot(attempts.filter(r=>eligiblePrecision(r)&&r.variant===variant&&r.level===level&&!seen.has(r.attemptId)&&seen.add(r.attemptId)).sort((a,b)=>chronological(b,a)).slice(0,limit).reverse().map(r=>({attemptId:r.attemptId,date:r.completedAt,variant,level,value:r.score.score,accuracy:r.metrics.clicksEligible?r.metrics.hits/r.metrics.clicksEligible*100:null,score:r.score.score,outcome:r.endReason,calibrationVersion:r.metrics.sequenceVersion??'legacy',scoringVersion:r.score.scoringVersion})));
 }
