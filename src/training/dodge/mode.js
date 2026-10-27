@@ -11,7 +11,7 @@ export function createDodgeMode({session,mode='normal',level=1,events}) {
     if(disposed||outcome||session.snapshot().state!=='running'||event.attemptId!==session.snapshot().id||processed.has(event.id))return;
     processed.add(event.id);const elapsed=session.snapshot().elapsed;
     if(elapsed-lastDamage<config.protection)return;
-    lastDamage=elapsed;lives--;events?.emit('dodge:damage',Object.freeze({...snapshot(),attemptId:session.snapshot().id,attackId:event.id}));
+    lastDamage=elapsed;lives--;events?.emit('dodge:damage',Object.freeze({...snapshot(),attemptId:session.snapshot().id,attackId:event.id,variant:event.variant}));
     if(lives===0)finish(mode==='diagnostic'?'diagnostic-lives':'defeat');
   });
   return {snapshot,fail(){finish('error');},evaluate(){if(!outcome&&!disposed&&config.duration!==null&&session.snapshot().elapsed>=config.duration)finish(mode==='diagnostic'?'diagnostic-time':'victory');},

@@ -1,3 +1,6 @@
+import { mountDodgeLab } from './dodgeLabScreen.js';
+import { createDodgeReplay } from '../training/dodge/replay.js';
+import { mountDodgeReplayReview } from './dodgeReplayReview.js';
 import { mountProfile } from './profileScreen.js';
 import { mountAudioFeedback } from '../audio/feedback.js';
 import { mountBackup } from './backupScreen.js';
@@ -49,13 +52,15 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   let exercise;
   let rules;
   let telemetry;
+  let dodgeRecording,dodgeReview,stopDodgeRecording;
   let cleanupScreen = () => {};
   function skipContent(event) { event.preventDefault(); host.querySelector('h1')?.focus(); }
   function render(focus = true) {
     const renderRevision = ++revision;audio.stopAll();
+    dodgeReview?.dispose();dodgeReview=undefined;stopDodgeRecording?.();stopDodgeRecording=undefined;dodgeRecording?.clear();dodgeRecording=undefined;
     preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
     const route = resolveRoute(window.location.hash);
-    const isDodge = route.path.startsWith('/dodge-tech') || Boolean(route.mode);
+    const isDodge = Boolean(route.mode),isDodgeLab=route.path.startsWith('/dodge-tech')||route.path==='/practice/dodge';
     const screen = createScreen(document, route);
     const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
@@ -67,6 +72,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     }
     const heading = screen.querySelector('h1'); heading.tabIndex = -1; if (focus) heading.focus();
     core.events.emit('navigation:changed', Object.freeze(route));
+    if(isDodgeLab){const lab=mountDodgeLab({screen,core,initialLevel:route.level??1,autoStart:route.path.startsWith('/dodge-tech'),loadPreview});cleanupScreen=()=>lab.dispose();}
     if(route.path==='/dpi'){const mouse=mountMouseTools(screen);cleanupScreen=()=>mouse.dispose();}
     if (route.path === '/settings'){mountSettings(screen);mountPreferences(screen,{onChange:p=>audio.setPreferences(p)});const backup=mountBackup({screen,repository});cleanupScreen=()=>backup.dispose();}
     if(route.path==='/practice/reflex'||route.path.startsWith('/timed/reflex')){const training=mountReflex({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/reflex'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}
@@ -85,7 +91,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     if (route.path === '/demo' || isDodge) {
       session = createSession({events:core.events,timeLimit:route.mode==='normal'?60:null,metadata:{type:route.mode??(isDodge?'dodge-technical':'demonstration'),level:route.level??1}});
       if(route.mode)rules=createDodgeMode({session,mode:route.mode,level:route.level,events:core.events});
-      if(route.mode)telemetry=createDodgeTelemetry({session,mode:route.mode,level:route.level,events:core.events});
+      if(route.mode){telemetry=createDodgeTelemetry({session,mode:route.mode,level:route.level,events:core.events});dodgeRecording=createDodgeReplay();stopDodgeRecording=core.events.on('dodge:damage',event=>{if(event.attemptId===session.snapshot().id)dodgeRecording?.mark({time:session.snapshot().elapsed,variant:event.variant??'fast',id:event.attackId});});}
       if(isDodge)exercise=createTechnicalDodge({level:route.level??1,attemptId:session.snapshot().id,mode:route.mode??'technical',isRunning:()=>session?.snapshot().state==='running',canSpawn:()=>route.mode!=='normal'||session.snapshot().elapsed<60,events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0])});
       const hud = element(document,'div','session-hud');
       const status = element(document,'p','',''); status.setAttribute('aria-live','off');
@@ -109,9 +115,11 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
           if(score.status==='scored')for(const c of score.components)resultContent.append(element(document,'p','muted',`${c.name}: ${c.contribution.toFixed(1)} / ${c.weight}`));
           else resultContent.append(element(document,'p','status-note',score.reasons.join(' ')));
           if(score.status==='scored')mountSaveAttempt({container:resultContent,repository,metrics:m,score,core,isActive:()=>active&&revision===renderRevision});
+          if(score.consistencyAvailable===false)resultContent.append(element(document,'p','status-note','Consistência ainda sem amostra suficiente; esta parcela não concede pontos.'));
           if(score.smallSample)resultContent.append(element(document,'p','status-note','Amostra pequena de ameaças resolvidas.'));
           if(score.capFactor<1)resultContent.append(element(document,'p','status-note','Nota limitada pela exposição curta antes da derrota.'));
           resultContent.append(element(document,'p','status-note','Fórmula provisória. A nota desta tentativa não representa seu nível de habilidade.'));
+          dodgeReview=mountDodgeReplayReview({container:resultContent,recording:dodgeRecording.snapshot(),loadPreview});
           const actions=element(document,'div','result-actions');replay.hidden=false;replay.autofocus=true;exit.textContent='Voltar ao menu';actions.append(replay,exit);resultMetrics.append(actions);hud.hidden=true;
           if(typeof resultMetrics.showModal==='function')resultMetrics.showModal();else resultMetrics.setAttribute('open','');replay.focus();
 
@@ -124,7 +132,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     }
     if (['/preview','/demo'].includes(route.path)||isDodge) loadPreview().then(({ mountPreview }) => {
       if (!active || revision !== renderRevision) return;
-      preview = mountPreview(screen.querySelector('.stage'), { events:core.events,session, exercise, onStep:(...args)=>telemetry?.step(...args), onTick:updateSession, onError: error => { core.errors.report(error, { source: 'preview' }); if(rules)rules.fail();else session?.finish('error'); } });
+      preview = mountPreview(screen.querySelector('.stage'), { events:core.events,session, exercise, onStep:(dt,from,to)=>{telemetry?.step(dt,from,to);if(dt>0&&dodgeRecording&&exercise){const move=preview?.movement?.snapshot();dodgeRecording.capture(exercise.snapshot(),to,move?.angle??0);}}, onTick:updateSession, onError: error => { core.errors.report(error, { source: 'preview' }); if(rules)rules.fail();else session?.finish('error'); } });
     }).catch(error => {
       if (!active || revision !== renderRevision) return;
       core.errors.report(error, { source: 'preview.load' });
@@ -137,7 +145,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   render(false);
   return { dispose() {
     if (!active) return;
-    active = false; revision++; preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
+    active = false; revision++;dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
     stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
   } };
 }

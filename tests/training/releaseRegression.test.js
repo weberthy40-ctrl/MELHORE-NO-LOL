@@ -2,7 +2,7 @@ import { it,expect } from 'vitest';
 import { createRandom } from '../../src/core/random.js';
 import { createTechnicalDodge } from '../../src/training/dodge/technicalDodge.js';
 import { difficultyFor } from '../../src/training/dodge/difficulty.js';
-import { ARENA } from '../../src/game3d/spatial.js';
+import { DODGE_ARENA as ARENA } from '../../src/game3d/spatial.js';
 import { PLAYER_RADIUS } from '../../src/training/dodge/projectiles.js';
 // Independent fine-step oracle: actual speed, rectangular boundary and no safety margin.
 function escapeWitness(player,threats,profile){
@@ -16,11 +16,15 @@ function escapeWitness(player,threats,profile){
   }if(safe)return true;
  }return false;
 }
-it('admits all five spells at every level with bounded concurrency and an independently sampled escape witness',()=>{
+it('admits the taught spells at every level with bounded concurrency and an independently sampled escape witness',()=>{
  for(let level=1;level<=10;level++){
   const seen=new Set(),profile=difficultyFor(level);let game,current={x:0,z:0},admissions=0;
   game=createTechnicalDodge({level,rng:createRandom(123),events:{emit(type,event){if(type==='dodge:spawn'){seen.add(event.variant);admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
   for(let frame=0;frame<2400;frame++){const before=current,t=(frame+1)*.05;current={x:5*Math.sin(t*.7),z:5*Math.sin(t*.4)};game.update(.05,before,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(profile.capacity);}
-  expect(seen.size).toBe(5);expect(admissions).toBeGreaterThan(10);game.dispose();
+  expect([...seen].sort()).toEqual(Object.keys(profile.weights).sort());expect(admissions).toBeGreaterThan(10);game.dispose();
  }
+},30000);
+it('retains an independent escape witness near the new corners at 180% practice pressure',()=>{
+ const profile=difficultyFor(10);let game,current={x:16,z:13.3},admissions=0;game=createTechnicalDodge({level:10,intensity:1.8,rng:createRandom(456),events:{emit(type){if(type==='dodge:spawn'){admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
+ for(let i=1;i<=1200;i++){const previous=current,t=i*.025;current={x:16+1.4*Math.sin(t*.5),z:12+1.3*Math.cos(t*.5)};game.update(.025,previous,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(20);}expect(admissions).toBeGreaterThan(40);game.dispose();
 },30000);

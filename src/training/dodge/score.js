@@ -1,11 +1,11 @@
 import { readonlySnapshot } from '../snapshot.js';
 import { METRICS_VERSION } from './telemetry.js';
-export const SCORING_VERSION='dodge-score-v1';
+export const SCORING_VERSION='dodge-score-v2';
 const clamp=value=>Math.max(0,Math.min(1,value));
 export function calculateDodgeScore(metrics) {
-  const m=metrics??{},reasons=[],components=[];let capFactor=1;
+  const m=metrics??{},reasons=[],components=[];let capFactor=1,consistencyAvailable=false;
   const resolved=m.threatsDodged+m.threatsHit;
-  const result=()=>readonlySnapshot({attemptId:m.attemptId??null,mode:m.mode??null,level:m.level??null,scoringVersion:SCORING_VERSION,metricsVersion:m.metricsVersion??null,status:reasons.length?'unscorable':'scored',score:reasons.length?null:Math.round(components.reduce((sum,c)=>sum+c.contribution,0)),components,capFactor,resolvedSample:Number.isFinite(resolved)?resolved:0,smallSample:resolved<5,reasons});
+  const result=()=>readonlySnapshot({attemptId:m.attemptId??null,mode:m.mode??null,level:m.level??null,scoringVersion:SCORING_VERSION,metricsVersion:m.metricsVersion??null,status:reasons.length?'unscorable':'scored',score:reasons.length?null:Math.round(components.reduce((sum,c)=>sum+c.contribution,0)),components,capFactor,resolvedSample:Number.isFinite(resolved)?resolved:0,smallSample:resolved<5||!consistencyAvailable,consistencyAvailable,reasons});
   if(m.metricsVersion!==METRICS_VERSION||typeof m.attemptId!=='string'||!m.attemptId.trim()||!['normal','survival'].includes(m.mode)||!Number.isInteger(m.level)||m.level<1||m.level>10||!m.terminal||!['victory','defeat'].includes(m.endReason))reasons.push('Tentativa ou versão não elegível.');
   const counts=['attacksEmitted','threatsQualified','threatsDodged','threatsHit','validHits','contactsIgnored','attacksNonThreatening','threatsUnresolved'];
   if(counts.some(k=>!Number.isInteger(m[k])||m[k]<0)||['elapsedActiveSeconds','totalDistanceMoved','activeMovementSeconds','stationarySeconds','riskDistance'].some(k=>!Number.isFinite(m[k])||m[k]<0)||!Array.isArray(m.buckets))reasons.push('Métricas inválidas ou incompletas.');
@@ -22,9 +22,10 @@ export function calculateDodgeScore(metrics) {
   }
   if(reasons.length)return result();
   const windows=m.buckets.filter(b=>b.dodged+b.hit>0);
-  if(windows.length<2){reasons.push('Consistência: amostra insuficiente (menos de duas janelas).');return result();}
+  consistencyAvailable=windows.length>=2;
+  if(!consistencyAvailable&&m.endReason!=='defeat'){reasons.push('Consistência: amostra insuficiente (menos de duas janelas).');return result();}
   const dodge=m.threatsDodged/resolved,rates=windows.map(b=>b.dodged/(b.dodged+b.hit)),mean=rates.reduce((a,b)=>a+b,0)/rates.length;
-  const consistency=clamp(mean*(1-Math.sqrt(rates.reduce((sum,r)=>sum+(r-mean)**2,0)/rates.length)));
+  const consistency=consistencyAvailable?clamp(mean*(1-Math.sqrt(rates.reduce((sum,r)=>sum+(r-mean)**2,0)/rates.length))):0;
   const positioning=dodge*clamp(m.riskDistance/(resolved*2));
   function component(name,weight,index){components.push({name,weight,index,contribution:weight*index});}
   if(m.mode==='normal'){component('Esquivas',40,dodge);component('Impactos',35,clamp(1-m.validHits/3));}

@@ -2,7 +2,7 @@ import { it,expect } from 'vitest';
 import { VARIANTS,createProjectiles } from '../../src/training/dodge/projectiles.js';
 import { chooseCasterOrigin,createTechnicalDodge } from '../../src/training/dodge/technicalDodge.js';
 import { createRandom } from '../../src/core/random.js';
-import { ARENA } from '../../src/game3d/spatial.js';
+import { DODGE_ARENA as ARENA } from '../../src/game3d/spatial.js';
 import { hasEscape } from '../../src/training/dodge/fairness.js';
 import { createKitingPractice } from '../../src/training/kiting/practice.js';
 import { kitingDifficulty } from '../../src/training/kiting/difficulty.js';
@@ -13,8 +13,8 @@ import { createSession } from '../../src/training/session.js';
 const zero={x:0,z:0},dir={x:0,z:1};
 const cast=(variant,extra={})=>({variant,origin:variant==='sun_beam'||variant==='arcane_bolt'?{x:0,z:-22}:zero,direction:dir,config:VARIANTS[variant],...extra});
 it('places all casters outside every playable edge with a minimum stand-off even near corners',()=>{
- const random=createRandom(76);for(const player of [zero,{x:13,z:19},{x:-13,z:-19},{x:13,z:0},{x:0,z:19}])for(let i=0;i<100;i++){const p=chooseCasterOrigin(player,random);expect(Math.abs(p.x)>ARENA.width/2||Math.abs(p.z)>ARENA.length/2).toBe(true);expect(Math.hypot(p.x-player.x,p.z-player.z)).toBeGreaterThanOrEqual(9-1e-8);}
- let draws=0;const p=chooseCasterOrigin({x:0,z:19},()=>{draws++;return 0;});expect(draws).toBe(16);expect(Math.hypot(p.x,p.z-19)).toBeGreaterThan(9);expect(()=>chooseCasterOrigin(zero,()=>NaN)).toThrow();
+ const random=createRandom(76);for(const player of [zero,{x:18,z:14},{x:-18,z:-14},{x:18,z:0},{x:0,z:14}])for(let i=0;i<100;i++){const p=chooseCasterOrigin(player,random);expect(Math.abs(p.x)>ARENA.width/2||Math.abs(p.z)>ARENA.length/2).toBe(true);expect(Math.hypot(p.x-player.x,p.z-player.z)).toBeGreaterThanOrEqual(9-1e-8);}
+ let draws=0;const p=chooseCasterOrigin({x:0,z:14},()=>{draws++;return 0;});expect(draws).toBe(16);expect(Math.hypot(p.x,p.z-14)).toBeGreaterThan(9);expect(()=>chooseCasterOrigin(zero,()=>NaN)).toThrow();
 });
 it('never damages during a ground telegraph and clips the damaging interval at warning and expiry boundaries',()=>{
  for(const variant of ['artillery','flame_circle','sun_beam']){const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast(variant));const delay=VARIANTS[variant].windup;p.update(delay,zero,zero);expect(events.some(e=>e.type==='impact')).toBe(false);p.update(.01,zero,zero);expect(events.filter(e=>e.type==='impact')).toHaveLength(1);expect(p.snapshot()).toHaveLength(0);}

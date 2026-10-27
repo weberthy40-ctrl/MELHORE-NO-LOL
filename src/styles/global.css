@@ -279,3 +279,29 @@ h1[tabindex='-1']:focus { outline:none; }
 .scale-reference table { min-width:510px;font-size:.85rem; }
 .scale-reference th { text-align:left; }
 @media(max-width:900px){.training-screen :is(.precision-practice,.kiting-practice)>p.stat-hud{max-width:calc(100% - 2rem);padding:.4rem;gap:.3rem;}.stat-chip{font-size:.62rem;padding:.25rem .4rem;}}
+/* Dodge laboratory and review are isolated from other training screens. */
+.dodge-lab-options { position:fixed;left:1.5rem;top:175px;z-index:2;width:min(370px,calc(100% - 3rem));max-height:calc(100svh - 250px);overflow:auto;background:#101d27f5;border:1px solid #b2d5dc35;border-radius:.7rem;padding:.9rem;box-shadow:0 12px 32px #0005; }
+.dodge-lab-options:not([open]) { display:none; }
+.dodge-lab-options[open] label { display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:1rem 0;font-size:.8rem; }
+.dodge-lab-options p { font-size:.76rem;line-height:1.65;color:#aec2c8; }
+.dodge-lab-options input[type='range'] { width:45%; }
+.replay-review { margin-block:1rem;padding-top:.5rem;border-top:1px solid #b2d5dc25; }
+.training-screen .replay-stage.stage { position:relative;inset:auto;z-index:0;width:100%;height:clamp(170px,30svh,290px);border:1px solid #b2d5dc30;border-radius:.5rem; }
+.replay-controls { display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:.75rem; }
+.replay-controls input { flex:1;min-width:100px; }
+.replay-controls button,.replay-controls select { padding:.5rem;font-size:.75rem; }
+.replay-review p { font-size:.76rem;line-height:1.5; }
+.replay-timeline { position:relative;height:6px;margin:.5rem 5px 0;border-radius:3px;background:#b2d5dc25; }
+.replay-marker { position:absolute;top:-2px;width:4px;height:10px;background:#ff7c8a;border-radius:2px;transform:translateX(-50%); }
+.replay-open { margin-block:.7rem; }
+@media(max-width:700px){.dodge-lab .session-hud{top:85px;}.dodge-lab-options{top:220px;max-height:calc(100svh - 290px);}.dodge-lab .session-hud .button{padding:.45rem;font-size:.7rem;}}
+.dodge-origin-alerts { position:absolute;inset:0;pointer-events:none;z-index:1; }
+.dodge-origin-arrow { position:absolute;width:18px;height:23px;background:currentColor;clip-path:polygon(50% 0,100% 100%,50% 72%,0 100%);filter:drop-shadow(0 0 5px currentColor);opacity:.9; }
+.dodge-origin-arrow[hidden] { display:none; }
+.training-screen dialog.result-metrics.reviewing[open] { width:min(900px,calc(100% - 2rem)); }
+.reviewing .result-content>:not(.replay-open):not(.replay-review) { display:none; }
+.reviewing .replay-review { margin:.4rem 0 0;border:0;padding:0; }
+.replay-review>h3 { margin:.15rem 0 .35rem;font-size:1rem; }
+.replay-review>p { margin:.35rem 0; }
+.training-screen .reviewing .replay-stage.stage { height:clamp(160px,31svh,260px); }
+.replay-stage :is(.dodge-spell-legend,.dodge-origin-alerts) { display:none; }

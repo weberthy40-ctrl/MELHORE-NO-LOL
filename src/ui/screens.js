@@ -44,6 +44,8 @@ export function createScreen(document, route) {
   } else if (route.modality) {
     title = MODALITIES.find(({ id }) => id === route.modality).title;
     description = `Nível ${route.level} · Escolha seu treino abaixo.`;
+  } else if(route.path==='/practice/dodge'){
+    title='Laboratório de Esquiva';description='Ajuste nível, pressão e adaptação. Reveja os últimos segundos para entender cada contato. Sem nota ou histórico.';
   } else if (route.path.startsWith('/dodge-tech')) {
     title = `Treino técnico de Esquiva — Nível ${route.level??1}`; description = 'Sem pontuação ou vidas. Desvie dos projéteis com clique direito. Impactos são apenas diagnósticos em memória.';
   } else if (route.path === '/demo') {
@@ -90,7 +92,7 @@ export function createScreen(document, route) {
           const item = link(document, String(n), `/train/${mode.id}/${n}`, 'level');
           item.setAttribute('aria-label', `${mode.title}, nível ${n}`); levels.append(item);
         }
-        card.append(levels);
+        card.append(levels);if(mode.id==='dodge')card.append(link(document,'Laboratório avançado →','/practice/dodge','button'));
       } else if(['dodge','precision','kiting','reflex'].includes(mode.id))card.append(link(document,'Iniciar avaliação',`/assessment/${mode.id}`,'button primary'));else card.append(element(document, 'p', 'status-note', 'Avaliação em preparação'));
       grid.append(card);
     }
@@ -107,7 +109,7 @@ export function createScreen(document, route) {
       card.append(element(document, 'h2', '', name), element(document, 'p', 'muted', info), link(document,'Iniciar →',`/play/dodge/${name==='Normal'?'normal':'survival'}/${route.level}`,'button primary'));
       modes.append(card);
     }
-    main.append(modes,link(document,'Abrir treino técnico de Esquiva — sem pontuação',`/dodge-tech/${route.level}`,'button primary'));
+    main.append(modes,link(document,'Abrir treino técnico de Esquiva — sem pontuação',`/dodge-tech/${route.level}`,'button primary'),link(document,'Laboratório avançado e adaptativo','/practice/dodge','button'));
   }
   if (['/preview','/demo'].includes(route.path)||route.path.startsWith('/dodge-tech')||route.mode) {
     const stage = element(document, 'div', 'stage'); stage.setAttribute('aria-label', 'Visualização da arena 3D');

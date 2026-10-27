@@ -1,12 +1,12 @@
 import { ARENA,isInsideArena } from './spatial.js';
 import { safeDelta } from '../training/movement.js';
 export const ZOOM = Object.freeze({min:0.65,max:1.6,initial:1});
-export function createCameraController() {
-  let locked = true, zoom = ZOOM.initial, center = {...ARENA.center};
+export function createCameraController({arena=ARENA,initialZoom=ZOOM.initial}={}) {
+  let locked = true, zoom = Math.max(ZOOM.min,Math.min(ZOOM.max,initialZoom)), center = {...arena.center};
   return {
     snapshot:()=>Object.freeze({locked,zoom,center:Object.freeze({...center})}),
     toggle() {locked=!locked;},
-    recenter(position) {if(!isInsideArena(position))return false;center={...position};return true;},
+    recenter(position) {if(!isInsideArena(position,arena))return false;center={...position};return true;},
     wheel(delta, mode=0) {
       if (!Number.isFinite(delta) || ![0,1,2].includes(mode)) return;
       const normalized = Math.max(-200,Math.min(200,delta*(mode===1?16:mode===2?500:1)));
@@ -16,8 +16,8 @@ export function createCameraController() {
       if(locked) center={...position};
       else if(preferences.edgePanEnabled) {
         const length = Math.max(1,Math.hypot(pan.x,pan.z)), step = 12*preferences.edgePanSpeed*safeDelta(dt);
-        center.x = Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,center.x+pan.x/length*step));
-        center.z = Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,center.z+pan.z/length*step));
+        center.x = Math.max(arena.bounds.minX,Math.min(arena.bounds.maxX,center.x+pan.x/length*step));
+        center.z = Math.max(arena.bounds.minZ,Math.min(arena.bounds.maxZ,center.z+pan.z/length*step));
       }
       return {...center};
     },

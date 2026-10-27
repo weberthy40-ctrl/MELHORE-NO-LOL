@@ -1,6 +1,6 @@
 {
   "name": "moba-training",
-  "version": "1.0.0-rc.8",
+  "version": "1.0.0-rc.9",
   "private": true,
   "description": "Treinador de Esquiva, Precis\u00e3o, Kiting e Reflexos com progresso local.",
   "type": "module",
@@ -15,7 +15,8 @@
     "lint": "eslint . --max-warnings 0",
     "test:browser": "node scripts/browser-smoke.js",
     "test:gameplay": "node scripts/browser-feedback.js",
-    "test:storage": "node scripts/browser-native.js"
+    "test:storage": "node scripts/browser-native.js",
+    "test:dodge": "node scripts/browser-dodge.js"
   },
   "dependencies": {
     "three": "0.186.1"

@@ -3,12 +3,13 @@ import { createMovement,safeDelta,DODGE_MOVEMENT_SPEED,KITING_MOVEMENT_SPEED } f
 import { createCameraController,edgeIntent } from './cameraController.js';
 import { loadPreferences } from '../settings/preferences.js';
 import { loadCameraSettings } from '../settings/cameraSettings.js';
-import { ARENA } from './spatial.js';
-import { CAMERA } from './cameraConfig.js';
+import { ARENA,DODGE_ARENA } from './spatial.js';
+import { CAMERA,DODGE_CAMERA } from './cameraConfig.js';
 export function attachPreviewControls({container,renderer,camera,character,render,onError=()=>{},session,exercise,visuals,feedback,onTick=()=>{},onStep=()=>{},onVisualStep=()=>{},requestFrame,cancelFrame}) {
   const document=container.ownerDocument, window=document.defaultView, canvas=renderer.domElement;
   const world=!['precision','reflex'].includes(exercise?.kind),dodge=Boolean(exercise)&&!['precision','reflex','kiting'].includes(exercise.kind);
-  const movement=createMovement(dodge?{speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController();
+  const arena=dodge?DODGE_ARENA:ARENA,viewConfig=dodge?DODGE_CAMERA:CAMERA;
+  const movement=createMovement(dodge?{arena,speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController({arena});
   const raycaster=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-ARENA.groundY);
   const cursor=new THREE.Vector2(), point=new THREE.Vector3();
   let disposed=false, frame=null, last=null, pan={x:0,z:0},flashRemaining=0,pointerKnown=false;
@@ -27,7 +28,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     const center=controller.update(snapshot.position,running()?pan:{x:0,z:0},dt,preferences), view=controller.snapshot();
     const fit=Math.max(1,1/camera.aspect);
     const precision=exercise?.kind==='precision';
-    camera.position.set(precision?0:center.x+CAMERA.x*view.zoom*fit,precision?34:CAMERA.y*view.zoom*fit,precision ? .001 : center.z+CAMERA.z*view.zoom*fit);
+    camera.position.set(precision?0:center.x+viewConfig.x*view.zoom*fit,precision?34:viewConfig.y*view.zoom*fit,precision ? .001 : center.z+viewConfig.z*view.zoom*fit);
     camera.lookAt(precision?0:center.x,0,precision?0:center.z);camera.updateMatrixWorld();
     ability.textContent=`${bindings.flashKey.replace('Key','')} · Flash ${flashRemaining>0?Math.ceil(flashRemaining)+'s':'pronto'}   /   ${bindings.stopKey.replace('Key','')} · Parar`;
     status.textContent=exercise?.kind==='reflex'?'TECLADO / MOUSE · responda ao sinal   /   ESC · pausar':precision?'ESQUERDO · acertar os alvos   /   ESC · pausar':`DIREITO · mover   /   ${exercise?.kind==='kiting'?'ESQUERDO · atacar   /   A · mostrar alcance   /   ':''}Y · câmera ${view.locked?'travada':'livre'}   /   ESPAÇO · centralizar   /   RODA · zoom   /   ESC · pausar`;
@@ -58,6 +59,8 @@ export function attachPreviewControls({container,renderer,camera,character,rende
   function flush(){if(last!==null)tickFrame(window.performance.now(),false);}
   function down(event) {
     if(!running()||![0,2].includes(event.button))return;
+    let displayedAim=null;
+    if(dodge&&event.button===2){const rect=canvas.getBoundingClientRect();if(rect.width>0&&rect.height>0){cursor.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(cursor,camera);if(raycaster.ray.intersectPlane(plane,point))displayedAim={x:point.x,z:point.z};pointerKnown=true;}}
     if(exercise?.kind!=='precision')flush();if(disposed||!running())return;
     const rect=canvas.getBoundingClientRect();
     if(rect.width<=0||rect.height<=0||event.clientX<rect.left||event.clientY<rect.top||event.clientX>rect.left+rect.width||event.clientY>rect.top+rect.height)return;
@@ -78,7 +81,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
       visuals.sync(exercise.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
     if(exercise?.kind==='precision'||exercise?.kind==='reflex')return;
-    if(raycaster.ray.intersectPlane(plane,point)&&movement.moveTo({x:Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,point.x)),z:Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,point.z))})){exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().target);onTick();}
+    if((displayedAim?(point.set(displayedAim.x,arena.groundY,displayedAim.z),true):raycaster.ray.intersectPlane(plane,point))&&movement.moveTo({x:Math.max(arena.bounds.minX,Math.min(arena.bounds.maxX,point.x)),z:Math.max(arena.bounds.minZ,Math.min(arena.bounds.maxZ,point.z))})){exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().target);if(dodge){pose();render();}onTick();}
   }
   function context(event){event.preventDefault();}
   function leave(){pan={x:0,z:0};}
@@ -87,9 +90,9 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     if(event.repeat||event.ctrlKey||event.altKey||event.metaKey||editable(event.target))return;
     if(world&&event.code==='Space'){event.preventDefault();pan={x:0,z:0};controller.recenter(movement.snapshot().position);pose();render();return;}
     if(world&&running()&&[bindings.stopKey,bindings.flashKey].includes(event.code)){
-      event.preventDefault();flush();if(disposed||!running())return;
+      event.preventDefault();let visibleFlashAim=null;if(dodge&&event.code===bindings.flashKey&&pointerKnown){raycaster.setFromCamera(cursor,camera);if(raycaster.ray.intersectPlane(plane,point))visibleFlashAim={x:point.x,z:point.z};}flush();if(disposed||!running())return;
       if(event.code===bindings.stopKey){movement.stop();exercise?.moveCommand?.();}
-      else if(flashRemaining<=0){pose();raycaster.setFromCamera(cursor,camera);const current=movement.snapshot(),aim=pointerKnown&&raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:current.target??{x:current.position.x+Math.sin(current.angle)*4,z:current.position.z+Math.cos(current.angle)*4};if(movement.blink(aim)){flashRemaining=15;exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().position);}}
+      else if(flashRemaining<=0){pose();raycaster.setFromCamera(cursor,camera);const current=movement.snapshot(),aim=visibleFlashAim??(pointerKnown&&raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:current.target??{x:current.position.x+Math.sin(current.angle)*4,z:current.position.z+Math.cos(current.angle)*4});if(movement.blink(aim)){flashRemaining=15;exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().position);}}
       pose();visuals?.sync?.(exercise?.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
     if(event.code==='KeyA'&&exercise?.kind==='kiting'&&running()){visuals.setRangeVisible(true);render();}

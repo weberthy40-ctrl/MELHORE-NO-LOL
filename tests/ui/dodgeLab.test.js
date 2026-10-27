@@ -1,0 +1,12 @@
+// @vitest-environment jsdom
+import { it,expect,vi } from 'vitest';
+import { createCore } from '../../src/core/createCore.js';
+import { mountDodgeLab } from '../../src/ui/dodgeLabScreen.js';
+const settle=async()=>{for(let i=0;i<6;i++)await Promise.resolve();};
+it('keeps adaptive practice outside official storage and lets review seek without advancing the completed attempt',async()=>{
+ const screen=document.createElement('main');document.body.append(screen);const core=createCore(),mounted=[],loadPreview=async()=>({mountPreview(stage,options){const view={options,dispose:vi.fn(),presentFrame:vi.fn(),movement:{snapshot:()=>({position:{x:0,z:0},angle:0})}};mounted.push(view);return view;}}),lab=mountDodgeLab({screen,core,loadPreview});await settle();expect(mounted[0].options.session.snapshot().state).toBe('idle');
+ screen.querySelector('select').value='10';screen.querySelector('input[type=range]').value='180';screen.querySelector('input[type=checkbox]').checked=true;[...screen.querySelectorAll('button')].find(b=>b.textContent==='Aplicar e iniciar').click();await settle();expect(mounted[0].dispose).toHaveBeenCalledOnce();const main=mounted[1].options;expect(main.exercise.snapshot()).toMatchObject({level:10,playerSpeed:5.4,pressure:{adaptive:true,current:1.53}});
+ for(let i=0;i<100;i++){const before=main.session.snapshot().elapsed;main.session.update(.05);const dt=main.session.snapshot().elapsed-before;main.exercise.update(dt,{x:0,z:0},{x:0,z:0});main.onStep(dt,{x:0,z:0},{x:0,z:0});main.onTick();}
+ [...screen.querySelectorAll('button')].find(b=>b.textContent==='Encerrar e analisar').click();expect(screen.querySelector('dialog').open).toBe(true);expect(screen.textContent).toContain('Não altera o perfil');const saved=main.session.snapshot();screen.querySelector('.replay-open').click();await settle();const review=mounted.at(-1);expect(review.options).toMatchObject({controls:false,fullscreenControls:false});const slider=screen.querySelector('.replay-controls input');slider.value=slider.max;slider.dispatchEvent(new Event('input'));expect(review.presentFrame).toHaveBeenCalled();expect(main.session.snapshot()).toEqual(saved);
+ [...screen.querySelectorAll('.result-actions button')].find(b=>b.textContent==='Jogar novamente').click();await settle();expect(review.dispose).toHaveBeenCalledOnce();expect(mounted.at(-1).options.session.snapshot().id).not.toBe(saved.id);expect(screen.querySelector('dialog').open).toBe(false);lab.dispose();core.dispose();screen.remove();
+});

@@ -1,8 +1,8 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.8**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC8.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.9**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC9.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
-- **Esquiva:** cinco habilidades com conjuração e aviso antes do impacto, lançadas por personagens fora da arena, com pistas reduzidas nos níveis 4–6 e sem previsão de disparos nos níveis 7–10; Normal com 60 segundos e três vidas; Sobrevivência com uma vida e tempo ilimitado.
+- **Esquiva:** arena própria de 36 × 28, movimento constante de 5,4 u/s, habilidades introduzidas gradualmente e padrões de leque, fogo cruzado e áreas nos níveis altos. Normal com 60 s e três vidas; Sobrevivência com uma vida. Laboratório separado com pressão de 100–180%, adaptação opcional e revisão dos últimos seis segundos em câmera lenta. Habilidades de área mantêm aviso; disparos nos níveis altos não mostram a trajetória antecipada.
 - **Precisão:** grupos de 4–10 alvos fixos, com tamanhos variados, órbitas e zigue-zague; um grupo a cada três exige sequência numérica (a cada dois nos níveis 7–10); o padrão só muda depois de acertar todos os alvos do grupo. Cliques errados e atrasos são contados; quantidade, velocidade, tamanho e prazo variam com o nível.
 - **Kiting:** ondas mistas com perseguidores e atiradores, vida do jogador, dano e morte; começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até oito inimigos. Movimento e velocidade de ataque escalam com o nível; perseguidores correm a 98% da velocidade do jogador. Derrotas também são salvas no histórico. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
 - **Reflexos:** um desafio integrado de Q/W/E/R, Espaço, F/J e mouse, sem setas. Verde pede clique esquerdo, azul pede direito e vermelho pede não responder; símbolos e texto acompanham as cores.
@@ -78,6 +78,7 @@ Há verificações adicionais em Chromium real, sem dependências de automação
 npm run test:browser
 npm run test:gameplay
 npm run test:storage
+npm run test:dodge
 ```
 
 Elas exigem servidor de desenvolvimento ativo e Chromium/Chrome com DevTools na porta 9222. Consulte [QA.md](docs/QA.md) para preparar o navegador, executar as verificações e testar os fluxos de gameplay no Windows. Os comandos não iniciam ou instalam o navegador automaticamente. A suíte de armazenamento usa e remove apenas seu próprio banco temporário; não apaga progresso oficial.
