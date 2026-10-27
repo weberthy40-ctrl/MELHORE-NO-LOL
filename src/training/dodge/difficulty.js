@@ -1,15 +1,20 @@
 import { MAX_DODGE_LEVEL,DODGE_RULESET } from './constants.js';
 import { VARIANTS } from './projectiles.js';
 import { DODGE_MOVEMENT_SPEED } from '../movement.js';
-const fullWeights=Object.freeze({arcane_bolt:2,heavy_lance:1.6,needle_burst:1.8,meteor_rain:1.4,sun_beam:1.4,artillery:1.3,flame_circle:1.3,cage:.65});
-/** One movement speed preserves muscle memory; difficulty comes from threat timing and patterns. */
+const stages=[
+ {level:1,interval:.95,capacity:3,combo:0,peak:5},
+ {level:5,interval:.58,capacity:5,combo:.12,peak:3.8},
+ {level:10,interval:.30,capacity:8,combo:.55,peak:1.9},
+ {level:15,interval:.18,capacity:12,combo:.85,peak:1.1},
+ {level:20,interval:.12,capacity:16,combo:1,peak:.7},
+];
+const fullWeights={arcane_bolt:2,heavy_lance:1.2,needle_burst:1.5,dark_orb:1.4,artillery:1.1,flame_circle:1,sun_beam:.9,cage:.55,meteor_rain:.8};
 export const DIFFICULTIES=Object.freeze(Array.from({length:MAX_DODGE_LEVEL},(_,index)=>{
- const level=index+1,early=Math.min(1,index/9),elite=Math.max(0,(index-9)/10);
- return Object.freeze({level,interval:.85*(.1/.85)**early*(.065/.1)**elite,capacity:Math.min(20,4+Math.floor(early*14)+Math.ceil(elite*2)),comboChance:Math.min(1,.12+index*.1),peakCooldown:3.2*(.52/3.2)**early*(.36/.52)**elite,rulesetVersion:DODGE_RULESET,playerSpeed:DODGE_MOVEMENT_SPEED,
- comboDelay:Math.max(.075,.27-index*.018),comboSize:level>=15?4:level>=9?3:level>=5?2:1,
- pathHint:level<=2?'full':'off',hintDuration:level<=2?5:0,horizon:2.2,reaction:.16,speedFactor:.9+index*.14,warningFactor:level<=2?1.12:1,
- weights:level<=2?Object.freeze({arcane_bolt:3,heavy_lance:1,artillery:1.2}):level<=4?Object.freeze({arcane_bolt:2,heavy_lance:1.5,artillery:1.6,flame_circle:1.5,sun_beam:1.4}):fullWeights,
- });
+ const level=index+1,a=stages.findLast(p=>p.level<=level),b=stages.find(p=>p.level>level)??a,t=a===b?0:(level-a.level)/(b.level-a.level),mix=key=>a[key]+(b[key]-a[key])*t;
+ const weights=Object.fromEntries(Object.entries(fullWeights).filter(([id])=>!(['heavy_lance','flame_circle'].includes(id)&&level<3||['needle_burst','sun_beam'].includes(id)&&level<5||id==='dark_orb'&&level<7||['cage','meteor_rain'].includes(id)&&level<9)));
+ return Object.freeze({level,interval:mix('interval'),capacity:Math.round(mix('capacity')),comboChance:mix('combo'),peakCooldown:mix('peak'),rulesetVersion:DODGE_RULESET,playerSpeed:DODGE_MOVEMENT_SPEED,
+ comboDelay:Math.max(.13,.34-index*.011),comboSize:level>=16?3:level>=10?2:1,pathHint:level<=2?'full':'off',hintDuration:level<=2?5:0,
+ horizon:2.8,reaction:.2,speedFactor:.85+index*.095,warningFactor:level<=2?1.12:1,minArrival:level<=5?1.05:level<=12?1:.95,weights:Object.freeze(weights)});
 }));
 export function difficultyFor(level=1){return DIFFICULTIES.find(p=>p.level===level)??DIFFICULTIES[0];}
 export function validateDifficulty(p){

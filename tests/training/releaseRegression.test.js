@@ -7,7 +7,7 @@ import { PLAYER_RADIUS } from '../../src/training/dodge/projectiles.js';
 // Independent fine-step oracle: actual speed, rectangular boundary and no safety margin.
 function escapeWitness(player,threats,profile){
  for(const stopAfter of (threats.some(p=>p.shape==='ring')?[Infinity,.4]:[Infinity]))for(let direction=0;direction<=16;direction++){const angle=direction*Math.PI/8;let safe=true;
-  for(let step=0;step<=440&&safe;step++){const t=step*.005,travel=profile.playerSpeed*Math.min(stopAfter,Math.max(0,t-profile.reaction)),x=Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,player.x+(direction===16?0:Math.sin(angle)*travel))),z=Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,player.z+(direction===16?0:Math.cos(angle)*travel)));
+  for(let step=0;step<=560&&safe;step++){const t=step*.005,travel=profile.playerSpeed*Math.min(stopAfter,Math.max(0,t-profile.reaction)),x=Math.max(ARENA.bounds.minX,Math.min(ARENA.bounds.maxX,player.x+(direction===16?0:Math.sin(angle)*travel))),z=Math.max(ARENA.bounds.minZ,Math.min(ARENA.bounds.maxZ,player.z+(direction===16?0:Math.cos(angle)*travel)));
    for(const p of threats){const age=p.age+t;if(age<(p.windup??0)||age>=p.ttl)continue;let distance;const px=p.origin.x+p.direction.x*p.speed*Math.max(0,age-(p.windup??0)),pz=p.origin.z+p.direction.z*p.speed*Math.max(0,age-(p.windup??0));
     if(p.shape==='beam'){const dot=(x-p.origin.x)*p.direction.x+(z-p.origin.z)*p.direction.z,u=Math.max(0,Math.min(p.length,dot));distance=Math.hypot(x-p.origin.x-p.direction.x*u,z-p.origin.z-p.direction.z*u);}
     else distance=Math.hypot(x-px,z-pz);
@@ -25,6 +25,6 @@ it('admits the taught spells at every level with bounded concurrency and an inde
  }
 },60000);
 it('retains an independent escape witness near the new corners at 180% practice pressure',()=>{
- const profile=difficultyFor(10);let game,current={x:14.8,z:12.3},admissions=0;game=createTechnicalDodge({level:10,intensity:1.8,rng:createRandom(456),events:{emit(type){if(type==='dodge:spawn'){admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
- for(let i=1;i<=1200;i++){const previous=current,t=i*.025;current={x:14.8+Math.sin(t*.5),z:11.3+Math.cos(t*.5)};game.update(.025,previous,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(20);}expect(admissions).toBeGreaterThan(40);game.dispose();
+ const profile=difficultyFor(10);let game,current={x:13.5,z:21.3},admissions=0;game=createTechnicalDodge({level:10,intensity:1.8,rng:createRandom(456),events:{emit(type){if(type==='dodge:spawn'){admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
+ for(let i=1;i<=1200;i++){const previous=current,t=i*.025;current={x:13.1+Math.sin(t*.5)*.4,z:21+Math.cos(t*.5)*.4};game.update(.025,previous,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(20);}expect(admissions).toBeGreaterThan(40);game.dispose();
 },60000);

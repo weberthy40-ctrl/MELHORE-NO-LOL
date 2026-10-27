@@ -8,7 +8,7 @@ import { createTechnicalDodge } from '../../src/training/dodge/technicalDodge.js
 import { createRandom } from '../../src/core/random.js';
 const zero={x:0,z:0};
 it('isolates the wider dodge arena and preserves consistent movement across all levels',()=>{
- expect(ARENA).toMatchObject({width:26,length:38});expect(DODGE_ARENA).toMatchObject({width:32.4,length:25.2});const old=createMovement(),dodge=createMovement({arena:DODGE_ARENA,speed:difficultyFor(10).playerSpeed});expect(old.moveTo({x:15,z:12})).toBe(false);expect(dodge.moveTo({x:15,z:12})).toBe(true);for(let i=0;i<10;i++)dodge.update(.1);expect(Math.hypot(dodge.snapshot().position.x,dodge.snapshot().position.z)).toBeCloseTo(5.8);for(let n=1;n<=10;n++)expect(difficultyFor(n).playerSpeed).toBe(5.8);
+ expect(ARENA).toMatchObject({width:26,length:38});expect(DODGE_ARENA).toMatchObject({width:28,length:44});const old=createMovement(),dodge=createMovement({arena:DODGE_ARENA,speed:difficultyFor(10).playerSpeed});expect(old.moveTo({x:13.5,z:20})).toBe(false);expect(dodge.moveTo({x:13.5,z:20})).toBe(true);for(let i=0;i<10;i++)dodge.update(.1);expect(Math.hypot(dodge.snapshot().position.x,dodge.snapshot().position.z)).toBeCloseTo(5.8);for(let n=1;n<=10;n++)expect(difficultyFor(n).playerSpeed).toBe(5.8);
 });
 it('adapts only after enough resolved threats, respects cooldown and never changes fixed pressure',()=>{
  const fixed=createPressureDirector({intensity:1.8}),adaptive=createPressureDirector({intensity:1.8,adaptive:true});for(let i=0;i<80;i++)fixed.observe(true,i);expect(fixed.snapshot()).toMatchObject({current:1.8,adjustments:0});

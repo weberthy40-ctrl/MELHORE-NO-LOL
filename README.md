@@ -1,8 +1,8 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.12**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC12.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.13**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC13.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
-- **Esquiva:** 20 níveis. O Normal começa após uma avaliação salva e abre diretamente no nível indicado; três vidas, tempo ilimitado e avanço após desempenho consistente. Sobrevivência com uma vida e escolha livre de nível. Pressão maior desde o nível 1, oito habilidades e conjuradores externos aleatórios mirando o personagem. Flash e dash curto (E) configuráveis; revisão dos últimos seis segundos. Áreas mantêm aviso; trajetória prévia apenas nos níveis 1 e 2. Laboratório e prática sem pontuação removidos.
+- **Esquiva:** 20 níveis. O Normal começa após uma avaliação salva e abre diretamente no nível indicado; três vidas, tempo ilimitado e avanço após desempenho consistente. Sobrevivência com uma vida e escolha livre de nível. Pressão maior desde o nível 1, nove habilidades e conjuradores externos aleatórios mirando o personagem. Flash e dash curto (E) configuráveis; revisão dos últimos seis segundos. Áreas mantêm aviso; trajetória prévia apenas nos níveis 1 e 2. Laboratório e prática sem pontuação removidos.
 - **Precisão:** grupos de 4–10 alvos fixos, com tamanhos variados, órbitas e zigue-zague; um grupo a cada três exige sequência numérica (a cada dois nos níveis 7–10); o padrão só muda depois de acertar todos os alvos do grupo. Cliques errados e atrasos são contados; quantidade, velocidade, tamanho e prazo variam com o nível.
 - **Kiting:** ondas mistas com perseguidores e atiradores, vida do jogador, dano e morte; começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até oito inimigos. Movimento e velocidade de ataque escalam com o nível; perseguidores correm a 98% da velocidade do jogador. Derrotas também são salvas no histórico. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
 - **Reflexos:** um desafio integrado de Q/W/E/R, Espaço, F/J e mouse, sem setas. Verde pede clique esquerdo, azul pede direito e vermelho pede não responder; símbolos e texto acompanham as cores.
@@ -49,7 +49,7 @@ Não abra `index.html` diretamente pelo explorador de arquivos. O projeto usa ES
 | Cancelar preparação de Kiting | Clique direito, parar ou Flash antes do disparo |
 | Parar o personagem | S (configurável) |
 | Flash na direção do cursor | D (configurável): até 4 unidades, 15 segundos ativos de recarga |
-| Dash na direção do cursor (Esquiva) | E (configurável): 1,8 unidade em 140 ms, recarga de 5 s ativos, sem invulnerabilidade |
+| Dash na direção do cursor (Esquiva) | E (configurável): 2,6 unidades em 170 ms, recarga de 5 s ativos, sem invulnerabilidade |
 | Tela cheia | Botão na arena; permanece ao jogar novamente |
 | Ver alcance de Kiting | Segurar A |
 | Responder em Reflexos | Q/W/E/R, Espaço, F/J ou mouse; aguarde nos sinais de inibição |
@@ -99,7 +99,7 @@ A evidência e os limites estão em [VALIDATION.md](docs/VALIDATION.md), [RELEAS
 | `src/settings`, `src/audio`, `src/tools` | Preferências, áudio e ferramenta de mouse |
 | `tests`, `scripts` | Testes puros, de interface e de navegador |
 
-O cenário combina arte procedural própria e modelos KayKit de Kay Lousberg, licenciados em CC0 e servidos pelo próprio site. Modelos, licenças e origem estão em `public/assets/kaykit`; veja [os créditos e modificações](docs/VISUAL_COMBAT_REVISION.md). Consulte [ARCHITECTURE.md](docs/ARCHITECTURE.md) para fórmulas, versões e contratos.
+O cenário combina arte procedural própria e modelos KayKit de Kay Lousberg, licenciados em CC0 e servidos pelo próprio site. Modelos, licenças e origem estão em `public/assets/kaykit` e `public/assets/kaykit-nature`; veja [os créditos e modificações](docs/VISUAL_COMBAT_REVISION.md). Consulte [ARCHITECTURE.md](docs/ARCHITECTURE.md) para fórmulas, versões e contratos.
 
 ## Distribuir
 

@@ -1,3 +1,4 @@
+import { mountArenaInputGuard } from '../game3d/arenaInputGuard.js';
 import { readDodgePlacement,advanceDodgePlacement } from '../progression/dodgePlacement.js';
 import { createDodgeReplay } from '../training/dodge/replay.js';
 import { mountDodgeReplayReview } from './dodgeReplayReview.js';
@@ -68,7 +69,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
     screen.classList.toggle('training-screen',training);screen.classList.toggle('profile-screen',route.path==='/profile');
     host.replaceChildren(screen);
-    if(isDodge||route.path==='/assessment/dodge'){const block=event=>event.preventDefault();screen.addEventListener('contextmenu',block,true);stopArenaContext=()=>screen.removeEventListener('contextmenu',block,true);}
+    if(training)stopArenaContext=mountArenaInputGuard(screen);
     for (const item of nav.children) {
       if (item.hash === `#${route.path}` || (route.modality && item.hash === '#/levels')) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');

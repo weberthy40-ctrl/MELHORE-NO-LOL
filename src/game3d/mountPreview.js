@@ -72,7 +72,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
     if(fullscreenControls)fullscreen=mountFullscreen(container);
     container.dataset.visuals='basic';
     if(arena&&document.defaultView.CanvasRenderingContext2D){
-      container.dataset.visuals='loading';Promise.all([loadSceneAssets(),dodge?loadDodgeArt():Promise.resolve({})]).then(([base,extra])=>{const assets={...base,...extra};return assets;}).then(assets=>{if(disposed)return;character.applyAssets(assets);visuals?.applyAssets?.(assets);arena.applyAssets(assets);if(dodge)visuals?.sync(exercise.snapshot());if(renderer.shadowMap)renderer.shadowMap.needsUpdate=true;container.dataset.visuals='ready';renderer.render(scene,camera);}).catch(()=>{if(!disposed)container.dataset.visuals='basic';});
+      container.dataset.visuals='loading';Promise.all([loadSceneAssets({includeArt:!dodge}),dodge?loadDodgeArt():Promise.resolve({})]).then(([base,extra])=>{const assets={...base,...extra};return assets;}).then(assets=>{if(disposed)return;character.applyAssets(assets);visuals?.applyAssets?.(assets);arena.applyAssets(assets);if(dodge)visuals?.sync(exercise.snapshot());if(renderer.shadowMap)renderer.shadowMap.needsUpdate=true;container.dataset.visuals='ready';renderer.render(scene,camera);}).catch(()=>{if(!disposed)container.dataset.visuals='basic';});
     }
     if (controls) input = attachPreviewControls({container,renderer,camera,character,onError,session,exercise,visuals,feedback,onTick,onStep,onVisualStep:dt=>{arena?.update(dt);shadowElapsed+=dt;if(renderer.shadowMap&&shadowElapsed>=.05){renderer.shadowMap.needsUpdate=true;shadowElapsed=0;}},requestFrame,cancelFrame,render:()=>renderer.render(scene,camera)});
   } catch (error) {

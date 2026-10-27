@@ -1,3 +1,4 @@
+import { allowsCageCombination } from './cageSafety.js';
 import { hasEscape } from './fairness.js';
 import { difficultyFor,validateDifficulty } from './difficulty.js';
 import { ARENA,DODGE_ARENA } from '../../game3d/spatial.js';
@@ -10,7 +11,7 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
  validateDifficulty(profile);
  if(!Number.isFinite(interval)||interval<.06||!Number.isInteger(capacity)||capacity<1||capacity>20)throw new TypeError('Invalid attack cadence or capacity.');
  const options=Object.freeze({...profile,weights:Object.freeze({...profile.weights})}),director=createPressureDirector({intensity,adaptive}),qualified=new Set(),select=createSelector({rng,weights:options.weights});
- let elapsed=0,clock=0,shots=0,impacts=0,disposed=false,sinceCombo=Infinity,attempts=0,rejected=0,peak=0,combinations=0,avoided=0,distanceMoved=0,lastCaster=null,lastCage=-Infinity,pending=[],patterns=new Set();
+ let elapsed=0,clock=0,shots=0,impacts=0,disposed=false,sinceCombo=Infinity,attempts=0,rejected=0,peak=0,combinations=0,avoided=0,distanceMoved=0,lastCaster=null,lastCage=-Infinity,cageWaiting=false,cageWaitStarted=0,pending=[],patterns=new Set();
  const limit=()=>Math.min(20,Math.ceil(capacity*Math.sqrt(director.snapshot().current)));
  const projectiles=createProjectiles({capacity:20,isRunning,onEvent(event){
   if(['warning','trajectory'].includes(event.type)&&trajectoryTouches(event,.5))qualified.add(event.id);
@@ -22,19 +23,22 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
  function selectGround(){const ids=Object.keys(options.weights).filter(id=>['circle','ring'].includes(VARIANTS[id].shape));return ids[Math.floor(rng()*ids.length)];}
  function launch(job,player){
   attempts++;const active=projectiles.snapshot(),pressure=director.snapshot().current;if(active.length>=limit()){rejected++;return null;}
-  const variant=job.variant&&Object.hasOwn(options.weights,job.variant)?job.variant:select(),base=VARIANTS[variant],caster=chooseCasterOrigin(player,rng,{avoid:lastCaster}),ground=['circle','ring'].includes(base.shape),speed=Math.min(variant==='arcane_bolt'?26:variant==='heavy_lance'?18:variant==='needle_burst'?30:Infinity,base.speed*(options.speedFactor??1)*Math.sqrt(pressure)),distance=Math.hypot(player.x-caster.x,player.z-caster.z);
-  if(variant==='cage'&&(elapsed-lastCage<2.8||active.filter(p=>p.variant==='cage').length>=2)){rejected++;return null;}
+  const variant=job.variant&&Object.hasOwn(options.weights,job.variant)?job.variant:select(),base=VARIANTS[variant],caster=chooseCasterOrigin(player,rng,{avoid:lastCaster}),ground=['circle','ring'].includes(base.shape),speed=Math.min(variant==='arcane_bolt'?24:variant==='heavy_lance'?17:variant==='needle_burst'?28:variant==='dark_orb'?15:Infinity,base.speed*(options.speedFactor??1)*Math.sqrt(pressure)),distance=Math.hypot(player.x-caster.x,player.z-caster.z);
+  if(variant==='cage'&&(elapsed-lastCage<6.8||active.some(p=>p.shape==='ring'))){rejected++;return null;}
   if(distance<9){rejected++;return null;}
   // Capture the character's position at conjuration, never the cursor, destination or velocity.
   const aim={x:player.x,z:player.z},angle=Math.atan2(aim.x-caster.x,aim.z-caster.z),direction={x:Math.sin(angle),z:Math.cos(angle)},origin=ground?aim:caster;
-  const config={...base,speed,pathHint:options.pathHint,hintDuration:options.hintDuration,pattern:job.pattern??'single',length:base.shape==='beam'?Math.max(base.length,distance+6):base.length,windup:base.shape==='bolt'?Math.max(base.windup??0,.9-(distance-base.radius-PLAYER_RADIUS)/speed):Math.max(.85,((base.windup??1)-(options.level-1)*.02)*(options.warningFactor??1))};
+  const config={...base,speed,pathHint:options.pathHint,hintDuration:options.hintDuration,pattern:job.pattern??'single',length:base.shape==='beam'?Math.max(base.length,distance+6):base.length,windup:base.shape==='bolt'?Math.max(base.windup??0,(options.minArrival??1)-(distance-base.radius-PLAYER_RADIUS)/speed):Math.max(1,(base.windup??1)*(options.warningFactor??1))};
+  if(base.shape==='bolt'){const bounds=DODGE_ARENA.bounds,exitX=Math.abs(direction.x)<1e-9?Infinity:((direction.x>0?bounds.maxX+3:bounds.minX-3)-origin.x)/direction.x,exitZ=Math.abs(direction.z)<1e-9?Infinity:((direction.z>0?bounds.maxZ+3:bounds.minZ-3)-origin.z)/direction.z;config.range=Math.min(base.range,Math.max(distance+4,Math.min(exitX,exitZ)));}
   const data={origin,direction,variant,config,caster,aim:player},candidate=createAttackData(data);
+  if(!allowsCageCombination(candidate,active,player,options.level)){if(variant==='cage'&&!cageWaiting){cageWaiting=true;cageWaitStarted=elapsed;pending=[];}rejected++;return null;}
   if(!hasEscape(player,[...active,candidate],options)){rejected++;return null;}
   const id=projectiles.spawn(data);if(!id)return null;shots++;if(variant==='cage')lastCage=elapsed;lastCaster=caster;peak=Math.max(peak,active.length+1);if(active.length)combinations++;patterns.add(job.pattern??'single');return {caster,aim};
  }
  return {kind:'dodge',snapshot:()=>Object.freeze({kind:'dodge',...getVitals(),level:options.level,rulesetVersion:options.rulesetVersion,playerSpeed:options.playerSpeed,elapsed,shots,impacts,attempts,rejected,peak,combinations,avoided,distanceMoved,focus:options.focus??'mixed',capacity:limit(),pressure:director.snapshot(),patterns:Object.freeze([...patterns]),projectiles:projectiles.snapshot()}),
  update(dt,previous,player,{allowSpawns=true}={}){
   if(disposed||!isRunning()||!Number.isFinite(dt)||dt<=0)return;elapsed+=dt;const moved=Math.hypot(player.x-previous.x,player.z-previous.z);if(moved<=options.playerSpeed*dt+1e-6)distanceMoved+=moved;projectiles.update(dt,previous,player);if(!isRunning()||!canSpawn())return;clock+=dt;sinceCombo+=dt;if(!allowSpawns)return;
+  if(cageWaiting){if(elapsed-cageWaitStarted>4.5)cageWaiting=false;else{const result=launch({variant:'cage',pattern:'cage-window'},player);if(result)cageWaiting=false;return;}}
   if(pending.length&&elapsed>=pending[0].at){launch(pending.shift(),player);return;}
   const pressure=director.snapshot().current;if(clock<interval/pressure)return;clock=0;
   const combo=!pending.length&&sinceCombo>=options.peakCooldown/Math.sqrt(pressure)&&rng()<options.comboChance,candidates=Object.hasOwn(options.weights,'cage')?['crossfire','barrage','ground']:['crossfire','barrage'],pattern=combo?(options.level>=7?candidates[Math.floor(rng()*candidates.length)]:'crossfire'):'single',variant=pattern==='barrage'?selectBolt():pattern==='ground'?selectGround():undefined,result=launch({pattern,variant},player);

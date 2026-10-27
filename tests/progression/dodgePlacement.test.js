@@ -15,3 +15,6 @@ it('advances one level only for a saved qualifying current Normal round and is i
  const storage=memory();seedDodgePlacement(storage,1);for(const record of [modernDodge({elapsed:10,hits:3,resolved:5}),modernDodge({mode:'survival'}),modernDodge({rulesetVersion:'dodge-v7'}),modernDodge({date:'2025-12-01T00:00:00.000Z'})])expect(advanceDodgePlacement(storage,record).level).toBe(1);
  const success=modernDodge();expect(advanceDodgePlacement(storage,success).level).toBe(2);expect(advanceDodgePlacement(storage,success).level).toBe(2);expect(advanceDodgePlacement(storage,{...modernDodge({level:2}),level:21}).level).toBe(2);seedDodgePlacement(storage,20);expect(advanceDodgePlacement(storage,modernDodge({level:20})).level).toBe(20);
 });
+it('keeps the previous twenty-level placement usable after the readability rebalance',()=>{
+ const storage=memory();seedDodgePlacement(storage,5);const value=JSON.parse(storage.getItem(DODGE_PLACEMENT_KEY));storage.setItem(DODGE_PLACEMENT_KEY,JSON.stringify({...value,rulesetVersion:'dodge-v8'}));expect(readDodgePlacement(storage)).toMatchObject({level:5,rulesetVersion:'dodge-v9'});
+});

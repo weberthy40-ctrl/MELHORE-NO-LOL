@@ -44,9 +44,9 @@ export function createCharacter({position=ARENA.center,rotation=0,scale=1,reduce
  function setPose({x,z},angle=group.rotation.y){if(![x,z,angle].every(Number.isFinite))throw new TypeError('Invalid visual pose.');group.position.set(x,ARENA.groundY,z);group.rotation.y=angle;}
  setPose(position,rotation);group.scale.setScalar(scale);
  return {group,setPose,setAccent(hex){const color=new THREE.Color(hex);group.traverse(node=>{if(!node.isMesh||!node.material?.color)return;const m=node.material;if(!m.userData.baseTint)m.userData.baseTint=m.color.clone();m.color.copy(m.userData.baseTint).lerp(color,.38);});ring.material.color.copy(color);},setHealthVisible(visible){health.visible=Boolean(visible)&&!caster;},setHealth(ratio){health.scale.x=1.5*Math.max(.02,Math.min(1,Number.isFinite(ratio)?ratio:1));},applyAssets(assets){
-  if(disposed||animated)return;const nextModel=createAnimatedModel(ranged?assets.ranger:enemy?assets.knight:assets.ranger,{enemy,caster,ranged,dodge});const original=new THREE.Group();for(const child of [...group.children])if(child.userData.rest){group.remove(child);original.add(child);}disposeObject(original);limbs.length=0;
+  if(disposed||animated)return;const nextModel=createAnimatedModel(ranged?assets.ranger:enemy||dodge?assets.knight:assets.ranger,{enemy,caster,ranged,dodge});const original=new THREE.Group();for(const child of [...group.children])if(child.userData.rest){group.remove(child);original.add(child);}disposeObject(original);limbs.length=0;
   animated=nextModel;group.add(animated.root);
-  const proxy=new THREE.Mesh(new THREE.CapsuleGeometry(.55,1.35,4,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));proxy.position.y=1.25;proxy.userData.rest=true;group.add(proxy);group.userData.model=enemy&&!ranged?'knight':'ranger';
+  const proxy=new THREE.Mesh(new THREE.CapsuleGeometry(.55,1.35,4,8),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));proxy.position.y=1.25;proxy.userData.rest=true;group.add(proxy);group.userData.model=(enemy&&!ranged||dodge&&!enemy)?'knight':'ranger';
  },animate({moving=false,attackPhase,state='running'}={},delta=0){
   if(disposed||state==='paused'||delta<=0&&['running','countdown'].includes(state))return;
   if(reducedMotion||!['running','countdown'].includes(state)){for(const limb of limbs)limb.mesh.rotation.x=0;return;}

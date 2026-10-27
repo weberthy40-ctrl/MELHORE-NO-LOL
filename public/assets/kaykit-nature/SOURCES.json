@@ -1,0 +1,20 @@
+{
+  "author": "Kay Lousberg / KayKit",
+  "repository": "https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0",
+  "commit": "84fa4e91af6a88989be7c99e0891cede11f2ca38",
+  "directory": "addons/kaykit_medieval_hexagon_pack/Assets/gltf/decoration/nature/",
+  "license": "CC0-1.0",
+  "modifications": "None; original glTF, buffers and shared atlas. Scene uses instanced geometry.",
+  "sha256": {
+    "tree_single_A.gltf": "ac913af6eaed6f15d26a2b75a877aa8dd10de90f26298f3f953abad86a4b4606",
+    "tree_single_A.bin": "437deac68f35338bb309b01e4d346dd4be37557d7a2f033d04765f63e1b88825",
+    "tree_single_B.gltf": "1c038591301947c485937e9fdbab182c813ef32df48c02fad3daeb2f1f0421e0",
+    "tree_single_B.bin": "c6a7423ce62f61216f7d8c77e1bd1d8665cbbee59718e59e0e42485f9acfca36",
+    "rock_single_C.gltf": "4cbf4a67fa176d2374b4863348fddf7879b892e612dd455ad14173f17172d45b",
+    "rock_single_C.bin": "7d63c76a9f576bda17a63c77d8f7c9f617e11ed57e3459d9c8d5da7ebdf0b8f1",
+    "waterplant_A.gltf": "a4b1c359cc60eb24e702d60777f65795cc490e79ac3ce2699458909a470a7abd",
+    "waterplant_A.bin": "03022fac7dbab3ddff3f3ea87d682f4085494f69f43b2229eab651e00cbffec1",
+    "hexagons_medieval.png": "5301a06866ba3be68dcc14cc429bd6d0f69004b72884283715d7e233f2e9782e",
+    "LICENSE.txt": "881e50d3629fba90629bedc65e9e6f47cfab3609598c296dcb7f70ea83174360"
+  }
+}

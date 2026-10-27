@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createMovement,safeDelta,DODGE_MOVEMENT_SPEED,KITING_MOVEMENT_SPEED } from '../training/movement.js';
+import { createMovement,safeDelta,DODGE_MOVEMENT_SPEED,KITING_MOVEMENT_SPEED,DODGE_DASH_RANGE } from '../training/movement.js';
 import { createCameraController,edgeIntent } from './cameraController.js';
 import { loadPreferences } from '../settings/preferences.js';
 import { loadCameraSettings } from '../settings/cameraSettings.js';
@@ -9,7 +9,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
   const document=container.ownerDocument, window=document.defaultView, canvas=renderer.domElement;
   const world=!['precision','reflex'].includes(exercise?.kind),dodge=Boolean(exercise)&&!['precision','reflex','kiting'].includes(exercise.kind);
   const arena=dodge?DODGE_ARENA:ARENA,viewConfig=dodge?DODGE_CAMERA:CAMERA;
-  const movement=createMovement(dodge?{arena,speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController(dodge?{arena,followSmoothing:.055,zoomLimits:DODGE_ZOOM}:{arena});
+  const movement=createMovement(dodge?{arena,speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController(dodge?{arena,followSmoothing:.035,zoomLimits:DODGE_ZOOM}:{arena});
   const raycaster=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-ARENA.groundY);
   const cursor=new THREE.Vector2(), point=new THREE.Vector3();
   let disposed=false, frame=null, last=null, pan={x:0,z:0},flashRemaining=0,dashRemaining=0,pointerKnown=false;
@@ -32,8 +32,10 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     const precision=exercise?.kind==='precision';
     camera.position.set(precision?0:center.x+viewConfig.x*view.zoom*fit,precision?34:viewConfig.y*view.zoom*fit,precision ? .001 : center.z+viewConfig.z*view.zoom*fit);
     camera.lookAt(precision?0:center.x,0,precision?0:center.z);camera.updateMatrixWorld();
-    ability.textContent=`${bindings.flashKey.replace('Key','')} · Flash ${flashRemaining>0?Math.ceil(flashRemaining)+'s':'pronto'}${dodge?`   /   ${bindings.dashKey.replace('Key','')} · Dash ${dashRemaining>0?Math.ceil(dashRemaining)+'s':'pronto'}`:''}   /   ${bindings.stopKey.replace('Key','')} · Parar`;
-    status.textContent=exercise?.kind==='reflex'?'TECLADO / MOUSE · responda ao sinal   /   ESC · pausar':precision?'ESQUERDO · acertar os alvos   /   ESC · pausar':`DIREITO · mover   /   ${exercise?.kind==='kiting'?'ESQUERDO · atacar   /   A · mostrar alcance   /   ':''}Y · câmera ${view.locked?'travada':'livre'}   /   ESPAÇO · centralizar   /   RODA · zoom   /   ESC · pausar`;
+    const abilityText=`${bindings.flashKey.replace('Key','')} · Flash ${flashRemaining>0?Math.ceil(flashRemaining)+'s':'pronto'}${dodge?`   /   ${bindings.dashKey.replace('Key','')} · Dash ${dashRemaining>0?Math.ceil(dashRemaining)+'s':'pronto'}`:''}   /   ${bindings.stopKey.replace('Key','')} · Parar`;
+    if(ability.textContent!==abilityText)ability.textContent=abilityText;
+    const instructionText=exercise?.kind==='reflex'?'TECLADO / MOUSE · responda ao sinal   /   ESC · pausar':precision?'ESQUERDO · acertar os alvos   /   ESC · pausar':`DIREITO · mover   /   ${exercise?.kind==='kiting'?'ESQUERDO · atacar   /   A · mostrar alcance   /   ':''}Y · câmera ${view.locked?'travada':'livre'}   /   ESPAÇO · centralizar   /   RODA · zoom   /   ESC · pausar`;
+    if(status.textContent!==instructionText)status.textContent=instructionText;
   }
   function tick(time) {
     try { tickFrame(time); } catch(error) { api.dispose(); onError(error); }
@@ -95,8 +97,8 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     if(world&&running()&&[bindings.stopKey,bindings.flashKey,...(dodge?[bindings.dashKey]:[])].includes(event.code)){
       event.preventDefault();let visibleFlashAim=null;if(dodge&&event.code!==bindings.stopKey&&pointerKnown){raycaster.setFromCamera(cursor,camera);if(raycaster.ray.intersectPlane(plane,point))visibleFlashAim={x:point.x,z:point.z};}flush();if(disposed||!running())return;
       if(event.code===bindings.stopKey){movement.stop();exercise?.moveCommand?.();}
-      else if(event.code===bindings.dashKey&&dodge){if(dashRemaining<=0){const current=movement.snapshot(),aim=visibleFlashAim??current.target??{x:current.position.x+Math.sin(current.angle)*2,z:current.position.z+Math.cos(current.angle)*2};if(movement.dash(aim)){dashRemaining=5;exercise?.moveCommand?.();}}}
-      else if(flashRemaining<=0){pose();raycaster.setFromCamera(cursor,camera);const current=movement.snapshot(),aim=visibleFlashAim??(pointerKnown&&raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:current.target??{x:current.position.x+Math.sin(current.angle)*4,z:current.position.z+Math.cos(current.angle)*4});if(movement.blink(aim)){flashRemaining=15;if(dodge&&controller.snapshot().locked)controller.recenter(movement.snapshot().position);exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().position);}}
+      else if(event.code===bindings.dashKey&&dodge){if(dashRemaining<=0){const current=movement.snapshot(),aim=visibleFlashAim??current.target??{x:current.position.x+Math.sin(current.angle)*DODGE_DASH_RANGE,z:current.position.z+Math.cos(current.angle)*DODGE_DASH_RANGE};if(movement.dash(aim,{continueMoving:true})){dashRemaining=5;exercise?.moveCommand?.();}}}
+      else if(flashRemaining<=0){pose();raycaster.setFromCamera(cursor,camera);const current=movement.snapshot(),aim=visibleFlashAim??(pointerKnown&&raycaster.ray.intersectPlane(plane,point)?{x:point.x,z:point.z}:current.target??{x:current.position.x+Math.sin(current.angle)*4,z:current.position.z+Math.cos(current.angle)*4});if(movement.blink(aim,4,{continueMoving:dodge})){flashRemaining=15;if(dodge&&controller.snapshot().locked)controller.recenter(movement.snapshot().position);exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().position);}}
       pose();visuals?.sync?.(exercise?.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
     if(event.code==='KeyA'&&exercise?.kind==='kiting'&&running()){visuals.setRangeVisible(true);render();}

@@ -141,3 +141,16 @@ Chromium, build de produção: Sobrevivência no nível 20 sem avaliação, derr
 A rotina adicional de gameplay passou pelos ataques, cancelamento, abate e Flash de kite, quatro grupos de precisão com cliques nativos e reflexo com teclado e as três cores. Execuções da rotina inteira expiraram em chamadas do DevTools ou esperando a reentrada de recursos 3D no renderizador por software; o cenário final de derrota do kite foi repetido isoladamente (`QA_GAMEPLAY_CASE=kiting-defeat`) e passou com pontos e salvamento. O transporte CDP aceita timeout configurável; a execução por software usou 45 s. Isso não mede FPS no computador do usuário. Tela cheia real continua fora desta execução headless.
 
 Armazenamento nativo passou: bloqueio, migração, leitura/gravação, ida e volta de backup, conflitos, rollback e seis conquistas permanentes. Os dados anteriores continuam legíveis. Documentação funcional em [PLAYER_FEEDBACK_RC12.md](PLAYER_FEEDBACK_RC12.md).
+
+
+## Revisão rc.13 — 27/10/2026
+
+254 testes em 52 arquivos passaram; lint sem avisos e build de produção aprovados. O build mantém o aviso de tamanho do chunk 3D que inclui Three.js. Cobertura nova: orçamento de disparos dentro da gaiola, rejeição de áreas/raios/lanças e gaiolas duplicadas, janela de gaiola em uma simulação real de nível 20, desbloqueios graduais, continuidade da caminhada após Dash/Flash, parada com S, avaliação anterior preservada e prevenção do menu de contexto/voltar/avançar dentro do treino. O bloqueio de margens em tela cheia é verificado com estado simulado no DOM; não representa teste manual da API no Windows.
+
+Chromium, build de produção, 1920 × 1080: seleção livre de Sobrevivência 20, derrota real e pontos salvos; três etapas diagnósticas reais e entrada automática no Normal 1; movimento direito, Dash E, Flash F, câmera livre e Espaço por eventos nativos; clique direito sem menu, resultado central, revisão dos seis segundos, perfil com patente/média parcial e saída sem canvas/RAF remanescentes. Nenhuma exceção de execução capturada na sequência aprovada. Tentativas anteriores expiraram no transporte CDP e ao esperar uma avaliação com duas páginas de teste competindo por foco; a sequência isolada em um Chromium novo passou. Não se infere FPS ou fluidez no equipamento do jogador.
+
+Navegação e perfil passaram em 1366 × 768, 1920 × 1080 e 390 × 844: seis rotas, trinta níveis das outras modalidades, vinte de esquiva e quatro diagnósticos. `QA_MENUS_ONLY=1` não exercita heap ou presets gráficos. Capturas de apresentação controladas foram inspecionadas para silhuetas, gaiola e arena; são composições visuais, não resultados de partidas oficiais.
+
+Fontes, licença CC0 e hashes dos novos modelos estão em `public/assets/kaykit-nature/`. Referências e regras atuais: [PLAYER_FEEDBACK_RC13.md](PLAYER_FEEDBACK_RC13.md). Tela cheia e sensação de controle no Windows continuam dependentes do teste manual do usuário.
+
+Armazenamento nativo aprovado: bloqueio/upgrade, migração, gravação das quatro modalidades, ida e volta de backup, conflito, rollback e seis conquistas permanentes. Todos os hashes declarados dos novos modelos conferem.
