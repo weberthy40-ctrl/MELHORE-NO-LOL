@@ -25,7 +25,7 @@ it('uses the documented scale in actual bolt collision, player movement and play
 });
 it('makes sustained circular movement substantially less effective in the advanced tier with bounded hazards',()=>{
  function run(level){const config=difficultyFor(level),g=createTechnicalDodge({level,rng:createRandom(43)});let previous={x:5,z:0};for(let i=1;i<=3000;i++){const angle=i*.02*config.playerSpeed/5,current={x:5*Math.cos(angle),z:5*Math.sin(angle)};g.update(.02,previous,current);previous=current;}const s=g.snapshot();g.dispose();return s;}
- const low=run(1),high=run(10);expect(high.shots).toBeGreaterThan(low.shots*1.5);expect(high.impacts).toBeGreaterThan(low.impacts+10);expect(high.peak).toBeLessThanOrEqual(16);
+ const low=run(1),high=run(10);expect(high.shots).toBeGreaterThan(low.shots*1.5);expect(high.impacts).toBeGreaterThan(low.impacts+10);expect(high.peak).toBeLessThanOrEqual(17);
 });
 it('keeps combat-v3 saves readable and never combines three old and new sessions into one rating sample',()=>{
  const session=createSession({countdown:0,timeLimit:60}),p=createKitingPractice({variant:'combat',level:4,damageEnabled:false,rng:createRandom(9)}),a=createKitingAttempt({session,practice:p,variant:'combat',level:4});session.start();p.start();for(let i=0;i<601;i++){session.update(.1);p.update(.1);a.evaluate();}const metrics=a.snapshot();

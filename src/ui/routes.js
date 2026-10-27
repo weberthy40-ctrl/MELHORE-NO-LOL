@@ -11,6 +11,8 @@ export const NAVIGATION = Object.freeze([
 export function resolveRoute(hash = '') {
   const path = hash.replace(/^#/, '') || '/';
   if (NAVIGATION.some(([route]) => route === path) || ['/practice/dodge','/preview','/demo','/dodge-tech','/history/dodge','/records/dodge','/evolution/dodge','/achievements/dodge','/assessment/dodge','/assessment/kiting','/history/kiting','/records/kiting','/evolution/kiting','/achievements/kiting','/assessment/reflex','/history/reflex','/records/reflex','/evolution/reflex','/achievements/reflex','/practice/reflex','/timed/reflex','/practice/kiting','/timed/kiting','/practice/precision','/timed/precision','/assessment/precision','/history/precision','/records/precision','/evolution/precision','/achievements/precision'].includes(path)) return { path };
+  const focus=/^\/practice\/dodge\/(micro|sidestep|direction)(?:\/(10|[1-9]))?$/.exec(path);
+  if(focus)return {path,focus:focus[1],level:Number(focus[2]??1)};
   const reflex = /^\/timed\/reflex\/(10|[1-9])$/.exec(path);
   if(reflex)return {path,modality:'reflex',level:Number(reflex[1]),timed:true};
   const kiting = /^\/timed\/kiting\/(10|[1-9])$/.exec(path);

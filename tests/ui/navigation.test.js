@@ -47,3 +47,8 @@ for(const [mode,lives]of [['normal',3],['survival',1]])it(`puts replay and menu 
  const id=frame.session.snapshot().id;replay.click();await Promise.resolve();await Promise.resolve();expect(frame.session.snapshot().id).not.toBe(id);expect(root.querySelector('.result-metrics').open).toBe(false);expect(root.querySelector('.session-hud').hidden).toBe(false);
  lose();const menu=root.querySelector('.result-actions a');go(menu.hash.slice(1));expect(root.querySelector('dialog')).toBeNull();expect(root.querySelector('h1').textContent).toContain('Mecânica afiada');
 });
+it('blocks the context menu across dodge canvas, HUD and controls, and releases the handler on exit',()=>{
+ const {root}=mount(async()=>({mountPreview(){return {dispose(){}};}}));let old;
+ for(const path of ['/dodge-tech/3','/play/dodge/normal/3','/assessment/dodge','/practice/dodge/micro/6']){go(path);old=root.querySelector('main');for(const target of [old.querySelector('h1'),old.querySelector('button')??old]){const event=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});target.dispatchEvent(event);expect(event.defaultPrevented).toBe(true);}}
+ go('/levels');for(const target of [old,root.querySelector('main')]){const event=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});target.dispatchEvent(event);expect(event.defaultPrevented).toBe(false);}expect(resolveRoute('#/practice/dodge/sidestep/7')).toEqual({path:'/practice/dodge/sidestep/7',focus:'sidestep',level:7});
+});

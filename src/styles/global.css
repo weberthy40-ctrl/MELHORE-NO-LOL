@@ -305,3 +305,7 @@ h1[tabindex='-1']:focus { outline:none; }
 .replay-review>p { margin:.35rem 0; }
 .training-screen .reviewing .replay-stage.stage { height:clamp(160px,31svh,260px); }
 .replay-stage :is(.dodge-spell-legend,.dodge-origin-alerts) { display:none; }
+.dodge-focus-guide { position:fixed;right:1.5rem;top:1.1rem;max-width:45%;padding:.65rem .9rem;border:1px solid #b4d5d52a;border-radius:.5rem;background:#101e26eb;color:#d0efb5;font-size:.78rem; }
+.dodge-focus-guide[hidden] { display:none; }
+.focus-recommendation { margin:.35rem .5rem .35rem 0; }
+@media(max-width:700px){.dodge-focus-guide{top:auto;bottom:6.2rem;right:1rem;max-width:75%;font-size:.67rem;}}

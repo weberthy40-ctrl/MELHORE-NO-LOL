@@ -4,11 +4,11 @@ import { cloneModel } from './sceneAssets.js';
 import { disposeObject } from './resources.js';
 /** Independent layout and materials: no change to the kiting arena. */
 export function createDodgeArena({quality='alto'}={}){
- const group=new THREE.Group(),textures=[],art=new THREE.Group();group.name='Dodge arena 36 × 28';group.add(art);let disposed=false,upgraded=false;
+ const group=new THREE.Group(),textures=[],art=new THREE.Group();group.name='Dodge arena 32.4 × 25.2';group.scale.set(.9,1,.9);group.add(art);let disposed=false,upgraded=false;
  const stone=new THREE.MeshStandardMaterial({color:0x51656b,roughness:.92}),trim=new THREE.MeshStandardMaterial({color:0x8d9e94,metalness:.35,roughness:.65}),gold=new THREE.MeshStandardMaterial({color:0xa69b71,metalness:.6,roughness:.5}),ground=new THREE.MeshStandardMaterial({color:0x254039,roughness:1}),water=new THREE.MeshStandardMaterial({color:0x173d4a,metalness:.25,roughness:.35});
  function mesh(geometry,material,x=0,y=0,z=0,parent=group){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);m.castShadow=m.receiveShadow=quality!=='leve';m.raycast=()=>{};parent.add(m);return m;}
  function plane(w,h,material,x=0,y=0,z=0,parent=group){const m=mesh(new THREE.PlaneGeometry(w,h),material,x,y,z,parent);m.rotation.x=-Math.PI/2;m.castShadow=false;return m;}
- plane(60,52,ground,0,-.1);const floor=plane(DODGE_ARENA.width+.8,DODGE_ARENA.length+.8,stone,0,-.025);
+ plane(60,52,ground,0,-.1);const floor=plane(DODGE_ARENA.width/.9+.8,DODGE_ARENA.length/.9+.8,stone,0,-.025);
  for(const side of [-1,1]){
   plane(3.4,42,water,side*23,-.07);mesh(new THREE.BoxGeometry(.5,.28,29.5),trim,side*18.8,.05);
   mesh(new THREE.BoxGeometry(38,.28,.5),trim,0,.05,side*14.8);

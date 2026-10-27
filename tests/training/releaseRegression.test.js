@@ -25,6 +25,6 @@ it('admits the taught spells at every level with bounded concurrency and an inde
  }
 },30000);
 it('retains an independent escape witness near the new corners at 180% practice pressure',()=>{
- const profile=difficultyFor(10);let game,current={x:16,z:13.3},admissions=0;game=createTechnicalDodge({level:10,intensity:1.8,rng:createRandom(456),events:{emit(type){if(type==='dodge:spawn'){admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
- for(let i=1;i<=1200;i++){const previous=current,t=i*.025;current={x:16+1.4*Math.sin(t*.5),z:12+1.3*Math.cos(t*.5)};game.update(.025,previous,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(20);}expect(admissions).toBeGreaterThan(40);game.dispose();
+ const profile=difficultyFor(10);let game,current={x:14.8,z:12.3},admissions=0;game=createTechnicalDodge({level:10,intensity:1.8,rng:createRandom(456),events:{emit(type){if(type==='dodge:spawn'){admissions++;expect(escapeWitness(current,game.snapshot().projectiles,profile)).toBe(true);}}}});
+ for(let i=1;i<=1200;i++){const previous=current,t=i*.025;current={x:14.8+Math.sin(t*.5),z:11.3+Math.cos(t*.5)};game.update(.025,previous,current);expect(game.snapshot().projectiles.length).toBeLessThanOrEqual(20);}expect(admissions).toBeGreaterThan(40);game.dispose();
 },30000);

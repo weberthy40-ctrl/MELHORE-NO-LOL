@@ -46,7 +46,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
       const activeDelta=session?session.snapshot().elapsed-elapsedBefore:safeDelta(frameDelta/steps);
       flashRemaining=Math.max(0,flashRemaining-activeDelta);
       const previous=movement.snapshot().position;pose(activeDelta);if(!running())visuals?.setRangeVisible?.(false);
-      if(running()&&exercise){exercise.update(activeDelta,previous,movement.snapshot().position);visuals.sync(exercise.snapshot(),movement.snapshot().position);}
+      if(running()&&exercise){if(dodge)exercise.update(activeDelta,previous,movement.snapshot().position,{allowSpawns:schedule});else exercise.update(activeDelta,previous,movement.snapshot().position);visuals.sync(exercise.snapshot(),movement.snapshot().position);}
       const nextPosition=movement.snapshot().position;character.animate?.({moving:Math.hypot(nextPosition.x-previous.x,nextPosition.z-previous.z)>1e-6,attackPhase:exercise?.kind==='kiting'?exercise.snapshot().phase:null,state:session?.snapshot().state??'running'},activeDelta);feedback?.update(activeDelta);onVisualStep(activeDelta);onStep(activeDelta,previous,nextPosition);if(disposed)return;onTick();if(disposed)return;
     }
     if(schedule){if(!session||['running','countdown'].includes(session.snapshot().state))render();frame=requestFrame(tick);}
@@ -81,7 +81,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
       visuals.sync(exercise.snapshot(),movement.snapshot().position);onTick();if(!disposed)render();return;
     }
     if(exercise?.kind==='precision'||exercise?.kind==='reflex')return;
-    if((displayedAim?(point.set(displayedAim.x,arena.groundY,displayedAim.z),true):raycaster.ray.intersectPlane(plane,point))&&movement.moveTo({x:Math.max(arena.bounds.minX,Math.min(arena.bounds.maxX,point.x)),z:Math.max(arena.bounds.minZ,Math.min(arena.bounds.maxZ,point.z))})){exercise?.moveCommand?.();feedback?.move?.(movement.snapshot().target);if(dodge){pose();render();}onTick();}
+    if((displayedAim?(point.set(displayedAim.x,arena.groundY,displayedAim.z),true):raycaster.ray.intersectPlane(plane,point))&&movement.moveTo({x:Math.max(arena.bounds.minX,Math.min(arena.bounds.maxX,point.x)),z:Math.max(arena.bounds.minZ,Math.min(arena.bounds.maxZ,point.z))})){exercise?.moveCommand?.();if(dodge)feedback?.move?.(movement.snapshot().target,0x79e4a1);else feedback?.move?.(movement.snapshot().target);if(dodge){pose();render();}onTick();}
   }
   function context(event){event.preventDefault();}
   function leave(){pan={x:0,z:0};}

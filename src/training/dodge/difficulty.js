@@ -7,10 +7,10 @@ export const DIFFICULTIES=Object.freeze([
  [4,.8,5,.4,3.5],[5,.58,7,.6,2.5],[6,.4,9,.8,1.8],
  [7,.28,11,.9,1.2],[8,.21,12,.95,.9],[9,.16,14,1,.7],[10,.12,16,1,.6],
 ].map(([level,interval,capacity,comboChance,peakCooldown])=>Object.freeze({
- level,interval,capacity,comboChance,peakCooldown,rulesetVersion:'dodge-v5',playerSpeed:DODGE_MOVEMENT_SPEED,
+ level,interval:level<=2?interval:interval*.9,capacity:level<=2?capacity:capacity+1,comboChance,peakCooldown:level<=2?peakCooldown:peakCooldown*.92,rulesetVersion:'dodge-v6',playerSpeed:DODGE_MOVEMENT_SPEED,
  comboDelay:Math.max(.1,.32-level*.022),comboSize:level>=9?3:level>=6?2:1,
- pathHint:level<=3?'full':level<=6?'brief':'off',hintDuration:level<=3?5:Math.max(0,.75-level*.1),
- horizon:2.2,reaction:.16,speedFactor:.72+(level-1)*.14,warningFactor:level<=3?1.35:1,
+ pathHint:level<=2?'full':'off',hintDuration:level<=2?5:0,
+ horizon:2.2,reaction:.16,speedFactor:(.72+(level-1)*.14)*(level<=2?1:1.06),warningFactor:level<=3?1.35:1,
  weights:level===1?Object.freeze({arcane_bolt:3,artillery:1}):level===2?Object.freeze({arcane_bolt:3,artillery:1,flame_circle:1}):level===3?Object.freeze({arcane_bolt:4,artillery:1.6,flame_circle:1.5,sun_beam:1.4}):fullWeights,
 })));
 export function difficultyFor(level=1){return DIFFICULTIES.find(p=>p.level===level)??DIFFICULTIES[0];}

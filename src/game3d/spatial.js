@@ -9,4 +9,4 @@ export function isInsideArena(position, arena=ARENA) {
 }
 
 /** Dodge owns a wider, shorter arena. Other modalities keep ARENA unchanged. */
-export const DODGE_ARENA = Object.freeze({width:36,length:28,groundY:0,margin:7,center:Object.freeze({x:0,z:0}),bounds:Object.freeze({minX:-18,maxX:18,minZ:-14,maxZ:14})});
+export const DODGE_ARENA = Object.freeze({width:32.4,length:25.2,groundY:0,margin:7,center:Object.freeze({x:0,z:0}),bounds:Object.freeze({minX:-16.2,maxX:16.2,minZ:-12.6,maxZ:12.6})});

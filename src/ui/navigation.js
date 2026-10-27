@@ -52,27 +52,29 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   let exercise;
   let rules;
   let telemetry;
+  let stopArenaContext;
   let dodgeRecording,dodgeReview,stopDodgeRecording;
   let cleanupScreen = () => {};
   function skipContent(event) { event.preventDefault(); host.querySelector('h1')?.focus(); }
   function render(focus = true) {
-    const renderRevision = ++revision;audio.stopAll();
+    const renderRevision = ++revision;audio.stopAll();stopArenaContext?.();stopArenaContext=undefined;
     dodgeReview?.dispose();dodgeReview=undefined;stopDodgeRecording?.();stopDodgeRecording=undefined;dodgeRecording?.clear();dodgeRecording=undefined;
     preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
     const route = resolveRoute(window.location.hash);
-    const isDodge = Boolean(route.mode),isDodgeLab=route.path.startsWith('/dodge-tech')||route.path==='/practice/dodge';
+    const isDodge = Boolean(route.mode),isDodgeLab=route.path.startsWith('/dodge-tech')||route.path.startsWith('/practice/dodge');
     const screen = createScreen(document, route);
     const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
     screen.classList.toggle('training-screen',training);screen.classList.toggle('profile-screen',route.path==='/profile');
     host.replaceChildren(screen);
+    if(isDodge||isDodgeLab||route.path==='/assessment/dodge'){const block=event=>event.preventDefault();screen.addEventListener('contextmenu',block,true);stopArenaContext=()=>screen.removeEventListener('contextmenu',block,true);}
     for (const item of nav.children) {
       if (item.hash === `#${route.path}` || (route.modality && item.hash === '#/levels')) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');
     }
     const heading = screen.querySelector('h1'); heading.tabIndex = -1; if (focus) heading.focus();
     core.events.emit('navigation:changed', Object.freeze(route));
-    if(isDodgeLab){const lab=mountDodgeLab({screen,core,initialLevel:route.level??1,autoStart:route.path.startsWith('/dodge-tech'),loadPreview});cleanupScreen=()=>lab.dispose();}
+    if(isDodgeLab){const lab=mountDodgeLab({screen,core,initialLevel:route.level??1,initialFocus:route.focus??'mixed',autoStart:route.path.startsWith('/dodge-tech'),loadPreview});cleanupScreen=()=>lab.dispose();}
     if(route.path==='/dpi'){const mouse=mountMouseTools(screen);cleanupScreen=()=>mouse.dispose();}
     if (route.path === '/settings'){mountSettings(screen);mountPreferences(screen,{onChange:p=>audio.setPreferences(p)});const backup=mountBackup({screen,repository});cleanupScreen=()=>backup.dispose();}
     if(route.path==='/practice/reflex'||route.path.startsWith('/timed/reflex')){const training=mountReflex({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/reflex'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}
@@ -145,7 +147,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   render(false);
   return { dispose() {
     if (!active) return;
-    active = false; revision++;dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
+    active = false; revision++;stopArenaContext?.();dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
     stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
   } };
 }

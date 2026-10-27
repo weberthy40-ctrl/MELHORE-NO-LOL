@@ -44,7 +44,7 @@ export function createScreen(document, route) {
   } else if (route.modality) {
     title = MODALITIES.find(({ id }) => id === route.modality).title;
     description = `Nível ${route.level} · Escolha seu treino abaixo.`;
-  } else if(route.path==='/practice/dodge'){
+  } else if(route.path.startsWith('/practice/dodge')){
     title='Laboratório de Esquiva';description='Ajuste nível, pressão e adaptação. Reveja os últimos segundos para entender cada contato. Sem nota ou histórico.';
   } else if (route.path.startsWith('/dodge-tech')) {
     title = `Treino técnico de Esquiva — Nível ${route.level??1}`; description = 'Sem pontuação ou vidas. Desvie dos projéteis com clique direito. Impactos são apenas diagnósticos em memória.';
