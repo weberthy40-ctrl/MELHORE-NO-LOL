@@ -1,3 +1,5 @@
+> Atualização rc.11: as alterações de velocidade, gaiola, modos e nota estão em [PLAYER_FEEDBACK_RC11.md](PLAYER_FEEDBACK_RC11.md). Os valores abaixo descrevem a rc.10, não a calibração atual.
+
 # Escala e calibração rc.10
 
 O projeto usa **100 unidades de referência do LoL para 1 unidade da arena**. É uma convenção explícita do treinador: não reproduz a câmera, o cliente ou todas as regras de colisão da Riot. Não há integração com partidas ou instalação do LoL.

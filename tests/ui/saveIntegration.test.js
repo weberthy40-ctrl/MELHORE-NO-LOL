@@ -18,7 +18,7 @@ it('a committed eligible result updates the active screen status',async()=>{
   }
   options.onStep(dt,{x:0,z:0},{x:0,z:0});options.onTick();
  }
- options.onStep(0,{x:0,z:0},{x:0,z:0});options.onTick();await Promise.resolve();await Promise.resolve();
+ expect(repository.saveCompletedAttempt).not.toHaveBeenCalled();[...root.querySelectorAll('button')].find(b=>b.textContent==='Encerrar e analisar').click();options.onStep(0,{x:0,z:0},{x:0,z:0});options.onTick();await Promise.resolve();await Promise.resolve();
  expect(repository.saveCompletedAttempt).toHaveBeenCalledTimes(1);expect(root.textContent).toContain('Salvo neste dispositivo');
  options.onTick();expect(repository.saveCompletedAttempt).toHaveBeenCalledTimes(1);
  navigation.dispose();core.dispose();root.remove();window.history.replaceState(null,'','/');

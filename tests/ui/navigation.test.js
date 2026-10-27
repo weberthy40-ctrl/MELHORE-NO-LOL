@@ -21,7 +21,7 @@ describe('navigation', () => {
     expect(root.querySelectorAll('.level')).toHaveLength(40);
     expect(root.querySelectorAll('.level[aria-disabled]')).toHaveLength(0);
     expect(root.querySelector('.tool-card').hash).toBe('#/dpi');
-    go('/train/dodge/8'); expect(root.textContent).toContain('60 segundos · 3 vidas'); expect(root.textContent).toContain('Tempo ilimitado · 1 vida');
+    go('/train/dodge/8'); expect(root.textContent).toContain('Tempo ilimitado · 3 vidas'); expect(root.textContent).toContain('Tempo ilimitado · 1 vida');
     go('/diagnostics'); expect(root.querySelectorAll('.mode-card')).toHaveLength(4);
     expect(root.querySelectorAll('.level')).toHaveLength(0);
   });

@@ -37,7 +37,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
     renderer.setSize(width,height,false); renderer.render(scene,camera);
   }
   function lost(event) { event.preventDefault(); input?.dispose(); fail(new Error('WebGL context lost.')); }
-  const api = { get movement(){return input?.movement;}, presentFrame(frame){if(disposed||controls||!renderer||!frame?.snapshot||![frame.player?.x,frame.player?.z,frame.angle].every(Number.isFinite))return false;character.setPose(frame.player,frame.angle);camera.position.set(frame.player.x+viewConfig.x*.78,viewConfig.y*.78,frame.player.z+viewConfig.z*.78);camera.lookAt(frame.player.x,0,frame.player.z);camera.updateMatrixWorld();visuals?.sync(frame.snapshot,frame.player);renderer.render(scene,camera);return true;}, dispose() {
+  const api = { get movement(){return input?.movement;}, presentFrame(frame){if(disposed||controls||!renderer||!frame?.snapshot||![frame.player?.x,frame.player?.z,frame.angle].every(Number.isFinite))return false;character.setPose(frame.player,frame.angle);character.setHealthVisible?.(Boolean(frame.snapshot.maxLives));if(frame.snapshot.maxLives)character.setHealth(frame.snapshot.lives/frame.snapshot.maxLives);camera.position.set(frame.player.x+viewConfig.x*.78,viewConfig.y*.78,frame.player.z+viewConfig.z*.78);camera.lookAt(frame.player.x,0,frame.player.z);camera.updateMatrixWorld();visuals?.sync(frame.snapshot,frame.player);renderer.render(scene,camera);return true;}, dispose() {
     if (disposed) return; disposed = true;
     input?.dispose();fullscreen?.dispose(); observer?.disconnect(); document.removeEventListener('visibilitychange', resize);
     document.defaultView?.removeEventListener('resize', resize);

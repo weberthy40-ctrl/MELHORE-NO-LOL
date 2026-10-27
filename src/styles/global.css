@@ -309,3 +309,13 @@ h1[tabindex='-1']:focus { outline:none; }
 .dodge-focus-guide[hidden] { display:none; }
 .focus-recommendation { margin:.35rem .5rem .35rem 0; }
 @media(max-width:700px){.dodge-focus-guide{top:auto;bottom:6.2rem;right:1rem;max-width:75%;font-size:.67rem;}}
+/* The practice setup reads as a short flow; extra pressure stays optional. */
+.dodge-lab-options { left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 3rem));max-height:calc(100svh - 140px);padding:1.5rem;border-color:#bce99165;background:linear-gradient(145deg,#14262bf8,#101c25fc); }
+.dodge-lab-options>summary { color:#bce991;font-size:.72rem;text-transform:uppercase;letter-spacing:.14em; }
+.dodge-lab-options h2 { margin:.7rem 0;font-size:1.6rem; }
+.dodge-lab-options .lab-steps { color:#e1eeed; }
+.dodge-lab-options .lab-mode-guide { padding:.8rem;border-left:3px solid #bce991;background:#bce99109;color:#d4e6df; }
+.lab-advanced { margin-top:1rem;border-top:1px solid #b2d5dc25;padding-top:.75rem; }
+.lab-advanced summary { cursor:pointer;font-size:.8rem; }
+.dodge-lab-options>.primary { width:100%;margin-top:.7rem; }
+@media(max-width:700px){.dodge-lab-options{top:50%;max-height:calc(100svh - 100px);padding:1rem;}}

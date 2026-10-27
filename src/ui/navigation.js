@@ -91,14 +91,15 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     }
     let updateSession = () => {};
     if (route.path === '/demo' || isDodge) {
-      session = createSession({events:core.events,timeLimit:route.mode==='normal'?60:null,metadata:{type:route.mode??(isDodge?'dodge-technical':'demonstration'),level:route.level??1}});
+      session = createSession({events:core.events,timeLimit:null,metadata:{type:route.mode??(isDodge?'dodge-technical':'demonstration'),level:route.level??1}});
       if(route.mode)rules=createDodgeMode({session,mode:route.mode,level:route.level,events:core.events});
       if(route.mode){telemetry=createDodgeTelemetry({session,mode:route.mode,level:route.level,events:core.events});dodgeRecording=createDodgeReplay();stopDodgeRecording=core.events.on('dodge:damage',event=>{if(event.attemptId===session.snapshot().id)dodgeRecording?.mark({time:session.snapshot().elapsed,variant:event.variant??'fast',id:event.attackId});});}
-      if(isDodge)exercise=createTechnicalDodge({level:route.level??1,attemptId:session.snapshot().id,mode:route.mode??'technical',isRunning:()=>session?.snapshot().state==='running',canSpawn:()=>route.mode!=='normal'||session.snapshot().elapsed<60,events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0])});
+      if(isDodge)exercise=createTechnicalDodge({level:route.level??1,attemptId:session.snapshot().id,mode:route.mode??'technical',isRunning:()=>session?.snapshot().state==='running',canSpawn:()=>true,getVitals:()=>({lives:rules?.snapshot().lives??null,maxLives:rules?.snapshot().initialLives??null}),events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0])});
       const hud = element(document,'div','session-hud');
       const status = element(document,'p','',''); status.setAttribute('aria-live','off');
       const pause = element(document,'button','button','Pausar');pause.type='button';
       const exit = link(document,'Sair / abandonar','/','button');
+      const analyze=element(document,'button','button','Encerrar e analisar');analyze.type='button';analyze.hidden=!rules;analyze.addEventListener('click',()=>{rules?.complete();telemetry?.step(0);updateSession();});
       pause.addEventListener('click',()=>{if(session?.snapshot().state==='paused')session.resume();else session?.pause();});
       updateSession = () => {if(!session)return; const s=session.snapshot();status.textContent=s.state==='countdown'?`Começar em ${Math.ceil(s.countdown-s.preparation)}`:`${s.state==='paused'?'Pausado':s.state==='completed'?'Concluído':s.state==='abandoned'?'Abandonado':'Em execução'} · ${s.elapsed.toFixed(1)} s`;pause.textContent=s.state==='paused'?'Retomar':'Pausar';};
       const diagnostics=element(document,'p','status-note','');
@@ -108,7 +109,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
       const outcome=element(document,'p','result-message','');outcome.setAttribute('aria-live','polite');
       const updateTechnical=updateSession;updateSession=()=>{
         updateTechnical();if(!rules)return;rules.evaluate();const current=rules.snapshot();
-        diagnostics.textContent=`Vidas: ${current.lives}/${current.initialLives} · ${current.mode==='normal'?'Tempo restante':'Tempo sobrevivido'}: ${(current.mode==='normal'?Math.max(0,60-current.elapsed):current.elapsed).toFixed(1)} s`;
+        diagnostics.textContent=`Vidas: ${current.lives}/${current.initialLives} · Tempo sobrevivido: ${current.elapsed.toFixed(1)} s`;
         if(telemetry?.isFinal()&&!shownResult){
           shownResult=true;resultMetrics.hidden=false;const m=telemetry.snapshot(),score=calculateDodgeScore(m),resultContent=element(document,'div','result-content');
           const title=element(document,'h2','result-title',current.outcome==='victory'?'Vitória!':current.outcome==='defeat'?'Fim de treino — Derrota':current.outcome==='error'?'Treino interrompido':'Treino encerrado');title.id='dodge-result-title';resultMetrics.append(title,resultContent);
@@ -129,7 +130,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
         replay.hidden=!current.outcome;pause.hidden=Boolean(current.outcome);
         outcome.textContent=current.outcome?`${current.outcome==='victory'?'Vitória':current.outcome==='defeat'?'Derrota':current.outcome==='error'?'Treino interrompido por erro':'Abandonado'} · ${current.elapsed.toFixed(1)} s · ${current.lives} vidas restantes`:'';
       };
-      hud.append(status,pause,exit,diagnostics,replay,outcome);screen.insertBefore(hud,screen.querySelector('.stage'));screen.append(resultMetrics);
+      hud.append(status,pause,analyze,exit,diagnostics,replay,outcome);screen.insertBefore(hud,screen.querySelector('.stage'));screen.append(resultMetrics);
       const unsubscribe=core.events.on('session:changed',updateSession);cleanupScreen=()=>{unsubscribe();if(resultMetrics.open)resultMetrics.close?.();};session.start();updateSession();
     }
     if (['/preview','/demo'].includes(route.path)||isDodge) loadPreview().then(({ mountPreview }) => {

@@ -1,6 +1,6 @@
 import { describe,it,expect } from 'vitest';
 import { createDodgeAssessmentFlow,calculateDodgeGuidedAssessment,recommendDodgeLevel,DIAGNOSTIC_VERSION } from '../../src/training/assessment/dodgeAssessment.js';
-const round=(index,changes={})=>({origin:'diagnostic',diagnosticVersion:DIAGNOSTIC_VERSION,attemptId:`diagnostic-${index}`,index,level:[2,5,8][index-1],durationTarget:20,activeSeconds:20,initialLives:3,finalLives:3,hits:0,eligibleThreats:6,verifiedDodges:6,endReason:'diagnostic-time',complete:true,...changes});
+const round=(index,changes={})=>({origin:'diagnostic',diagnosticVersion:DIAGNOSTIC_VERSION,attemptId:`diagnostic-${index}`,index,level:[2,5,8][index-1],durationTarget:40,activeSeconds:40,initialLives:3,finalLives:3,hits:0,eligibleThreats:6,verifiedDodges:6,endReason:'diagnostic-time',complete:true,...changes});
 describe('three-round diagnostic isolation',()=>{
  it('requires explicit next actions, fixed levels and exactly three distinct results',()=>{
   const flow=createDodgeAssessmentFlow();expect(flow.snapshot().level).toBe(2);expect(flow.start()).toBe(true);expect(flow.finishRound(round(1))).toBe(false);flow.running();expect(flow.finishRound(round(1))).toBe(true);expect(flow.finishRound(round(1))).toBe(false);expect(flow.snapshot().state).toBe('round-summary');

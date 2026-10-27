@@ -1,4 +1,4 @@
-export const DODGE_MODES=Object.freeze({diagnostic:Object.freeze({initialLives:3,duration:20,protection:.75}),normal:Object.freeze({initialLives:3,duration:60,protection:.75}),survival:Object.freeze({initialLives:1,duration:null,protection:0})});
+export const DODGE_MODES=Object.freeze({diagnostic:Object.freeze({initialLives:3,duration:40,protection:.75}),normal:Object.freeze({initialLives:3,duration:null,protection:.75}),survival:Object.freeze({initialLives:1,duration:null,protection:0})});
 /** Mode rules consume the shared session clock. Impact time uses end-of-step granularity. */
 export function createDodgeMode({session,mode='normal',level=1,events}) {
   const config=DODGE_MODES[mode];
@@ -14,7 +14,7 @@ export function createDodgeMode({session,mode='normal',level=1,events}) {
     lastDamage=elapsed;lives--;events?.emit('dodge:damage',Object.freeze({...snapshot(),attemptId:session.snapshot().id,attackId:event.id,variant:event.variant}));
     if(lives===0)finish(mode==='diagnostic'?'diagnostic-lives':'defeat');
   });
-  return {snapshot,fail(){finish('error');},evaluate(){if(!outcome&&!disposed&&config.duration!==null&&session.snapshot().elapsed>=config.duration)finish(mode==='diagnostic'?'diagnostic-time':'victory');},
+  return {snapshot,complete(){if(mode!=='diagnostic')finish('completed');},fail(){finish('error');},evaluate(){if(!outcome&&!disposed&&config.duration!==null&&session.snapshot().elapsed>=config.duration)finish(mode==='diagnostic'?'diagnostic-time':'victory');},
     abandon(){if(outcome||disposed)return;outcome='abandoned';session.abandon();events?.emit('dodge:finished',snapshot());},
     dispose(){if(disposed)return;if(!outcome)this.abandon();disposed=true;unsubscribe?.();processed.clear();}};
 }

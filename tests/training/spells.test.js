@@ -22,7 +22,7 @@ it('never damages during a ground telegraph and clips the damaging interval at w
 });
 it('makes the cage center safe and detects crossing the active wall without treating the disk as filled',()=>{
  const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast('cage'));p.update(1.3,zero,zero);expect(events.some(e=>e.type==='impact')).toBe(false);p.update(.1,zero,{x:5,z:0});expect(events.filter(e=>e.type==='impact')).toHaveLength(1);
- const escaped=createProjectiles({onEvent:e=>events.push(e)});escaped.spawn(cast('cage'));escaped.update(.6,zero,{x:5,z:0});escaped.update(.7,{x:5,z:0},{x:5,z:0});expect(events.filter(e=>e.type==='impact')).toHaveLength(1);
+ const escaped=createProjectiles({onEvent:e=>events.push(e)});escaped.spawn(cast('cage'));escaped.update(.6,zero,{x:7,z:0});escaped.update(.7,{x:7,z:0},{x:7,z:0});expect(events.filter(e=>e.type==='impact')).toHaveLength(1);
 });
 it('uses the visible beam width for grazing contacts, and the entire fast bolt sweep at low frame rates',()=>{
  for(const [x,hit]of [[1.64,true],[1.66,false]]){const events=[],p=createProjectiles({onEvent:e=>events.push(e)});p.spawn(cast('sun_beam'));p.update(1.2,{x,z:0},{x,z:0});expect(events.some(e=>e.type==='impact')).toBe(hit);}

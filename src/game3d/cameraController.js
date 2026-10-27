@@ -1,8 +1,8 @@
 import { ARENA,isInsideArena } from './spatial.js';
 import { safeDelta } from '../training/movement.js';
 export const ZOOM = Object.freeze({min:0.65,max:1.6,initial:1});
-export function createCameraController({arena=ARENA,initialZoom=ZOOM.initial}={}) {
-  let locked = true, zoom = Math.max(ZOOM.min,Math.min(ZOOM.max,initialZoom)), center = {...arena.center};
+export function createCameraController({arena=ARENA,initialZoom=ZOOM.initial,followSmoothing=0,zoomLimits=ZOOM}={}) {
+  let locked = true, zoom = Math.max(zoomLimits.min,Math.min(zoomLimits.max,initialZoom)), center = {...arena.center};
   return {
     snapshot:()=>Object.freeze({locked,zoom,center:Object.freeze({...center})}),
     toggle() {locked=!locked;},
@@ -10,10 +10,10 @@ export function createCameraController({arena=ARENA,initialZoom=ZOOM.initial}={}
     wheel(delta, mode=0) {
       if (!Number.isFinite(delta) || ![0,1,2].includes(mode)) return;
       const normalized = Math.max(-200,Math.min(200,delta*(mode===1?16:mode===2?500:1)));
-      zoom = Math.max(ZOOM.min,Math.min(ZOOM.max,zoom*Math.exp(normalized*0.0015)));
+      zoom = Math.max(zoomLimits.min,Math.min(zoomLimits.max,zoom*Math.exp(normalized*0.0015)));
     },
     update(position,pan,dt,preferences) {
-      if(locked) center={...position};
+      if(locked){const alpha=followSmoothing>0?1-Math.exp(-Math.max(0,Math.min(.5,dt))/followSmoothing):1;center.x+=(position.x-center.x)*alpha;center.z+=(position.z-center.z)*alpha;}
       else if(preferences.edgePanEnabled) {
         const length = Math.max(1,Math.hypot(pan.x,pan.z)), step = 12*preferences.edgePanSpeed*safeDelta(dt);
         center.x = Math.max(arena.bounds.minX,Math.min(arena.bounds.maxX,center.x+pan.x/length*step));

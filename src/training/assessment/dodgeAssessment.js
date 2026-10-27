@@ -1,8 +1,8 @@
 import { readonlySnapshot } from '../snapshot.js';
 export const ASSESSMENT_LEVELS=Object.freeze([2,5,8]);
-export const DIAGNOSTIC_VERSION='dodge-diagnostic-v1';
+export const DIAGNOSTIC_VERSION='dodge-diagnostic-v2';
 export function validDiagnostic(result,index){
- return result?.diagnosticVersion===DIAGNOSTIC_VERSION&&result.origin==='diagnostic'&&typeof result.attemptId==='string'&&result.attemptId.length>0&&result.index===index+1&&result.level===ASSESSMENT_LEVELS[index]&&result.durationTarget===20&&result.complete===true&&Number.isFinite(result.activeSeconds)&&result.activeSeconds>=0&&result.activeSeconds<=20&&result.initialLives===3&&Number.isInteger(result.finalLives)&&result.finalLives>=0&&result.finalLives<=3&&Number.isInteger(result.hits)&&result.hits===3-result.finalLives&&['diagnostic-time','diagnostic-lives'].includes(result.endReason)&&((result.endReason==='diagnostic-time'&&result.activeSeconds===20&&result.finalLives>0)||(result.endReason==='diagnostic-lives'&&result.finalLives===0))&&Number.isInteger(result.eligibleThreats)&&result.eligibleThreats>=result.hits&&Number.isInteger(result.verifiedDodges)&&result.verifiedDodges>=0&&result.verifiedDodges+result.hits<=result.eligibleThreats;
+ return result?.diagnosticVersion===DIAGNOSTIC_VERSION&&result.origin==='diagnostic'&&typeof result.attemptId==='string'&&result.attemptId.length>0&&result.index===index+1&&result.level===ASSESSMENT_LEVELS[index]&&result.durationTarget===40&&result.complete===true&&Number.isFinite(result.activeSeconds)&&result.activeSeconds>=0&&result.activeSeconds<=40&&result.initialLives===3&&Number.isInteger(result.finalLives)&&result.finalLives>=0&&result.finalLives<=3&&Number.isInteger(result.hits)&&result.hits===3-result.finalLives&&['diagnostic-time','diagnostic-lives'].includes(result.endReason)&&((result.endReason==='diagnostic-time'&&result.activeSeconds===40&&result.finalLives>0)||(result.endReason==='diagnostic-lives'&&result.finalLives===0))&&Number.isInteger(result.eligibleThreats)&&result.eligibleThreats>=result.hits&&Number.isInteger(result.verifiedDodges)&&result.verifiedDodges>=0&&result.verifiedDodges+result.hits<=result.eligibleThreats;
 }
 export function createDodgeAssessmentFlow(){
  let state='introduction',results=[];
@@ -17,7 +17,7 @@ export function calculateDodgeGuidedAssessment(results){
  const base={guidedAssessmentVersion:'1',recommendedStartingLevel:null,perAttempt:[],evidenceWarnings:[],complete:Array.isArray(results)&&results.length===3};
  if(!base.complete||!results.every(validDiagnostic)||new Set(results.map(r=>r.attemptId)).size!==3)return readonlySnapshot({...base,complete:false,status:'invalid-data',explanation:'Três tentativas diagnósticas válidas nas dificuldades 2, 5 e 8 são necessárias.'});
  if(results.some(r=>r.eligibleThreats<3))return readonlySnapshot({...base,status:'insufficient-evidence',perAttempt:results,evidenceWarnings:results.filter(r=>r.eligibleThreats<3).map(r=>`Tentativa ${r.index}: menos de três ameaças resolvidas.`),explanation:'Evidências insuficientes; refaça a avaliação.'});
- const perAttempt=results.map(r=>({...r,qi:Math.round(100*(.5*r.activeSeconds/20+.3*r.verifiedDodges/r.eligibleThreats+.2*r.finalLives/3))}));
+ const perAttempt=results.map(r=>({...r,qi:Math.round(100*(.5*r.activeSeconds/40+.3*r.verifiedDodges/r.eligibleThreats+.2*r.finalLives/3))}));
  const [q2,q5,q8]=perAttempt.map(r=>r.qi);
 
  return readonlySnapshot({...base,status:'recommended',perAttempt,recommendedStartingLevel:recommendDodgeLevel(q2,q5,q8,results[2].hits),explanation:'Sugestão experimental baseada nos três testes curtos. Não altera a classificação pessoal no Perfil.'});

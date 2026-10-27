@@ -20,7 +20,7 @@ import { precisionDifficulty } from '../../src/training/precision/difficulty.js'
 const zero={x:0,z:0};
 it('uses the documented scale in actual bolt collision, player movement and player radius',()=>{
  expect(LOL_UNITS_PER_WORLD).toBe(100);expect(VARIANTS.arcane_bolt.radius).toBe(toWorld(60));expect(VARIANTS.arcane_bolt.speed).toBe(toWorld(2000));expect(PLAYER_RADIUS).toBe(TRAINING_PLAYER_RADIUS);expect(PLAYER_RADIUS).toBe(toWorld(65));
- for(let level=1;level<=10;level++)expect(difficultyFor(level).playerSpeed*LOL_UNITS_PER_WORLD).toBe(540);
+ for(let level=1;level<=10;level++)expect(difficultyFor(level).playerSpeed*LOL_UNITS_PER_WORLD).toBe(580);
  expect(hasEscape(zero,[],{playerSpeed:NaN})).toBe(false);
 });
 it('makes sustained circular movement substantially less effective in the advanced tier with bounded hazards',()=>{

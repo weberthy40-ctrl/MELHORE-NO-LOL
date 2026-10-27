@@ -13,7 +13,7 @@ export function mountDodgeAssessment({screen,core,loadPreview=()=>import('../gam
  function button(text,action){const b=element(document,'button','button',text);b.type='button';b.addEventListener('click',action);return b;}
  function cleanupRound(){revision++;if(!round)return;round.preview?.dispose();round.unsubscribe?.();round.rules.dispose();round.metrics.dispose();round.exercise.dispose();round.session.dispose();round=null;}
  function footer(){const actions=element(document,'div','actions');actions.append(button('Refazer avaliação',()=>{cleanupRound();flow.reset();introduction();}),link(document,'Voltar ao menu','/','button'));return actions;}
- function introduction(){host.replaceChildren(element(document,'p','lead','Três tentativas de até 20 segundos, com três vidas cada, nas dificuldades 2, 5 e 8. Clique direito move; ESC pausa. Avaliação experimental em memória; recarregar reinicia o fluxo.'),button('Iniciar avaliação',()=>{if(flow.start())beginRound();}));}
+ function introduction(){host.replaceChildren(element(document,'p','lead','Três tentativas de até 40 segundos, com três vidas cada, nas dificuldades 2, 5 e 8. Clique direito move; ESC pausa. Avaliação experimental em memória; recarregar reinicia o fluxo.'),button('Iniciar avaliação',()=>{if(flow.start())beginRound();}));}
  function showError(error){if(!active)return;core.errors.report(error,{source:'assessment.dodge'});flow.fail();cleanupRound();host.replaceChildren(element(document,'p','status-note','Não foi possível concluir a avaliação. Nenhuma conclusão foi atribuída.'),footer());}
  function summary(){
    const state=flow.snapshot();host.replaceChildren();
@@ -32,20 +32,20 @@ export function mountDodgeAssessment({screen,core,loadPreview=()=>import('../gam
  }
  function beginRound(){
    cleanupRound();const generation=revision,state=flow.snapshot(),level=state.level,index=state.index;
-   const session=createSession({timeLimit:20,events:core.events,metadata:{origin:'diagnostic',index,level}});
+   const session=createSession({timeLimit:40,events:core.events,metadata:{origin:'diagnostic',index,level}});
    const rules=createDodgeMode({session,mode:'diagnostic',level,events:core.events});
    const metrics=createDodgeTelemetry({session,mode:'diagnostic',level,events:core.events});
-   const exercise=createTechnicalDodge({level,mode:'diagnostic',attemptId:session.snapshot().id,events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0]),isRunning:()=>session.snapshot().state==='running',canSpawn:()=>session.snapshot().elapsed<20});
+   const exercise=createTechnicalDodge({level,mode:'diagnostic',attemptId:session.snapshot().id,events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0]),isRunning:()=>session.snapshot().state==='running',getVitals:()=>({lives:rules.snapshot().lives,maxLives:3}),canSpawn:()=>session.snapshot().elapsed<40});
    const heading=element(document,'h2','',`Tentativa ${index} de 3 · Dificuldade ${level}`),status=element(document,'p','muted','Preparando...'),pause=button('Pausar',()=>{if(session.snapshot().state==='paused')session.resume();else session.pause();});
    const cancel=button('Cancelar avaliação',()=>{flow.cancel();cleanupRound();host.replaceChildren(element(document,'p','muted','Avaliação cancelada. Nenhum diagnóstico foi salvo.'),footer());});
    const actions=element(document,'div','session-hud');actions.append(status,pause,cancel);const stage=element(document,'div','stage');host.replaceChildren(heading,actions,stage);
    function update(){
      if(!active||generation!==revision)return;const s=session.snapshot();if(s.state==='running')flow.running();
-     status.textContent=s.state==='countdown'?`Começar em ${Math.ceil(s.countdown-s.preparation)}`:`${s.state==='paused'?'Pausado':'Tempo restante'} · ${Math.max(0,20-s.elapsed).toFixed(1)} s · ${rules.snapshot().lives} vidas`;
+     status.textContent=s.state==='countdown'?`Começar em ${Math.ceil(s.countdown-s.preparation)}`:`${s.state==='paused'?'Pausado':'Tempo restante'} · ${Math.max(0,40-s.elapsed).toFixed(1)} s · ${rules.snapshot().lives} vidas`;
      pause.textContent=s.state==='paused'?'Retomar':'Pausar';rules.evaluate();
      if(rules.snapshot().outcome&&metrics.isFinal()){
        const outcome=rules.snapshot(),m=metrics.snapshot();
-       const result={origin:'diagnostic',diagnosticVersion:DIAGNOSTIC_VERSION,attemptId:s.id,index,level,durationTarget:20,activeSeconds:m.elapsedActiveSeconds,initialLives:3,finalLives:outcome.lives,hits:m.validHits,eligibleThreats:m.threatsDodged+m.threatsHit+m.contactsIgnored,verifiedDodges:m.threatsDodged,endReason:outcome.outcome,complete:true};
+       const result={origin:'diagnostic',diagnosticVersion:DIAGNOSTIC_VERSION,attemptId:s.id,index,level,durationTarget:40,activeSeconds:m.elapsedActiveSeconds,initialLives:3,finalLives:outcome.lives,hits:m.validHits,eligibleThreats:m.threatsDodged+m.threatsHit+m.contactsIgnored,verifiedDodges:m.threatsDodged,endReason:outcome.outcome,complete:true};
        if(!flow.finishRound(result)){showError(new Error('Invalid diagnostic transition.'));return;}
        cleanupRound();summary();
      }

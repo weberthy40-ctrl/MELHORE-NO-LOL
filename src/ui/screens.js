@@ -40,12 +40,12 @@ export function createScreen(document, route) {
     title='Treino cronometrado — Precisão de clique';description='Alvos parados, móveis e grupos em uma sequência aleatória. Escolha o nível e treine por 60 segundos.';
   } else if (route.mode) {
     title = `Esquiva — ${route.mode==='normal'?'Normal':'Sobrevivência'} — Nível ${route.level}`;
-    description = route.mode==='normal'?'Sobreviva por 60 segundos com três vidas.':'Uma vida. Tempo ilimitado. Sobreviva enquanto conseguir.';
+    description = route.mode==='normal'?'Três vidas, sem limite de tempo. Encerre para analisar ou sobreviva enquanto conseguir.':'Uma vida. Tempo ilimitado. Sobreviva enquanto conseguir.';
   } else if (route.modality) {
     title = MODALITIES.find(({ id }) => id === route.modality).title;
     description = `Nível ${route.level} · Escolha seu treino abaixo.`;
   } else if(route.path.startsWith('/practice/dodge')){
-    title='Laboratório de Esquiva';description='Ajuste nível, pressão e adaptação. Reveja os últimos segundos para entender cada contato. Sem nota ou histórico.';
+    title='Arena de esquiva';description='Desafio com três vidas ou aquecimento livre. Escolha o nível, jogue e reveja seus contatos.';
   } else if (route.path.startsWith('/dodge-tech')) {
     title = `Treino técnico de Esquiva — Nível ${route.level??1}`; description = 'Sem pontuação ou vidas. Desvie dos projéteis com clique direito. Impactos são apenas diagnósticos em memória.';
   } else if (route.path === '/demo') {
@@ -92,7 +92,7 @@ export function createScreen(document, route) {
           const item = link(document, String(n), `/train/${mode.id}/${n}`, 'level');
           item.setAttribute('aria-label', `${mode.title}, nível ${n}`); levels.append(item);
         }
-        card.append(levels);if(mode.id==='dodge')card.append(link(document,'Laboratório avançado →','/practice/dodge','button'));
+        card.append(levels);if(mode.id==='dodge')card.append(link(document,'Desafio e aquecimento →','/practice/dodge','button'));
       } else if(['dodge','precision','kiting','reflex'].includes(mode.id))card.append(link(document,'Iniciar avaliação',`/assessment/${mode.id}`,'button primary'));else card.append(element(document, 'p', 'status-note', 'Avaliação em preparação'));
       grid.append(card);
     }
@@ -104,12 +104,12 @@ export function createScreen(document, route) {
   if(route.modality==='precision'&&!route.timed)main.append(link(document,'Abrir prática técnica de Precisão','/practice/precision','button'),link(document,'Treino cronometrado (60 s)',`/timed/precision/${route.level}`,'button primary'));
   if (route.modality === 'dodge' && !route.mode) {
     const modes = element(document, 'div', 'mode-grid');
-    for (const [name, info] of [['Normal', '60 segundos · 3 vidas'], ['Sobrevivência', 'Tempo ilimitado · 1 vida']]) {
+    for (const [name, info] of [['Normal', 'Tempo ilimitado · 3 vidas'], ['Sobrevivência', 'Tempo ilimitado · 1 vida']]) {
       const card = element(document, 'section', 'mode-card');
       card.append(element(document, 'h2', '', name), element(document, 'p', 'muted', info), link(document,'Iniciar →',`/play/dodge/${name==='Normal'?'normal':'survival'}/${route.level}`,'button primary'));
       modes.append(card);
     }
-    main.append(modes,link(document,'Abrir treino técnico de Esquiva — sem pontuação',`/dodge-tech/${route.level}`,'button primary'),link(document,'Laboratório avançado e adaptativo','/practice/dodge','button'));
+    main.append(modes,link(document,'Abrir treino técnico de Esquiva — sem pontuação',`/dodge-tech/${route.level}`,'button primary'),link(document,'Desafio e aquecimento personalizados','/practice/dodge','button'));
   }
   if (['/preview','/demo'].includes(route.path)||route.path.startsWith('/dodge-tech')||route.mode) {
     const stage = element(document, 'div', 'stage'); stage.setAttribute('aria-label', 'Visualização da arena 3D');
