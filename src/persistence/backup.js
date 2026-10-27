@@ -1,3 +1,4 @@
+import { DODGE_PLACEMENT_KEY,validateDodgePlacement } from '../progression/dodgePlacement.js';
 import { validateAttemptRecord,canonicalRecord,StorageError } from './attemptRecord.js';
 import { assertRecordData } from './storageError.js';
 import { readonlySnapshot } from '../training/snapshot.js';
@@ -6,11 +7,11 @@ import { PREFERENCES_KEY,validatePreferences } from '../settings/preferences.js'
 import { MOUSE_SETTINGS_KEY,validateMouseSettings } from '../tools/mouse/calculator.js';
 import { calculateKitingProgress,KITING_ACHIEVEMENTS } from '../progression/kitingProgress.js';
 export const BACKUP_MAX_BYTES=10*1024*1024;
-export const PREFERENCE_KEYS=Object.freeze([SETTINGS_KEY,PREFERENCES_KEY,MOUSE_SETTINGS_KEY]);
+export const PREFERENCE_KEYS=Object.freeze([SETTINGS_KEY,PREFERENCES_KEY,MOUSE_SETTINGS_KEY,DODGE_PLACEMENT_KEY]);
 const timestamp=v=>typeof v==='string'&&/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString()===v;
 function forbidDangerousKeys(value){if(!value||typeof value!=='object')return;for(const key of Object.keys(value)){if(['__proto__','constructor','prototype'].includes(key))throw new StorageError('Campo de backup não permitido.','INVALID_BACKUP');forbidDangerousKeys(value[key]);}}
 export function validateBackupPreference(key,value){
- if(key===PREFERENCES_KEY)return validatePreferences(value);if(key===MOUSE_SETTINGS_KEY)return validateMouseSettings(value);
+ if(key===DODGE_PLACEMENT_KEY)return validateDodgePlacement(value);if(key===PREFERENCES_KEY)return validatePreferences(value);if(key===MOUSE_SETTINGS_KEY)return validateMouseSettings(value);
  if(key===SETTINGS_KEY&&value&&typeof value.edgePanEnabled==='boolean'&&typeof value.edgePanSpeed==='number'&&Number.isFinite(value.edgePanSpeed)&&value.edgePanSpeed>=.5&&value.edgePanSpeed<=2)return Object.freeze({edgePanEnabled:value.edgePanEnabled,edgePanSpeed:value.edgePanSpeed});throw new StorageError('Preferência de backup incompatível.','INVALID_BACKUP');
 }
 export function validateBackup(data){

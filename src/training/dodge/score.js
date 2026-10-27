@@ -1,12 +1,13 @@
+import { isUnlimitedDodge,dodgeLevelLimit } from './constants.js';
 import { readonlySnapshot } from '../snapshot.js';
 import { METRICS_VERSION } from './telemetry.js';
 export const SCORING_VERSION='dodge-score-v3';
 const clamp=value=>Math.max(0,Math.min(1,value));
 export function calculateDodgeScore(metrics) {
-  const m=metrics??{},unlimited=m.rulesetVersion==='dodge-v7',reasons=[],components=[];let capFactor=1,consistencyAvailable=false;
+  const m=metrics??{},unlimited=isUnlimitedDodge(m.rulesetVersion),reasons=[],components=[];let capFactor=1,consistencyAvailable=false;
   const resolved=m.threatsDodged+m.threatsHit;
   const result=()=>readonlySnapshot({attemptId:m.attemptId??null,mode:m.mode??null,level:m.level??null,scoringVersion:unlimited?SCORING_VERSION:'dodge-score-v2',metricsVersion:m.metricsVersion??null,status:reasons.length?'unscorable':'scored',score:reasons.length?null:Math.round(components.reduce((sum,c)=>sum+c.contribution,0)),components,capFactor,resolvedSample:Number.isFinite(resolved)?resolved:0,smallSample:resolved<5||!consistencyAvailable,consistencyAvailable,reasons});
-  if(m.metricsVersion!==METRICS_VERSION||typeof m.attemptId!=='string'||!m.attemptId.trim()||!['normal','survival'].includes(m.mode)||!Number.isInteger(m.level)||m.level<1||m.level>10||!m.terminal||!(unlimited?['completed','defeat']:['victory','defeat']).includes(m.endReason))reasons.push('Tentativa ou versão não elegível.');
+  if(m.metricsVersion!==METRICS_VERSION||typeof m.attemptId!=='string'||!m.attemptId.trim()||!['normal','survival'].includes(m.mode)||!Number.isInteger(m.level)||m.level<1||m.level>dodgeLevelLimit(m.rulesetVersion)||!m.terminal||!(unlimited?['completed','defeat']:['victory','defeat']).includes(m.endReason))reasons.push('Tentativa ou versão não elegível.');
   const counts=['attacksEmitted','threatsQualified','threatsDodged','threatsHit','validHits','contactsIgnored','attacksNonThreatening','threatsUnresolved'];
   if(counts.some(k=>!Number.isInteger(m[k])||m[k]<0)||['elapsedActiveSeconds','totalDistanceMoved','activeMovementSeconds','stationarySeconds','riskDistance'].some(k=>!Number.isFinite(m[k])||m[k]<0)||!Array.isArray(m.buckets))reasons.push('Métricas inválidas ou incompletas.');
   if(reasons.length)return result();

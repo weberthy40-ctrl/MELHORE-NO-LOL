@@ -1,0 +1,4 @@
+import { DIAGNOSTIC_VERSION,ASSESSMENT_LEVELS } from '../../src/training/assessment/dodgeAssessment.js';
+import { saveDodgeAssessment,DODGE_PLACEMENT_KEY } from '../../src/progression/dodgePlacement.js';
+export function diagnosticRound(index,changes={}){return {origin:'diagnostic',diagnosticVersion:DIAGNOSTIC_VERSION,attemptId:`diagnostic-${index}`,index,level:ASSESSMENT_LEVELS[index-1],durationTarget:40,activeSeconds:40,initialLives:3,finalLives:3,hits:0,eligibleThreats:20,verifiedDodges:20,endReason:'diagnostic-time',complete:true,...changes};}
+export function seedDodgePlacement(storage,level=1){const results=[1,2,3].map(index=>diagnosticRound(index,{activeSeconds:4,finalLives:0,hits:3,eligibleThreats:3,verifiedDodges:0,endReason:'diagnostic-lives'}));const value=saveDodgeAssessment(storage,results,{assessedAt:'2026-01-01T00:00:00.000Z'});storage.setItem(DODGE_PLACEMENT_KEY,JSON.stringify({...value,level}));}

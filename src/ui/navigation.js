@@ -1,4 +1,4 @@
-import { mountDodgeLab } from './dodgeLabScreen.js';
+import { readDodgePlacement,advanceDodgePlacement } from '../progression/dodgePlacement.js';
 import { createDodgeReplay } from '../training/dodge/replay.js';
 import { mountDodgeReplayReview } from './dodgeReplayReview.js';
 import { mountProfile } from './profileScreen.js';
@@ -60,21 +60,21 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     const renderRevision = ++revision;audio.stopAll();stopArenaContext?.();stopArenaContext=undefined;
     dodgeReview?.dispose();dodgeReview=undefined;stopDodgeRecording?.();stopDodgeRecording=undefined;dodgeRecording?.clear();dodgeRecording=undefined;
     preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
-    const route = resolveRoute(window.location.hash);
-    const isDodge = Boolean(route.mode),isDodgeLab=route.path.startsWith('/dodge-tech')||route.path.startsWith('/practice/dodge');
-    const screen = createScreen(document, route);
+    let route = resolveRoute(window.location.hash);const dodgePlacement=readDodgePlacement(preferencesStorage);
+    if(route.mode==='normal'){route=dodgePlacement?{...route,level:dodgePlacement.level,path:`/play/dodge/normal/${dodgePlacement.level}`}:{path:'/assessment/dodge'};if(window.location.hash!==`#${route.path}`)window.history.replaceState(null,'',`#${route.path}`);}
+    const isDodge = Boolean(route.mode);
+    const screen = createScreen(document, route,{dodgePlacement});
     const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
     screen.classList.toggle('training-screen',training);screen.classList.toggle('profile-screen',route.path==='/profile');
     host.replaceChildren(screen);
-    if(isDodge||isDodgeLab||route.path==='/assessment/dodge'){const block=event=>event.preventDefault();screen.addEventListener('contextmenu',block,true);stopArenaContext=()=>screen.removeEventListener('contextmenu',block,true);}
+    if(isDodge||route.path==='/assessment/dodge'){const block=event=>event.preventDefault();screen.addEventListener('contextmenu',block,true);stopArenaContext=()=>screen.removeEventListener('contextmenu',block,true);}
     for (const item of nav.children) {
       if (item.hash === `#${route.path}` || (route.modality && item.hash === '#/levels')) item.setAttribute('aria-current', 'page');
       else item.removeAttribute('aria-current');
     }
     const heading = screen.querySelector('h1'); heading.tabIndex = -1; if (focus) heading.focus();
     core.events.emit('navigation:changed', Object.freeze(route));
-    if(isDodgeLab){const lab=mountDodgeLab({screen,core,initialLevel:route.level??1,initialFocus:route.focus??'mixed',autoStart:route.path.startsWith('/dodge-tech'),loadPreview});cleanupScreen=()=>lab.dispose();}
     if(route.path==='/dpi'){const mouse=mountMouseTools(screen);cleanupScreen=()=>mouse.dispose();}
     if (route.path === '/settings'){mountSettings(screen);mountPreferences(screen,{onChange:p=>audio.setPreferences(p)});const backup=mountBackup({screen,repository});cleanupScreen=()=>backup.dispose();}
     if(route.path==='/practice/reflex'||route.path.startsWith('/timed/reflex')){const training=mountReflex({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/reflex'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}
@@ -117,7 +117,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
           resultContent.append(element(document,'h2','',score.status==='scored'?`Pontuação desta tentativa: ${score.score}/100`:'Pontuação indisponível nesta tentativa'));
           if(score.status==='scored')for(const c of score.components)resultContent.append(element(document,'p','muted',`${c.name}: ${c.contribution.toFixed(1)} / ${c.weight}`));
           else resultContent.append(element(document,'p','status-note',score.reasons.join(' ')));
-          if(score.status==='scored')mountSaveAttempt({container:resultContent,repository,metrics:m,score,core,isActive:()=>active&&revision===renderRevision});
+          if(score.status==='scored')mountSaveAttempt({container:resultContent,repository,metrics:m,score,core,isActive:()=>active&&revision===renderRevision,onSaved:record=>{try{const next=advanceDodgePlacement(preferencesStorage,record);if(next&&next.level>record.level&&active&&revision===renderRevision){replay.textContent=`Jogar nível ${next.level} →`;resultContent.append(element(document,'p','level-unlocked',`Nível ${record.level} superado. Seu próximo desafio é o nível ${next.level}.`));}}catch(error){core.errors.report(error,{source:'dodge.progression'});if(active&&revision===renderRevision)resultContent.append(element(document,'p','status-note','Treino salvo. Não foi possível atualizar seu próximo nível.'));}}});
           if(score.consistencyAvailable===false)resultContent.append(element(document,'p','status-note','Consistência ainda sem amostra suficiente; esta parcela não concede pontos.'));
           if(score.smallSample)resultContent.append(element(document,'p','status-note','Amostra pequena de ameaças resolvidas.'));
           if(score.capFactor<1)resultContent.append(element(document,'p','status-note','Nota limitada pela exposição curta antes da derrota.'));

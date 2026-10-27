@@ -27,7 +27,7 @@ export function createTechnicalDodge({rng=createRandom(),level=1,profile=difficu
   if(distance<9){rejected++;return null;}
   // Capture the character's position at conjuration, never the cursor, destination or velocity.
   const aim={x:player.x,z:player.z},angle=Math.atan2(aim.x-caster.x,aim.z-caster.z),direction={x:Math.sin(angle),z:Math.cos(angle)},origin=ground?aim:caster;
-  const config={...base,speed,pathHint:options.pathHint,hintDuration:options.hintDuration,pattern:job.pattern??'single',length:base.shape==='beam'?Math.max(base.length,distance+6):base.length,windup:base.shape==='bolt'?Math.max(base.windup,.95-distance/speed):Math.max(.85,((base.windup??1)-(options.level-1)*.02)*(options.warningFactor??1))};
+  const config={...base,speed,pathHint:options.pathHint,hintDuration:options.hintDuration,pattern:job.pattern??'single',length:base.shape==='beam'?Math.max(base.length,distance+6):base.length,windup:base.shape==='bolt'?Math.max(base.windup??0,.9-(distance-base.radius-PLAYER_RADIUS)/speed):Math.max(.85,((base.windup??1)-(options.level-1)*.02)*(options.warningFactor??1))};
   const data={origin,direction,variant,config,caster,aim:player},candidate=createAttackData(data);
   if(!hasEscape(player,[...active,candidate],options)){rejected++;return null;}
   const id=projectiles.spawn(data);if(!id)return null;shots++;if(variant==='cage')lastCage=elapsed;lastCaster=caster;peak=Math.max(peak,active.length+1);if(active.length)combinations++;patterns.add(job.pattern??'single');return {caster,aim};

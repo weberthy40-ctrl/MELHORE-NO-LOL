@@ -6,7 +6,8 @@ try{
  originalPreferences=await page.evaluate("localStorage.getItem('moba-training:preferences:v1')");
  await page.send('Emulation.setDeviceMetricsOverride',{width:1366,height:768,deviceScaleFactor:1,mobile:false});assert.equal(await page.evaluate("document.querySelector('h1').textContent"),'Mecânica afiada.\nJogo diferente.');
  for(const path of ['/levels','/diagnostics','/profile','/settings','/dpi']){await page.go(path);assert.equal(await page.evaluate("document.querySelectorAll('main').length"),1);assert.equal(await page.evaluate("document.documentElement.scrollWidth>innerWidth"),false,`Sem overflow em ${path}`);}
- await page.go('/levels');assert.equal(await page.evaluate("document.querySelectorAll('.level').length"),40);await page.go('/diagnostics');assert.equal(await page.evaluate("document.querySelectorAll('a[href^=\"#/assessment/\"]').length"),4);
+ await page.go('/levels');assert.equal(await page.evaluate("document.querySelectorAll('.level').length"),30);await page.go('/train/dodge');assert.equal(await page.evaluate("document.querySelector('select').options.length"),20);assert.equal(await page.evaluate("/Laboratório|sem pontuação/.test(document.querySelector('main').textContent)"),false);await page.go('/diagnostics');assert.equal(await page.evaluate("document.querySelectorAll('a[href^=\"#/assessment/\"]').length"),4);
+ if(!process.env.QA_MENUS_ONLY){
  await page.go('/settings');await page.evaluate("(()=>{const form=[...document.querySelectorAll('form')].find(f=>f.textContent.includes('Qualidade gráfica'));form.querySelectorAll('select')[2].value='leve';form.querySelector('button[type=submit]').click();})()");
  // Record the loop owned by a scene; the wrapper itself never retains completed callbacks.
  await page.evaluate(`(()=>{const request=window.requestAnimationFrame.bind(window),cancel=window.cancelAnimationFrame.bind(window);window.qaFrames=new Set();window.requestAnimationFrame=callback=>{const id=request(time=>{qaFrames.delete(id);callback(time);});qaFrames.add(id);return id;};window.cancelAnimationFrame=id=>{qaFrames.delete(id);cancel(id);};})()`);
@@ -16,6 +17,13 @@ try{
  for(const [quality,expected]of [['leve',1],['medio',1.2],['alto',1.5]]){
   if(process.env.QA_TRACE)console.log(`Graphics ${quality}`);await page.go('/settings');await page.evaluate(`(()=>{const form=[...document.querySelectorAll('form')].find(f=>f.textContent.includes('Qualidade gráfica'));form.querySelectorAll('select')[2].value='${quality}';form.querySelector('button[type=submit]').click();})()`);await page.go('/preview');await page.waitFor("document.querySelectorAll('canvas').length===1&&document.querySelector('.stage').dataset.visuals==='ready'",{timeout:30000});await pause(100);const dimensions=await page.evaluate("(()=>{const c=document.querySelector('canvas'),r=c.getBoundingClientRect();return {css:r.width,internal:c.width,dpr:devicePixelRatio};})()");assert.equal(dimensions.dpr,2);assert.ok(Math.abs(dimensions.internal/dimensions.css-expected)<.01);graphics.push({quality,...dimensions});await page.go('/');
  }
- for(const [width,height]of [[1366,768],[1920,1080],[390,844]]){await page.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await page.go('/levels');assert.equal(await page.evaluate('document.documentElement.scrollWidth>innerWidth'),false);if(process.env.QA_ARTIFACT_DIR){await mkdir(process.env.QA_ARTIFACT_DIR,{recursive:true});const shot=await page.send('Page.captureScreenshot',{format:'png'});await writeFile(`${process.env.QA_ARTIFACT_DIR}/levels-${width}.png`,Buffer.from(shot.data,'base64'));}}
- assert.deepEqual(page.errors,[]);console.log(JSON.stringify({status:'PASSOU',navigation:5,unlockedLevels:40,diagnostics:4,reentryQuality:'leve',reentries:measurements,graphics},null,2));
+ }
+ for(const [width,height]of [[1366,768],[1920,1080],[390,844]]){
+  await page.send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
+  for(const path of ['/levels','/train/dodge','/profile']){
+   await page.go(path);if(path==='/profile')await page.waitFor("document.querySelectorAll('.rank-badge').length===4");assert.equal(await page.evaluate('document.documentElement.scrollWidth>innerWidth'),false,`Sem overflow em ${path} / ${width}`);
+   if(process.env.QA_ARTIFACT_DIR){await mkdir(process.env.QA_ARTIFACT_DIR,{recursive:true});const shot=await page.send('Page.captureScreenshot',{format:'png'});await writeFile(`${process.env.QA_ARTIFACT_DIR}/${path.split('/').at(-1)}-${width}.png`,Buffer.from(shot.data,'base64'));}
+  }
+ }
+ assert.deepEqual(page.errors,[]);console.log(JSON.stringify({status:'PASSOU',scope:process.env.QA_MENUS_ONLY?'menus-and-profile':'full',navigation:6,otherTrainingLevels:30,dodgeLevels:20,diagnostics:4,reentryQuality:process.env.QA_MENUS_ONLY?null:'leve',reentries:measurements,graphics},null,2));
 }finally{try{if(originalPreferences!==undefined)await page.evaluate(originalPreferences===null?"localStorage.removeItem('moba-training:preferences:v1')":`localStorage.setItem('moba-training:preferences:v1',${JSON.stringify(originalPreferences)})`);}finally{await page.close();}}

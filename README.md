@@ -1,14 +1,14 @@
 # MOBA Training
 
-Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.11**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC11.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
+Treinador web de mecânicas de MOBA, em português, com arena própria e personagens animados KayKit (CC0). **Versão candidata 1.0.0-rc.12**: revisão da experiência de jogo após os blocos 001–105. Veja [a revisão visual e de combate](docs/VISUAL_COMBAT_REVISION.md) e [as mudanças desta revisão](docs/PLAYER_FEEDBACK_RC12.md). Texturas originais, VFX e escala da arena foram revistos; veja [a calibração e suas referências](docs/LOL_REFERENCE_CALIBRATION.md). A aceitação manual no Windows e a calibração com jogadores permanecem pendentes; esta entrega não declara uma versão 1.0 aprovada.
 
-- **Esquiva:** arena própria de 32,4 × 25,2, movimento constante de 5,8 u/s, habilidades introduzidas gradualmente e salvas, fogo cruzado e áreas nos níveis altos. Normal com três vidas e tempo ilimitado; Sobrevivência com uma vida. Flash e dash curto (E) têm teclas configuráveis. Laboratório com desafio de três vidas ou aquecimento livre, pressão de 100–180%, adaptação opcional e revisão dos últimos seis segundos em câmera lenta. Habilidades de área mantêm aviso; a trajetória antecipada aparece apenas nos níveis 1 e 2. Cada conjuração mira a posição atual do personagem, partindo de origens externas aleatórias. O laboratório oferece exercícios de passos curtos, saída perpendicular e mudança de direção, sugeridos também pelo replay.
+- **Esquiva:** 20 níveis. O Normal começa após uma avaliação salva e abre diretamente no nível indicado; três vidas, tempo ilimitado e avanço após desempenho consistente. Sobrevivência com uma vida e escolha livre de nível. Pressão maior desde o nível 1, oito habilidades e conjuradores externos aleatórios mirando o personagem. Flash e dash curto (E) configuráveis; revisão dos últimos seis segundos. Áreas mantêm aviso; trajetória prévia apenas nos níveis 1 e 2. Laboratório e prática sem pontuação removidos.
 - **Precisão:** grupos de 4–10 alvos fixos, com tamanhos variados, órbitas e zigue-zague; um grupo a cada três exige sequência numérica (a cada dois nos níveis 7–10); o padrão só muda depois de acertar todos os alvos do grupo. Cliques errados e atrasos são contados; quantidade, velocidade, tamanho e prazo variam com o nível.
 - **Kiting:** ondas mistas com perseguidores e atiradores, vida do jogador, dano e morte; começa com um perseguidor com vida; acertos causam dano, abates geram reposição e níveis maiores sobrepõem ondas até oito inimigos. Movimento e velocidade de ataque escalam com o nível; perseguidores correm a 98% da velocidade do jogador. Derrotas também são salvas no histórico. Esquerdo em qualquer ponto ataca um inimigo no alcance, direito move e A exibe o alcance.
 - **Reflexos:** um desafio integrado de Q/W/E/R, Espaço, F/J e mouse, sem setas. Verde pede clique esquerdo, azul pede direito e vermelho pede não responder; símbolos e texto acompanham as cores.
 - **DPI:** estimativa por contagens brutas e distância medida com régua; comparação de DPIs com três rodadas por valor. O campo de referência do LoL usa 0–100, padrão 50.
 
-Todos os níveis 1–10 estão disponíveis. Cada modalidade tem histórico local, recordes por contexto, evolução, seis conquistas, classificação pessoal e avaliação guiada de três etapas: até 40 segundos por etapa na esquiva, 20 segundos nas demais. A recomendação diagnóstica é provisória, fica em memória e não altera o Perfil. Não há score global, contas, backend, API Riot ou sincronização.
+Esquiva tem 20 níveis; precisão, kiting e reflexo têm dez cada. A seleção livre da esquiva fica em Sobrevivência; o Normal segue a avaliação e a progressão. Cada modalidade tem histórico local, recordes por contexto, evolução, seis conquistas, classificação pessoal e avaliação guiada de três etapas: até 40 segundos por etapa na esquiva, 20 segundos nas demais. A recomendação diagnóstica é provisória, fica em memória e não altera o Perfil. O perfil mostra pontos e patentes por habilidade e uma média geral das modalidades treinadas. Não há contas, placar online, backend, API Riot ou sincronização.
 
 ## Testar pelo navegador
 
@@ -49,11 +49,12 @@ Não abra `index.html` diretamente pelo explorador de arquivos. O projeto usa ES
 | Cancelar preparação de Kiting | Clique direito, parar ou Flash antes do disparo |
 | Parar o personagem | S (configurável) |
 | Flash na direção do cursor | D (configurável): até 4 unidades, 15 segundos ativos de recarga |
+| Dash na direção do cursor (Esquiva) | E (configurável): 1,8 unidade em 140 ms, recarga de 5 s ativos, sem invulnerabilidade |
 | Tela cheia | Botão na arena; permanece ao jogar novamente |
 | Ver alcance de Kiting | Segurar A |
 | Responder em Reflexos | Q/W/E/R, Espaço, F/J ou mouse; aguarde nos sinais de inibição |
 
-Pausa, preparação e tempo sem foco não contam como tempo ativo. A retomada após perda de foco é explícita. Saída antecipada não salva conclusão oficial.
+Pausa, preparação e tempo sem foco não contam como tempo ativo. A retomada após perda de foco é explícita. Sair / abandonar não salva conclusão oficial. Na esquiva, Encerrar e analisar conclui a tentativa e salva quando existe amostra válida.
 
 ## Dados e configurações
 

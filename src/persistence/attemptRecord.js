@@ -1,3 +1,4 @@
+import { isUnlimitedDodge,dodgeLevelLimit } from '../training/dodge/constants.js';
 import { GAME_VERSION } from '../app/version.js';
 import { validateReflexRecord,createReflexRecord } from './reflexRecord.js';
 import { validateKitingRecord,createKitingRecord } from './kitingRecord.js';
@@ -11,8 +12,8 @@ export function validateAttemptRecord(record){
   if(record?.modality==='reflex')return validateReflexRecord(record);
   if(record?.modality==='kiting')return validateKitingRecord(record);
   if(record?.modality==='precision')return validatePrecisionRecord(record);
-  const r=record,m=r?.metrics,s=r?.score,unlimited=m?.rulesetVersion==='dodge-v7';
-  if(!r||r.recordSchemaVersion!==1||r.modality!=='dodge'||typeof r.attemptId!=='string'||!r.attemptId.trim()||!['normal','survival'].includes(r.mode)||!Number.isInteger(r.level)||r.level<1||r.level>10||!(unlimited?['completed','defeat']:['victory','defeat']).includes(r.endReason)||!Number.isFinite(Date.parse(r.completedAt))||!m||!s)throw new StorageError('Formato de tentativa inválido.','INVALID_RECORD');
+  const r=record,m=r?.metrics,s=r?.score,unlimited=isUnlimitedDodge(m?.rulesetVersion);
+  if(!r||r.recordSchemaVersion!==1||r.modality!=='dodge'||typeof r.attemptId!=='string'||!r.attemptId.trim()||!['normal','survival'].includes(r.mode)||!Number.isInteger(r.level)||r.level<1||r.level>dodgeLevelLimit(m?.rulesetVersion)||!(unlimited?['completed','defeat']:['victory','defeat']).includes(r.endReason)||!Number.isFinite(Date.parse(r.completedAt))||!m||!s)throw new StorageError('Formato de tentativa inválido.','INVALID_RECORD');
   if((unlimited&&s.scoringVersion!==SCORING_VERSION)||(!unlimited&&s.scoringVersion===SCORING_VERSION)||m.metricsVersion!==METRICS_VERSION||!['dodge-score-v1','dodge-score-v2',SCORING_VERSION].includes(s.scoringVersion)||s.metricsVersion!==METRICS_VERSION||!m.terminal||m.endReason!==r.endReason||s.status!=='scored'||!Number.isInteger(s.score)||s.score<0||s.score>100||!Array.isArray(s.components)||s.components.length!==4||s.components.reduce((sum,c)=>sum+c.weight,0)!==100)throw new StorageError('Tentativa não elegível para salvamento.','INELIGIBLE');
   for(const snapshot of [m,s])if(snapshot.attemptId!==r.attemptId||snapshot.mode!==r.mode||snapshot.level!==r.level)throw new StorageError('Identidades de tentativa incompatíveis.','INVALID_RECORD');
   if(['attacksEmitted','threatsQualified','threatsDodged','threatsHit','validHits','contactsIgnored','attacksNonThreatening','threatsUnresolved'].some(key=>!Number.isInteger(m[key])||m[key]<0)||!Array.isArray(m.buckets)||m.buckets.length>120)throw new StorageError('Contagens inválidas.','INVALID_RECORD');

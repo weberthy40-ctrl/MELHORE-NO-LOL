@@ -1,3 +1,5 @@
+> Calibração atual: rc.12 / `dodge-v8`, vinte níveis e patentes. Consulte [PLAYER_FEEDBACK_RC12.md](PLAYER_FEEDBACK_RC12.md). Os números históricos abaixo não substituem a configuração atual.
+
 > Atualização rc.11: as alterações de velocidade, gaiola, modos e nota estão em [PLAYER_FEEDBACK_RC11.md](PLAYER_FEEDBACK_RC11.md). Os valores abaixo descrevem a rc.10, não a calibração atual.
 
 # Escala e calibração rc.10

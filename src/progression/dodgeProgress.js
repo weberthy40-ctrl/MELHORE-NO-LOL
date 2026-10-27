@@ -1,3 +1,4 @@
+import { MAX_DODGE_LEVEL,DODGE_RULESET,isUnlimitedDodge } from '../training/dodge/constants.js';
 import { validateAttemptRecord } from '../persistence/attemptRecord.js';
 import { readonlySnapshot } from '../training/snapshot.js';
 export const ACHIEVEMENTS=Object.freeze([
@@ -16,32 +17,32 @@ export function compareRecord(a,b){
 }
 /** Streaming aggregation retains bounded rating samples per calibration, records and first-level dates. */
 export function createDodgeProgress(){
- const records=new Map(),evidence=new Map(),competitiveEvidence=new Map(),refinedEvidence=new Map(),currentEvidence=new Map(),unlimitedEvidence=new Map(),levelFirst=new Map(),first=new Map();let total=0;
+ const records=new Map(),evidence=new Map(),competitiveEvidence=new Map(),refinedEvidence=new Map(),currentEvidence=new Map(),unlimitedEvidence=new Map(),expandedEvidence=new Map(),levelFirst=new Map(),first=new Map();let total=0;
  function mark(id,record){if(!first.has(id)||chronological(record,first.get(id))<0)first.set(id,record);}
  return {add(record){
    if(!eligibleRecord(record))return;total++;
    const key=`${record.mode}:${record.level}`;if(!records.has(key)||compareRecord(record,records.get(key))<0)records.set(key,record);
    mark('first',record);
-   if(record.mode==='normal'&&(record.endReason==='victory'||record.metrics.rulesetVersion==='dodge-v7'&&record.metrics.elapsedActiveSeconds>=60)){mark('victory',record);if(record.metrics.validHits===0)mark('untouched',record);}
+   if(record.mode==='normal'&&(record.endReason==='victory'||isUnlimitedDodge(record.metrics.rulesetVersion)&&record.metrics.elapsedActiveSeconds>=60)){mark('victory',record);if(record.metrics.validHits===0)mark('untouched',record);}
    if(record.mode==='survival'){if(record.metrics.elapsedActiveSeconds>=30)mark('survival30',record);if(record.metrics.elapsedActiveSeconds>=60)mark('survival60',record);}
    if(!levelFirst.has(record.level)||chronological(record,levelFirst.get(record.level))<0)levelFirst.set(record.level,record);
    if(record.mode==='normal'){
-     const pool=record.metrics.rulesetVersion==='dodge-v7'?unlimitedEvidence:record.metrics.rulesetVersion==='dodge-v6'?currentEvidence:record.metrics.rulesetVersion==='dodge-v5'?refinedEvidence:record.metrics.rulesetVersion==='competitive-v4'?competitiveEvidence:evidence;if(!pool.has(record.level))pool.set(record.level,{count:0,recent:[]});const item=pool.get(record.level);item.count++;item.recent.push(record);item.recent.sort((a,b)=>chronological(b,a));item.recent=item.recent.slice(0,3);
+     const pool=record.metrics.rulesetVersion===DODGE_RULESET?expandedEvidence:record.metrics.rulesetVersion==='dodge-v7'?unlimitedEvidence:record.metrics.rulesetVersion==='dodge-v6'?currentEvidence:record.metrics.rulesetVersion==='dodge-v5'?refinedEvidence:record.metrics.rulesetVersion==='competitive-v4'?competitiveEvidence:evidence;if(!pool.has(record.level))pool.set(record.level,{count:0,recent:[]});const item=pool.get(record.level);item.count++;item.recent.push(record);item.recent.sort((a,b)=>chronological(b,a));item.recent=item.recent.slice(0,3);
    }
  },snapshot(){
    const explorer=[...levelFirst.values()].sort(chronological)[2];if(explorer)mark('explorer',explorer);
-   const reference=[...unlimitedEvidence.values()].some(e=>e.count>=3)?unlimitedEvidence:[...currentEvidence.values()].some(e=>e.count>=3)?currentEvidence:[...refinedEvidence.values()].some(e=>e.count>=3)?refinedEvidence:[...competitiveEvidence.values()].some(e=>e.count>=3)?competitiveEvidence:evidence;
-   const evidenceByLevel=Array.from({length:10},(_,index)=>{
+   const reference=[...expandedEvidence.values()].some(e=>e.count>=3)?expandedEvidence:[...unlimitedEvidence.values()].some(e=>e.count>=3)?unlimitedEvidence:[...currentEvidence.values()].some(e=>e.count>=3)?currentEvidence:[...refinedEvidence.values()].some(e=>e.count>=3)?refinedEvidence:[...competitiveEvidence.values()].some(e=>e.count>=3)?competitiveEvidence:evidence;
+   const evidenceByLevel=Array.from({length:MAX_DODGE_LEVEL},(_,index)=>{
      const level=index+1,item=reference.get(level)??{count:0,recent:[]},wins=item.recent.filter(r=>r.endReason==='victory').length;
      const median=item.recent.length===3?item.recent.map(r=>r.score.score).sort((a,b)=>a-b)[1]:null;
-     return {level,count:item.count,attemptIds:item.recent.map(r=>r.attemptId),wins,median,demonstrated:item.recent.length===3&&(reference===unlimitedEvidence?item.recent.filter(r=>r.metrics.elapsedActiveSeconds>=30).length>=2:wins>=2)&&median>=60};
+     return {level,count:item.count,attemptIds:item.recent.map(r=>r.attemptId),wins,median,demonstrated:item.recent.length===3&&([expandedEvidence,unlimitedEvidence].includes(reference)?item.recent.filter(r=>r.metrics.elapsedActiveSeconds>=30).length>=2:wins>=2)&&median>=60};
    });
    const rating=evidenceByLevel.filter(e=>e.demonstrated).at(-1)?.level??null;
-   return readonlySnapshot({total,records:[...records.values()],achievements:ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),rating:{ratingVersion:'1',referenceConfig:reference===unlimitedEvidence?'dodge-v7':reference===currentEvidence?'dodge-v6':reference===refinedEvidence?'dodge-v5':reference===competitiveEvidence?'competitive-v4':null,rating,status:rating===null?'insufficient-data':'classified',totalEligibleAttempts:[...reference.values()].reduce((n,e)=>n+e.count,0),evidenceByLevel}});
+   return readonlySnapshot({total,records:[...records.values()],achievements:ACHIEVEMENTS.map(a=>({...a,unlocked:first.has(a.id),completedAt:first.get(a.id)?.completedAt??null})),rating:{ratingVersion:'1',referenceConfig:reference===expandedEvidence?DODGE_RULESET:reference===unlimitedEvidence?'dodge-v7':reference===currentEvidence?'dodge-v6':reference===refinedEvidence?'dodge-v5':reference===competitiveEvidence?'competitive-v4':null,rating,status:rating===null?'insufficient-data':'classified',totalEligibleAttempts:[...reference.values()].reduce((n,e)=>n+e.count,0),evidenceByLevel}});
  }};
 }
 export function calculateDodgeProgress(attempts){const progress=createDodgeProgress(),seen=new Set();for(const attempt of attempts){if(seen.has(attempt?.attemptId))continue;seen.add(attempt?.attemptId);progress.add(attempt);}return progress.snapshot();}
 export function prepareEvolution(attempts,{mode='normal',level=1,limit=30}={}){
- if(!['normal','survival'].includes(mode)||!Number.isInteger(level)||level<1||level>10||![10,30,100].includes(limit))throw new TypeError('Invalid evolution filters.');
+ if(!['normal','survival'].includes(mode)||!Number.isInteger(level)||level<1||level>MAX_DODGE_LEVEL||![10,30,100].includes(limit))throw new TypeError('Invalid evolution filters.');
  const seen=new Set();return readonlySnapshot(attempts.filter(r=>eligibleRecord(r)&&r.mode===mode&&r.level===level&&!seen.has(r.attemptId)&&seen.add(r.attemptId)).sort((a,b)=>chronological(b,a)).slice(0,limit).reverse().map(r=>({attemptId:r.attemptId,date:r.completedAt,mode,level,value:mode==='normal'?r.score.score:r.metrics.elapsedActiveSeconds,score:r.score.score,outcome:r.endReason,calibrationVersion:r.metrics.rulesetVersion??'legacy',scoringVersion:r.score.scoringVersion})));
 }

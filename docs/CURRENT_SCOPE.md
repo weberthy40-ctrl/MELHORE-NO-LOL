@@ -1,25 +1,14 @@
-# Escopo entregue
+# Escopo atual — rc.12
 
-A candidata implementa os blocos funcionais 001–088 e a auditoria 089–105. Os textos antigos em ARCHITECTURE e VALIDATION registram os marcos históricos, não limitações atuais. A identidade inicial de fundação foi evoluída na revisão de UX para a página real do produto.
+Treinador web em português, publicado pelo GitHub Pages e voltado a teclado e mouse. Os registros de blocos 001–105 e revisões anteriores são históricos. Consulte [a revisão atual](PLAYER_FEEDBACK_RC12.md) e [a validação](VALIDATION.md).
 
-Não há contas, servidor de aplicação, telemetria, dados da Riot ou multiplayer. Toda arte e áudio são originais/procedurais. Metas, notas e ratings são heurísticas provisórias.
+- Esquiva: 20 níveis, Normal guiado por avaliação salva e progressão por desempenho; Sobrevivência com seleção livre. Três vidas no Normal e uma em Sobrevivência, ambos sem limite de tempo. Oito habilidades de conjuradores externos, Flash, dash, parada, câmera livre/travada e revisão das tentativas. Laboratório e treino sem pontuação foram removidos.
+- Precisão: dez níveis, grupos mistos e prioridades ocasionais. O padrão muda após completar o grupo.
+- Kiting: dez níveis, combate em ondas com perseguidores e atiradores, vida, dano, morte, cancelamentos e reposição de inimigos.
+- Reflexos: dez níveis, teclado, mouse e inibição com cores, texto e símbolos.
+- Perfil: pontos de habilidade de 0–10.000, patentes de Ferro a Profissional, média por modalidade e média geral com cobertura explicitada. Histórico, evolução, recordes, conquistas e backup local preservados.
+- DPI: medição assistida por distância física e contagens brutas, comparação de configurações; escala do LoL de 0–100, padrão 50.
 
-Quatro modalidades e seus contextos oficiais:
+Avaliação da esquiva tem três etapas de até 40 s; as outras mantêm etapas de 20 s. Estado de acesso ao Normal é incluído no backup. Toda persistência fica no dispositivo. Não há contas, backend, sincronização, API Riot, placar multiplayer ou telemetria externa.
 
-- Esquiva: Normal/Sobrevivência × dez níveis, com quatro ataques elegíveis em todos.
-- Precisão: quatro variantes × dez níveis.
-- Kiting: três variantes × dez níveis.
-- Reflexos: quatro exercícios × dez níveis.
-
-Cada modalidade possui histórico, recordes, gráficos, seis conquistas, rating específico e avaliação guiada. Todas as dificuldades permanecem livres. Ferramenta DPI separada, somente preferências manuais persistidas.
-
-Aceitação final: veja validacao/105-criterios-lancamento.md. A implementação não equivale à calibração humana, homologação Windows, CI remoto ou publicação do ambiente.
-
-
-Revisão de experiência `1.0.0-rc.2`: arena ocupa o viewport; câmera próxima; cenário com superfície pintada e vegetação agrupada por instâncias; personagens articulados; movimento 11 u/s e física em subpassos. Precisão tem fundo independente, alvos maiores e expiração. Kiting abre com perseguição e ataque no primeiro clique. Reflexo e avaliação abrem com desafio misto. Perfil usa quatro cartões. DPI tem medição física assistida e comparação por rodadas. Consulte ARENA_REVISION.md para fórmulas e limites de validação.
-
-
-Revisão `1.0.0-rc.3`: modelos KayKit CC0 com animações, água, ruínas e sombras por qualidade; esquiva lança de origens aleatórias dentro do corredor, a 7,5–11,5 u do jogador; kiting tem 2–6 inimigos, esquerdo em qualquer chão solicita ataque a um alvo elegível, direito move, A somente mostra alcance. Consulte VISUAL_COMBAT_REVISION.md.
-
-
-Correção `1.0.0-rc.4`: projéteis com núcleo brilhante, contorno escuro, rastro e halo de no mínimo 26 px de diâmetro; efeitos visíveis sobre o cenário. Resultado de Esquiva usa diálogo modal com Jogar novamente e Voltar ao menu no rodapé fixo do painel; métricas rolam separadamente.
+Arte combina modelos KayKit CC0, texturas originais e efeitos procedurais; as fontes e licenças constam no repositório. Geometria, notas, patentes e níveis são adaptações do treinador, sem equivalência validada ao patch ou ao elo do LoL. Aceitação de fluidez, tela cheia e calibração humana no computador do jogador permanece manual.

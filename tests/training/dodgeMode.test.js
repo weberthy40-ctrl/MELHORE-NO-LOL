@@ -11,7 +11,7 @@ function attempt(mode='normal',level=1){
 }
 describe('dodge mode rules',()=>{
   it('uses three lives with unlimited time in all levels; voluntary completion fires once',()=>{
-    for(let level=1;level<=10;level++){
+    for(let level=1;level<=20;level++){
       const a=attempt('normal',level);expect(a.rules.snapshot().lives).toBe(3);a.advance(125);expect(a.rules.snapshot()).toMatchObject({outcome:null,lives:3,duration:null});a.rules.complete();
       expect(a.rules.snapshot()).toMatchObject({outcome:'completed',lives:3});a.hit('late');expect(a.rules.snapshot().lives).toBe(3);a.rules.dispose();a.core.dispose();
     }
