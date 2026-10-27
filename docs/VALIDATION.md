@@ -154,3 +154,17 @@ Navegação e perfil passaram em 1366 × 768, 1920 × 1080 e 390 × 844: seis ro
 Fontes, licença CC0 e hashes dos novos modelos estão em `public/assets/kaykit-nature/`. Referências e regras atuais: [PLAYER_FEEDBACK_RC13.md](PLAYER_FEEDBACK_RC13.md). Tela cheia e sensação de controle no Windows continuam dependentes do teste manual do usuário.
 
 Armazenamento nativo aprovado: bloqueio/upgrade, migração, gravação das quatro modalidades, ida e volta de backup, conflito, rollback e seis conquistas permanentes. Todos os hashes declarados dos novos modelos conferem.
+
+## Revisão rc.14 — 27/10/2026
+
+A bateria completa passou com 259 testes em 54 arquivos. Depois dos ajustes finais de enquadramento, escopo das sombras e apresentação da avaliação, passaram novamente os testes direcionados de controles/câmera (18), animação real e navegação (12), e navegação/percurso diagnóstico (11). Lint sem avisos e build aprovados; permanece o aviso de tamanho do chunk que inclui Three.js.
+
+A cobertura nova verifica início manual sem contagem, tempo zerado enquanto a arena carrega, saída da preparação sem controles órfãos, enquadramento amplo/ativo com proporção 0,86/1,7, percurso adaptativo, limites de evidência, recomendação sem extrapolação, recusa de etapas fora da sequência/duplicadas e compatibilidade das avaliações anteriores. O backup de uma avaliação nova com cinco etapas foi exportado/importado e preservou nível e resultados. Um teste adicional carrega a geometria, esqueleto e animações do arquivo real do cavaleiro, alterna corrida/repouso/direção por 120 quadros e confere estabilidade espacial e configuração de sombras/recorte.
+
+Chromium, build de produção, 1920 × 1080: Sobrevivência no nível 20 aguardou o clique em Iniciar com relógio zerado; derrota real salva com pontos; cinco etapas adaptativas reais percorreram 5, 2, 1, 1 e 1 e salvaram o acesso ao Normal, que também aguardou início manual. Movimento direito, Dash E, Flash F, câmera livre e Espaço passaram com eventos nativos; o cabeçalho ficou oculto durante o jogo. Resultado central, revisão, perfil com pontos e saída sem canvas/RAF remanescentes passaram. Nenhuma exceção de execução capturada.
+
+A apresentação final foi conferida separadamente em qualidade Alta, com sombras ligadas e movimento por clique nativo: enquadramento ativo medido em 0,505882 da distância de preparação (0,86/1,7), capturas em diferentes poses e nenhuma exceção. Essa composição não gera resultados oficiais; não é benchmark de FPS nem teste do monitor do jogador. Tela cheia real no Windows continua dependente do teste humano.
+
+Menus/perfil sem transbordamento em 1366 × 768, 1920 × 1080 e 390 × 844: seis rotas, trinta níveis das outras modalidades, vinte de esquiva e quatro diagnósticos. A execução `QA_MENUS_ONLY=1` não mede heap nem presets. Armazenamento nativo aprovou bloqueio, migração, ida e volta de backup, conflitos, rollback e seis conquistas permanentes. O ambiente ficou temporariamente indisponível durante a preparação dos documentos; os arquivos foram preservados e os resultados dos processos foram conferidos após a reconexão.
+
+Regras e limitações: [PLAYER_FEEDBACK_RC14.md](PLAYER_FEEDBACK_RC14.md).

@@ -1,5 +1,5 @@
 import { MAX_DODGE_LEVEL } from './constants.js';
-export const DODGE_MODES=Object.freeze({diagnostic:Object.freeze({initialLives:3,duration:40,protection:.75}),normal:Object.freeze({initialLives:3,duration:null,protection:.75}),survival:Object.freeze({initialLives:1,duration:null,protection:0})});
+export const DODGE_MODES=Object.freeze({diagnostic:Object.freeze({initialLives:3,duration:30,protection:.75}),normal:Object.freeze({initialLives:3,duration:null,protection:.75}),survival:Object.freeze({initialLives:1,duration:null,protection:0})});
 /** Mode rules consume the shared session clock. Impact time uses end-of-step granularity. */
 export function createDodgeMode({session,mode='normal',level=1,events}) {
   const config=DODGE_MODES[mode];

@@ -8,7 +8,7 @@ it('a committed eligible result updates the active screen status',async()=>{
  seedDodgePlacement(window.localStorage,1);const core=createCore(),repository={saveCompletedAttempt:vi.fn().mockResolvedValue({status:'saved'}),close:vi.fn()};let options;
  const navigation=mountNavigation({root,core,attemptRepository:repository,loadPreview:async()=>({mountPreview:(_container,value)=>{options=value;return {dispose:vi.fn()};}})});
  await Promise.resolve();await Promise.resolve();
- while(options.session.snapshot().state==='countdown')options.session.update(.1);
+ options.session.start();
  let id=0;
  for(let frame=0;frame<600;frame++){
   const before=options.session.snapshot().elapsed;options.session.update(.1);const dt=options.session.snapshot().elapsed-before;

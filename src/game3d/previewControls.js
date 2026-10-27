@@ -9,7 +9,7 @@ export function attachPreviewControls({container,renderer,camera,character,rende
   const document=container.ownerDocument, window=document.defaultView, canvas=renderer.domElement;
   const world=!['precision','reflex'].includes(exercise?.kind),dodge=Boolean(exercise)&&!['precision','reflex','kiting'].includes(exercise.kind);
   const arena=dodge?DODGE_ARENA:ARENA,viewConfig=dodge?DODGE_CAMERA:CAMERA;
-  const movement=createMovement(dodge?{arena,speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController(dodge?{arena,followSmoothing:.035,zoomLimits:DODGE_ZOOM}:{arena});
+  const movement=createMovement(dodge?{arena,speed:exercise.snapshot().playerSpeed??DODGE_MOVEMENT_SPEED}:exercise?.kind==='kiting'?{speed:exercise.snapshot().config?.playerSpeed??KITING_MOVEMENT_SPEED}:{}), controller=createCameraController(dodge?{arena,initialZoom:DODGE_ZOOM.initial,followSmoothing:.035,zoomLimits:DODGE_ZOOM}:{arena});
   const raycaster=new THREE.Raycaster(), plane=new THREE.Plane(new THREE.Vector3(0,1,0),-ARENA.groundY);
   const cursor=new THREE.Vector2(), point=new THREE.Vector3();
   let disposed=false, frame=null, last=null, pan={x:0,z:0},flashRemaining=0,dashRemaining=0,pointerKnown=false;
@@ -28,9 +28,9 @@ export function attachPreviewControls({container,renderer,camera,character,rende
     character.setPose(snapshot.position,combat?.phase==='windup'?Math.atan2(combat.target.position.x-snapshot.position.x,combat.target.position.z-snapshot.position.z):snapshot.angle);
     if(!updateView)return;
     const center=controller.update(snapshot.position,running()?pan:{x:0,z:0},viewDelta,preferences), view=controller.snapshot();
-    const fit=Math.max(1,1/camera.aspect);
+    const fit=Math.max(1,1/camera.aspect),framing=dodge&&session?.snapshot().state==='idle'?1.7:view.zoom;
     const precision=exercise?.kind==='precision';
-    camera.position.set(precision?0:center.x+viewConfig.x*view.zoom*fit,precision?34:viewConfig.y*view.zoom*fit,precision ? .001 : center.z+viewConfig.z*view.zoom*fit);
+    camera.position.set(precision?0:center.x+viewConfig.x*framing*fit,precision?34:viewConfig.y*framing*fit,precision ? .001 : center.z+viewConfig.z*framing*fit);
     camera.lookAt(precision?0:center.x,0,precision?0:center.z);camera.updateMatrixWorld();
     const abilityText=`${bindings.flashKey.replace('Key','')} · Flash ${flashRemaining>0?Math.ceil(flashRemaining)+'s':'pronto'}${dodge?`   /   ${bindings.dashKey.replace('Key','')} · Dash ${dashRemaining>0?Math.ceil(dashRemaining)+'s':'pronto'}`:''}   /   ${bindings.stopKey.replace('Key','')} · Parar`;
     if(ability.textContent!==abilityText)ability.textContent=abilityText;

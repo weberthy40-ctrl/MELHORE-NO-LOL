@@ -5,7 +5,7 @@ import { readonlySnapshot } from '../training/snapshot.js';
 export const DODGE_PLACEMENT_KEY='moba-training:dodge-placement:v1';
 export function validateDodgePlacement(value){
  const result=calculateDodgeGuidedAssessment(value?.results);
- if(value?.version!==1||![DODGE_RULESET,'dodge-v8'].includes(value.rulesetVersion)||result.status!=='recommended'||!Number.isInteger(value.level)||value.level<1||value.level>MAX_DODGE_LEVEL||!Number.isFinite(Date.parse(value.assessedAt))||(value.lastAdvancedAttempt!=null&&(typeof value.lastAdvancedAttempt!=='string'||value.lastAdvancedAttempt.length>200)))throw new TypeError('Avaliação de esquiva incompatível.');
+ if(value?.version!==1||![DODGE_RULESET,'dodge-v9','dodge-v8'].includes(value.rulesetVersion)||result.status!=='recommended'||!Number.isInteger(value.level)||value.level<1||value.level>MAX_DODGE_LEVEL||!Number.isFinite(Date.parse(value.assessedAt))||(value.lastAdvancedAttempt!=null&&(typeof value.lastAdvancedAttempt!=='string'||value.lastAdvancedAttempt.length>200)))throw new TypeError('Avaliação de esquiva incompatível.');
  return readonlySnapshot({version:1,rulesetVersion:DODGE_RULESET,level:value.level,assessedAt:value.assessedAt,results:value.results,lastAdvancedAttempt:value.lastAdvancedAttempt??null});
 }
 export function readDodgePlacement(storage){try{return validateDodgePlacement(JSON.parse(storage?.getItem(DODGE_PLACEMENT_KEY)));}catch{return null;}}

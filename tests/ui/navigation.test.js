@@ -38,9 +38,9 @@ describe('navigation', () => {
   });
 });
 for(const [mode,lives]of [['normal',3],['survival',1]])it(`puts replay and menu inside the central result after ${mode} defeat`,async()=>{
- let frame;const loadPreview=async()=>({mountPreview(_stage,options){frame=options;return {dispose(){}};}});
+ let frame;const loadPreview=async()=>({mountPreview(_stage,options){_stage.dataset.visuals='ready';frame=options;return {dispose(){}};}});
  if(mode==='normal')seedDodgePlacement(window.localStorage,5);const {root,core}=mount(loadPreview);go(`/play/dodge/${mode}/5`);await Promise.resolve();await Promise.resolve();
- const lose=()=>{const {session,onStep,onTick}=frame;for(let i=0;i<31;i++)session.update(.1);
+ const lose=()=>{root.querySelector('.arena-ready button').disabled=false;root.querySelector('.arena-ready button').click();const {session,onStep,onTick}=frame;for(let i=0;i<31;i++)session.update(.1);
   for(let hit=1;hit<=lives;hit++){for(let i=0;i<10;i++){session.update(.1);onStep(.1,{x:0,z:0},{x:0,z:0});}const event={attemptId:session.snapshot().id,id:`projectile-${hit}`,variant:'fast'};core.events.emit('dodge:spawn',event);core.events.emit('dodge:impact',event);onStep(0,{x:0,z:0},{x:0,z:0});onTick();}
  };
  lose();const dialog=root.querySelector('dialog.result-metrics'),actions=dialog.querySelector('.result-actions');expect(dialog.open).toBe(true);expect(dialog.textContent).toContain('Derrota');expect(root.querySelector('.session-hud').hidden).toBe(true);

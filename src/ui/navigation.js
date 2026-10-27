@@ -1,3 +1,4 @@
+import { mountDodgeReady } from './dodgeReady.js';
 import { mountArenaInputGuard } from '../game3d/arenaInputGuard.js';
 import { readDodgePlacement,advanceDodgePlacement } from '../progression/dodgePlacement.js';
 import { createDodgeReplay } from '../training/dodge/replay.js';
@@ -53,21 +54,21 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   let exercise;
   let rules;
   let telemetry;
-  let stopArenaContext;
+  let stopArenaContext,readyPanel;
   let dodgeRecording,dodgeReview,stopDodgeRecording;
   let cleanupScreen = () => {};
   function skipContent(event) { event.preventDefault(); host.querySelector('h1')?.focus(); }
   function render(focus = true) {
     const renderRevision = ++revision;audio.stopAll();stopArenaContext?.();stopArenaContext=undefined;
     dodgeReview?.dispose();dodgeReview=undefined;stopDodgeRecording?.();stopDodgeRecording=undefined;dodgeRecording?.clear();dodgeRecording=undefined;
-    preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
+    readyPanel?.dispose();readyPanel=undefined;preview?.dispose(); preview = undefined; cleanupScreen(); cleanupScreen = () => {}; rules?.dispose(); rules=undefined; telemetry?.dispose();telemetry=undefined; session?.dispose(); session = undefined; exercise?.dispose(); exercise = undefined;
     let route = resolveRoute(window.location.hash);const dodgePlacement=readDodgePlacement(preferencesStorage);
     if(route.mode==='normal'){route=dodgePlacement?{...route,level:dodgePlacement.level,path:`/play/dodge/normal/${dodgePlacement.level}`}:{path:'/assessment/dodge'};if(window.location.hash!==`#${route.path}`)window.history.replaceState(null,'',`#${route.path}`);}
     const isDodge = Boolean(route.mode);
     const screen = createScreen(document, route,{dodgePlacement});
     const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
-    screen.classList.toggle('training-screen',training);screen.classList.toggle('profile-screen',route.path==='/profile');
+    screen.classList.toggle('training-screen',training);screen.classList.toggle('dodge-screen',isDodge||route.path==='/assessment/dodge');screen.classList.toggle('profile-screen',route.path==='/profile');
     host.replaceChildren(screen);
     if(training)stopArenaContext=mountArenaInputGuard(screen);
     for (const item of nav.children) {
@@ -92,17 +93,17 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     }
     let updateSession = () => {};
     if (route.path === '/demo' || isDodge) {
-      session = createSession({events:core.events,timeLimit:null,metadata:{type:route.mode??(isDodge?'dodge-technical':'demonstration'),level:route.level??1}});
+      session = createSession({countdown:isDodge?0:3,events:core.events,timeLimit:null,metadata:{type:route.mode??(isDodge?'dodge-technical':'demonstration'),level:route.level??1}});
       if(route.mode)rules=createDodgeMode({session,mode:route.mode,level:route.level,events:core.events});
       if(route.mode){telemetry=createDodgeTelemetry({session,mode:route.mode,level:route.level,events:core.events});dodgeRecording=createDodgeReplay();stopDodgeRecording=core.events.on('dodge:damage',event=>{if(event.attemptId===session.snapshot().id)dodgeRecording?.mark({time:session.snapshot().elapsed,variant:event.variant??'fast',id:event.attackId});});}
       if(isDodge)exercise=createTechnicalDodge({level:route.level??1,attemptId:session.snapshot().id,mode:route.mode??'technical',isRunning:()=>session?.snapshot().state==='running',canSpawn:()=>true,getVitals:()=>({lives:rules?.snapshot().lives??null,maxLives:rules?.snapshot().initialLives??null}),events:core.events,rng:createRandom(window.crypto.getRandomValues(new Uint32Array(1))[0])});
       const hud = element(document,'div','session-hud');
-      const status = element(document,'p','',''); status.setAttribute('aria-live','off');
+      const status = element(document,'p','session-status',''); status.setAttribute('aria-live','off');
       const pause = element(document,'button','button','Pausar');pause.type='button';
-      const exit = link(document,'Sair / abandonar','/','button');
-      const analyze=element(document,'button','button','Encerrar e analisar');analyze.type='button';analyze.hidden=!rules;analyze.addEventListener('click',()=>{rules?.complete();telemetry?.step(0);updateSession();});
-      pause.addEventListener('click',()=>{if(session?.snapshot().state==='paused')session.resume();else session?.pause();});
-      updateSession = () => {if(!session)return; const s=session.snapshot();status.textContent=s.state==='countdown'?`Começar em ${Math.ceil(s.countdown-s.preparation)}`:`${s.state==='paused'?'Pausado':s.state==='completed'?'Concluído':s.state==='abandoned'?'Abandonado':'Em execução'} · ${s.elapsed.toFixed(1)} s`;pause.textContent=s.state==='paused'?'Retomar':'Pausar';};
+      const exit = link(document,'Sair / abandonar','/','button dodge-exit');
+      const analyze=element(document,'button','button dodge-analyze','Encerrar e analisar');analyze.type='button';analyze.hidden=!rules;analyze.addEventListener('click',()=>{rules?.complete();telemetry?.step(0);updateSession();});
+      pause.addEventListener('click',()=>{if(session?.snapshot().state==='paused'){session.resume();screen.querySelector('.stage canvas')?.focus({preventScroll:true});}else session?.pause();});
+      updateSession = () => {if(!session)return; const s=session.snapshot();status.textContent=s.state==='countdown'?`Começar em ${Math.ceil(s.countdown-s.preparation)}`:`${s.state==='paused'?'Pausado':s.state==='completed'?'Concluído':s.state==='abandoned'?'Abandonado':s.state==='idle'?'Pronto para iniciar':'Em execução'} · ${s.elapsed.toFixed(1)} s`;pause.textContent=s.state==='paused'?'Retomar':'Pausar';pause.disabled=s.state==='idle';analyze.disabled=s.state==='idle';};
       const diagnostics=element(document,'p','status-note','');
       const updateClock=updateSession;updateSession=()=>{updateClock();if(exercise){const s=exercise.snapshot();diagnostics.textContent=`Diagnóstico em memória: ${s.shots} disparos · ${s.impacts} impactos`;}};
       const replay=element(document,'button','button primary','Jogar novamente');replay.type='button';replay.hidden=true;replay.addEventListener('click',()=>render());
@@ -132,7 +133,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
         outcome.textContent=current.outcome?`${current.outcome==='victory'?'Vitória':current.outcome==='defeat'?'Derrota':current.outcome==='error'?'Treino interrompido por erro':'Abandonado'} · ${current.elapsed.toFixed(1)} s · ${current.lives} vidas restantes`:'';
       };
       hud.append(status,pause,analyze,exit,diagnostics,replay,outcome);screen.insertBefore(hud,screen.querySelector('.stage'));screen.append(resultMetrics);
-      const unsubscribe=core.events.on('session:changed',updateSession);cleanupScreen=()=>{unsubscribe();if(resultMetrics.open)resultMetrics.close?.();};session.start();updateSession();
+      const unsubscribe=core.events.on('session:changed',updateSession);cleanupScreen=()=>{unsubscribe();if(resultMetrics.open)resultMetrics.close?.();};if(isDodge)readyPanel=mountDodgeReady({screen,stage:screen.querySelector('.stage'),session,title:`${route.mode==='normal'?'Normal':'Sobrevivência'} · Nível ${route.level}`,onStart:()=>updateSession()});else session.start();updateSession();
     }
     if (['/preview','/demo'].includes(route.path)||isDodge) loadPreview().then(({ mountPreview }) => {
       if (!active || revision !== renderRevision) return;
@@ -149,7 +150,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   render(false);
   return { dispose() {
     if (!active) return;
-    active = false; revision++;stopArenaContext?.();dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
+    active = false; revision++;readyPanel?.dispose();stopArenaContext?.();dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
     stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
   } };
 }

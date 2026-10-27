@@ -58,7 +58,7 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
   } else if(route.path==='/assessment/precision'){
     title='Avaliação guiada — Precisão de Clique';description='Três amostras de 20 segundos, separadas dos treinos oficiais.';
   } else if(route.path==='/assessment/dodge'){
-    title='Avaliação guiada — Esquiva';description='Três amostras reais. Diagnóstico separado dos treinos oficiais.';
+    title='Avaliação guiada — Esquiva';description='Cinco etapas adaptativas. Sua dificuldade é ajustada pelo desempenho observado.';
   } else if (route.path.endsWith('/reflex')) {
     title=({'/history/reflex':'Histórico de Reflexos','/records/reflex':'Recordes de Reflexos','/evolution/reflex':'Evolução de Reflexos','/achievements/reflex':'Conquistas de Reflexos'})[route.path]??title;description='Tentativas oficiais deste dispositivo, por exercício e dificuldade.';
   } else if (route.path.endsWith('/kiting')) {
@@ -103,7 +103,10 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
   if (route.modality === 'dodge' && !route.mode) {
     const modes=element(document,'div','mode-grid'),normal=element(document,'section','mode-card'),survival=element(document,'section','mode-card');
     normal.append(element(document,'span','eyebrow','SEU PERCURSO'),element(document,'h2','','Normal'),element(document,'p','muted',dodgePlacement?`Nível atual: ${dodgePlacement.level}/${MAX_DODGE_LEVEL} · 3 vidas · tempo ilimitado`:'Faça a avaliação para começar no nível indicado para você.'),link(document,dodgePlacement?`Continuar no nível ${dodgePlacement.level} →`:'Descobrir minha habilidade →',dodgePlacement?'/play/dodge/normal':'/assessment/dodge','button primary'));
-    if(dodgePlacement)normal.append(link(document,'Refazer avaliação','/assessment/dodge'));
+    if(dodgePlacement){
+      normal.append(link(document,'Refazer avaliação','/assessment/dodge'));const details=element(document,'details','placement-evidence');details.append(element(document,'summary','','Ver minha avaliação'),element(document,'p','muted','Estas etapas definiram seu ponto de partida. O nível atual também acompanha sua evolução nos treinos.'));
+      const list=element(document,'ol');for(const result of dodgePlacement.results)list.append(element(document,'li','',`Nível ${result.level} · ${result.activeSeconds.toFixed(1)} s · ${result.verifiedDodges} esquivas · ${result.hits} impactos`));details.append(list);normal.append(details);
+    }
     survival.append(element(document,'span','eyebrow','ESCOLHA SEU DESAFIO'),element(document,'h2','','Sobrevivência'),element(document,'p','muted','Uma vida, tempo ilimitado. Escolha qualquer nível para jogar.' ));
     const label=element(document,'label','','Nível '),select=element(document,'select');select.setAttribute('aria-label','Nível da Sobrevivência');
     for(let n=1;n<=MAX_DODGE_LEVEL;n++){const option=element(document,'option','',`${n} · ${n<=5?'Fundamentos':n<=10?'Intermediário':n<=15?'Avançado':'Elite'}`);option.value=String(n);select.append(option);}select.value=String(route.level??1);label.append(select);

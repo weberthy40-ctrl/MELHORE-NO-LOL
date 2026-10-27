@@ -2,11 +2,11 @@ import { MAX_DODGE_LEVEL,DODGE_RULESET } from './constants.js';
 import { VARIANTS } from './projectiles.js';
 import { DODGE_MOVEMENT_SPEED } from '../movement.js';
 const stages=[
- {level:1,interval:.95,capacity:3,combo:0,peak:5},
- {level:5,interval:.58,capacity:5,combo:.12,peak:3.8},
- {level:10,interval:.30,capacity:8,combo:.55,peak:1.9},
- {level:15,interval:.18,capacity:12,combo:.85,peak:1.1},
- {level:20,interval:.12,capacity:16,combo:1,peak:.7},
+ {level:1,interval:.88,capacity:3,combo:0,peak:5},
+ {level:5,interval:.54,capacity:5,combo:.12,peak:3.8},
+ {level:10,interval:.27,capacity:8,combo:.55,peak:1.9},
+ {level:15,interval:.165,capacity:12,combo:.85,peak:1.1},
+ {level:20,interval:.11,capacity:16,combo:1,peak:.7},
 ];
 const fullWeights={arcane_bolt:2,heavy_lance:1.2,needle_burst:1.5,dark_orb:1.4,artillery:1.1,flame_circle:1,sun_beam:.9,cage:.55,meteor_rain:.8};
 export const DIFFICULTIES=Object.freeze(Array.from({length:MAX_DODGE_LEVEL},(_,index)=>{

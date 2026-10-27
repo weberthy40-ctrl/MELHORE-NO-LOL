@@ -1,4 +1,4 @@
-> Calibração atual: rc.13 / `dodge-v9`, vinte níveis e patentes. Consulte [PLAYER_FEEDBACK_RC13.md](PLAYER_FEEDBACK_RC13.md). Os números históricos abaixo não substituem a configuração atual.
+> Calibração atual: rc.14 / `dodge-v10`, vinte níveis e patentes. Consulte [PLAYER_FEEDBACK_RC14.md](PLAYER_FEEDBACK_RC14.md). Os números históricos abaixo não substituem a configuração atual.
 
 > Atualização rc.11: as alterações de velocidade, gaiola, modos e nota estão em [PLAYER_FEEDBACK_RC11.md](PLAYER_FEEDBACK_RC11.md). Os valores abaixo descrevem a rc.10, não a calibração atual.
 
