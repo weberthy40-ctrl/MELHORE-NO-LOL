@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "seed_sha": "25acaf93dc86aa8c136e9e41b9e75cac8f205c30",
+  "evolution_branch": "rift-lab/evolution",
+  "max_monthly_rounds": 10,
+  "monthly_budget_usd": 20,
+  "estimated_round_usd": 4,
+  "max_patch_bytes": 12000,
+  "max_file_bytes": 1000000,
+  "max_changed_files": 30,
+  "max_cycles": 1,
+  "max_correction_attempts": 3,
+  "model": "",
+  "codex_version": "0.165.0"
+}

@@ -1,15 +1,15 @@
 # Registro de evolução
 
-## Checkpoint operacional — candidata de jornada M001/E010
+## Checkpoint operacional — E012 infraestrutura recorrente preparada
 
-- Mandato de produto adotado em 28/10/2026. Corte entregue: entrada com percurso claro, consulta das três avaliações na sessão e briefing de mobilidade com teclas reais. Não é conclusão de toda a ambição premium nem nova mecânica.
-- Branch `rift-lab/product-journey`, base HEAD `e221ae62d57d39ae69e8b1f512e540d709cc5d23`. Commit de entrega: o commit que contém este checkpoint; consultar `git log -1 --format=%H`. O snapshot inclui trabalho anterior inventariado, não atribuído a este marco. Sem push/PR/merge/deploy.
-- Base de recuperação: `/workspace/.cache/rift-mandate-20261028/baseline.tar.gz`+baseline.json,32 hashes verificados. Não extrair sobre trabalho posterior sem comparar. Pacote fonte previsto: `/workspace/rift-lab-training-journey.zip`.
-- Últimos gates:304 testes/59 arquivos, lint/build e audit0 APROVADOS. Seis suítes nativas APROVADAS em delivery-final; após ajuste isolado de camada/rolagem da preparação, lint/build e test:dodge no previewprodução APROVADOS. Smoke geral de produção APROVADO, saída 0, três presets e zero avisos do modo removido; evidências na tabela ao fim.
-- Revisão independente de lógica/UX sem bloqueios, capturas1366/390 e preparação390×600 inspecionadas. Fullscreen EXCLUÍDO na bateria headless; Windows/GPU/áudio/DPI físicos e calibração NÃO EXECUTADOS. Bundle 3D 714,70 kB mantém aviso. CI remota sem nova execução comprovada (consulta anteriorForbidden).
-- SEM AGENDAMENTO AUTÔNOMO: catálogo verificado novamente sem Goals/Automations/agendamento. Há autoprompts/skill/checkpoint e subagentes, sem daemon/promessa de execução após encerrar.
-- Próximo ciclo selecionado: E011, série técnica de saída lateral de feixe, com fluxo jogável próprio e isolamento da gravação oficial; contrato de retomada ao fim. Conferir Git, arquivo de recuperação e adquirir trava antes de editar; não iniciar sessão concorrente.
-- Trava `mandate-20261028` liberada no fechamento após conferir proprietário; nova execução deve adquirir sua própria trava. Nenhuma dependência, lockfile, persistência ou publicação alterada neste mandato.
+- Produto preservado no seed `25acaf93dc86aa8c136e9e41b9e75cac8f205c30`, enviado e conferido em `origin/rift-lab/product-journey`. Marco M001/E010 não foi reimplementado; E011 continua próximo corte de produto.
+- Branch de trabalho `rift-lab/recurring-qa` (checkpoint local). Infraestrutura isolada enviada em `origin/rift-lab/autoevolution-infra`, derivada de `origin/main` e contendo somente18arquivos novos de workflow/controladores/docs. Main permanece `e221ae62d57d39ae69e8b1f512e540d709cc5d23`. Não houve merge ou deploy.
+- Abertura de PR pelo gh falhou com Forbidden. Link pronto: https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/compare/main...rift-lab/autoevolution-infra?expand=1 . Não abrir PR da branch de produto para instalar somente a infraestrutura.
+- Implementado: schedule09America/Sao_Paulo+dispatchdryrun/live; seed/continuidade, prompt e orçamento protegidos; agente/revisor semGitwrite, QAsemchave soboutroUID, coletorsemseguirlinks e publisher confiável exclusivo evolution. Detalhes normativos em docs/AUTOMATION.md.
+- Validação local atual:49 testes Python + 3 testes Node de controles/admissão, YAML/shell, ausência de chave negativa; controladorQA completo com npmciignore-scripts,304unit/59arquivos,lint/build/audit0,seisbrowser+produçãosmoke APROVADOS. Simulações Git usam remotesbarelocais; não são API/modeloremoto.
+- Pendentes externas: PR/merge inicial, confirmar/adicionar ActionsSecretOPENAI_API_KEY e faturamento/alertas API+GitHub, enablevariable eprimeirodryrun/live/agendado. Segredo remoto NÃO VERIFICADO; execuçãoremota eagenda NÃO COMPROVADAS. SEM AGENDAMENTO ATIVO nesta entrega.
+- Não chamar APIs pagas nem ativar modelo comcredenciais novas nesta sessão. A implantação não altera CI/Pages/produto/lockfile. O merge humano da infraestrutura dispara o Pages existente conforme seus gatilhos, sem mudanças de produto neste PR.
+- Trava recurrence-20261028 liberada no fechamento após conferir proprietário. Próximaexecução: conferir estado remoto e ativação pelos resultados reais; depois retomar E011 na branch evolution pelo master, sem novos prompts de produto.
 
 
 Execução inicial: 27/10/2026. Base: rc.14, Fases 1/2 com alterações locais ainda não commitadas. Sem push, merge, deploy ou serviço externo. Método: [skill](../.agents/skills/rift-lab-evolution/SKILL.md); visão/backlog: [EVOLUTION.md](EVOLUTION.md).
@@ -277,3 +277,44 @@ E010 foi encerrado com guarda de dispose (1rodada) e layout com faixa reservada 
 
 
 **Fechamento verificado:** smoke de produção final APROVADO; revisão independente de capturas/código sem bloqueios para aceitação humana deste corte. Os dois ciclos E004/E009 (M001) e E010 foram implementados e validados; E011 permanece próximo corte, não funcionalidade entregue. SEM AGENDAMENTO AUTÔNOMO. Snapshot local inclui as fases anteriores preservadas, com inventário/reversão disponível; não houve upload, PR, merge ou publicação. Logs/capturas desta rodada copiados para `/workspace/.cache/rift-mandate-20261028/evidence/`; pacote fonte sem dependências/cache/dados de navegador em `/workspace/rift-lab-training-journey.zip`. Uso humano e próximos cortes continuam necessários para a ambição premium; não há selo comercial ou eficácia competitiva comprovada.
+
+
+## E012 — orquestração recorrente segura — contrato
+
+Pedido explícito confirmado e reforçado pelo texto colado em28/10/2026. Base25acaf9 limpa, branchrift-lab/recurring-qa; trava recurrence-20261028. Seed25acaf9 publicado com sucesso emrift-lab/product-journey; GitAPIghGraphQL retornouForbidden. Nenhuma publicação emmain/deploy.
+
+**Autoprompt:** implemente workflow diário12UTC(09America/Sao_Paulo) e dispatch dry-run/live apenas narefdefault. Controles/prompt/política versionados em.github/automation, actionoficial pinSHAverificado eCLI0.165.0, permission-profile:workspace/drop-sudo, actionúltimastepnojobchave. Agente retornaJSONpatchlimitado como output, sem permissõeswrite/credenciaischeckout. Runnerseparado valida paths/base/modos/hash e roda gates existentes sobusuáriosemprivilégio/semchaves; revisorindependente separado read-only. Publisherconfiável revalida patch e optimisticpush somente branchfixarift-lab/evolution, nuncaexecutacódigo candidato. Semautomerge/Pagesmodificado. Continuidaderecuperaúltimaevolutionaceitaou seedpinned; rejeitaalteraçõesdoscontroles,manifest/lock/scripts/instruções e arquivos especiais. Um ciclo/rodada, três correções dentrodajanela, duas invocações CLI (cada uma pode fazer várias requisições API), timeouts e orçamento porcontagemconservadora mensal; valorUSDéestimativa,nãocapfinanceirocomprovado. Gatessemsecret falhamantescall. Testesestáticos+negativos/dry-runlocal, testesproduto existentes conformeviável; não chamar APIpaga semconfiguraçãoexplícita externa. PRinfra isolado deproduto via commitbase main+somenteinfra; abrir seAPIpermitir, senão linkcompare. Documentar gatilhosdoPagesexistente ao merge e statusimplementado/enviado/secret/execução/agendamento separados. Critérios: nenhumaexecuçãogeradacomcredencialpushouAPI, controlesimutáveisparapatch,corridaabortasemforcepush, ausênciachavenão aprova,dry-runnão chamamodelo,nãoativarporcondiçãoimplícita.
+
+
+### E012 — implementação, evidências e pendências finais
+
+Integração oficial pesquisada por README/action.yml/security e SDK oficiais. SDK é wrapper da CLI e exigiria manter proxy/isolation próprios; escolhida codex-action pin c05cfd74ad95c626cdf05c6685e62becc3bf7813, com CLI e proxy0.165.0 confirmados no registro npm (SRI fornecido). Tagv1 apontava outrarevisão. Perfil:workspace/drop-sudo e:read-only/drop-sudo disponíveis no action.yml pinado. Página de modelosdevelopers.openai.com retornou403; não se inventou disponibilidade de modelo: policy usa default da CLI fixada. Nenhuma chamada ao modelo/API paga foi executada.
+
+Controladores com testes Git reais validam seed/base/ancestralidade, allowlist/modes/tamanhos, patch canônico, hashes, aprovação e publicação normal em destino fixo. Source nova é retomada da branch evolution, ou seed25acaf9. Outputs JSON limitados permitem a action ser última etapa dos jobs com chave; nenhum exportador é executado naquele host. QA em outro runner/usuário não recebe chave, token/env do runner ou.git; publisher comwrite revalida sem executar fonte. Revisor recebe patch e evidências coletadas. Limitesexternos são timeouts, invocações de CLI e rodadas/tamanho/paths; ciclo/correções são contrato semântico verificado por revisão. USD é estimativa de admissão, não hardcapfinanceiro. Instalação/alertas precisamserconfigurados pelo proprietário uma vez.
+
+Falhas/achados tratados sem enfraquecer checks: lint inicial apontou URLglobal não definido nos.mjs; correção importou URL de node:url sem desabilitarregra. Revisão independente detectou coleta cp-a permitindo linkspara arquivos do runner; coletor novo comopenat/O_NOFOLLOW,fstat,hardlink/mode/size/count/depthlimites e testes de corrida fechaessecaminho. Download das evidências ao revisor foi confirmado. Master ganhou receita no-index para arquivosnovos, pois.git pode serread-only no sandbox. Textos livres do modelo deixam stdout para não virarem comandoslegados do runner. Publicador ganhou helper/testes próprios; fixtures iniciais comHEADbare master foram corrigidas nos testes. O agente principal identificou bypassde rerunparcial reutilizando admissãoprévia; guardsde github.run_attempt1 foram acrescentadas a implement/verify/review/publish, com regressãoestática. Revisor independente confirmou correção. Nenhuma chave foi exposta/testada; nenhumaexecuçãoremota inventada.
+
+| Check desta tarefa | Resultado |
+| --- | --- |
+| 49 testes Python de patch/coleta/publicação/workflow | APROVADOS. Remotes bare locais cobrem duas rodadas, main intacta, stale base/corrida, hooks/fsmonitor inertes, paths/modos/links/hash e falta de chave. |
+| 3 testes Node de admissão | APROVADOS: disabled/dry-run, tetos, defaults seguros, histórico incompleto/403 e rerun/ref inválidos. |
+| YAML com PyYAML disponível; bash-n | APROVADOS localmente. Não substituem parsing/execução real do GitHub. Nenhuma dependência do produto foi adicionada. |
+| dry-run local | APROVADO como probe sem modelo; model_calledfalse. |
+| live sem chave (RIFT_KEY_PRESENTfalse) | FALHA ESPERADA, saída2 antes de qualquer modelo. Não é uma chamada real de API. |
+| CHROME_BINchromium bash.github/automation/qa.sh checkout atual /tmp/rift-recurrence-qa | APROVADO, saída0: npmciignore-scripts,304testes/59arquivos,lint,build119módulos,audit0,seis suítes e smokeprodução. Execução local como usuário desta sessão, não comprova UID/sandbox do GitHub. |
+| Fullscreen/headless | EXCLUÍDO COM JUSTIFICATIVA; interação/retorno da API em hardware não aprovados. |
+| Modelo, chaveAPI real, isolamentoUID/proxy/GHA e reviewCodexremoto | NÃO EXECUTADOS. Exigem configuração externa e evidência do primeiro workflow. |
+| Gitpush seed e infra | APROVADOS com refs remotas conferidas; sem pushmain/merge/deploy. |
+| PR via gh/API | FALHOU Forbidden. Comparelink entregue para abertura/merge humano único. |
+| Schedule | NÃO COMPROVADO/nãoativo: arquivo ainda não está na branch padrão. |
+
+Revisão independente final não encontrou bloqueios estruturais remanescentes, inclusive coletor/publisher/guardsrerun. Produto, persistência, package/lock, scripts existentes, CI e Pages sem diff nesta tarefa. Os totais finais são 49 testes Python e 3 testes Node de admissão, separados dos 304 testes do produto. Evidências locais em /tmp/rift-recurrence*.log e /tmp/rift-recurrence-qa, arquivadas fora do checkout em /workspace/.cache/rift-recurrence-20261028.
+
+Arquivos novos da infraestrutura: .github/workflows/rift-lab-autoevolution.yml; .github/automation/{.gitignore,policy.json,master.md,review.md,candidate.schema.json,review.schema.json,preflight.mjs,control.py,collect.py,publish.py,qa.sh,tests/check_preflight.mjs,tests/test_control.py,tests/test_collect.py,tests/test_publish.py,tests/test_workflow.py}; docs/AUTOMATION.md. Este registro é atualizado apenas na branch de checkpoint, mantendo o PR de infraestrutura separado do produto.
+
+
+Extensibilidade do QA: o controlador aceita até5cenários nativos adicionais em tests/browser/*.mjs,90s por cenário, somente sob o usuário QA sem chaves, com URL de produção/CDP e pasta de capturas. Assim uma tela/modo novo pode trazer prova visual sem alterar scripts protegidos. Três testes locais do protocolo (fixtures Node sem browser) cobrem argumentos/artefatos, limite antesde execução e propagação de falha. Eles não são evidência de um modo novo nem execução de API. Total final desta execução: 49 testes Python e 3 testes Node de admissão, além dos304testes do produto.
+
+Coletor confiável também foi exercitado com as evidências reais desta rodada, copiando-as para o arquivo local de recuperação sem seguir links; essa verificação não é uma execução remota ou de modelo.
+
+Revisão independente final da extensão de cenários nativos: sem bloqueios;10 testes de estrutura/protocolo e bash-n reexecutados pelo revisor e aprovados. Infraestrutura final publicada em `2ef78d912e5871574932004a6f08326be736a333`, na branch `rift-lab/autoevolution-infra`; nenhuma execução remota do orquestrador é alegada.
