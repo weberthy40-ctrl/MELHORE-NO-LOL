@@ -1,3 +1,4 @@
+import { mountDodgeDrill } from './dodgeDrillScreen.js';
 import { createAssessmentMemory } from './assessmentMemory.js';
 import { mountDodgeReady } from './dodgeReady.js';
 import { mountArenaInputGuard } from '../game3d/arenaInputGuard.js';
@@ -68,9 +69,9 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     if(route.mode==='normal'){route=dodgePlacement?{...route,level:dodgePlacement.level,path:`/play/dodge/normal/${dodgePlacement.level}`}:{path:'/assessment/dodge'};if(window.location.hash!==`#${route.path}`)window.history.replaceState(null,'',`#${route.path}`);}
     const isDodge = Boolean(route.mode);
     const screen = createScreen(document, route,{dodgePlacement});
-    const training=/^\/(play|practice|timed|assessment|dodge-tech|demo|preview)(\/|$)/.test(route.path);
+    const training=/^\/(play|practice|timed|assessment|drill|dodge-tech|demo|preview)(\/|$)/.test(route.path);
     shell.classList.toggle('is-training',training);shell.dataset.session='idle';
-    screen.classList.toggle('training-screen',training);screen.classList.toggle('dodge-screen',isDodge||route.path==='/assessment/dodge');screen.classList.toggle('profile-screen',route.path==='/profile');
+    screen.classList.toggle('training-screen',training);screen.classList.toggle('dodge-screen',isDodge||route.path==='/assessment/dodge'||route.path==='/drill/dodge/sidestep');screen.classList.toggle('profile-screen',route.path==='/profile');
     host.replaceChildren(screen);
     if(training)stopArenaContext=mountArenaInputGuard(screen);
     for (const item of nav.children) {
@@ -79,6 +80,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     }
     const heading = screen.querySelector('h1'); heading.tabIndex = -1; if (focus) heading.focus();
     core.events.emit('navigation:changed', Object.freeze(route));
+    if(route.path==='/drill/dodge/sidestep'){const drill=mountDodgeDrill({screen,core,loadPreview});cleanupScreen=()=>drill.dispose();}
     if(route.path==='/dpi'){const mouse=mountMouseTools(screen);cleanupScreen=()=>mouse.dispose();}
     if (route.path === '/settings'){mountSettings(screen);mountPreferences(screen,{onChange:p=>audio.setPreferences(p)});const backup=mountBackup({screen,repository});cleanupScreen=()=>backup.dispose();}
     if(route.path==='/practice/reflex'||route.path.startsWith('/timed/reflex')){const training=mountReflex({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/reflex'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}

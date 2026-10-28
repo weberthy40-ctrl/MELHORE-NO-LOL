@@ -12,6 +12,7 @@ export const NAVIGATION = Object.freeze([
 export function resolveRoute(hash = '') {
   const path = hash.replace(/^#/, '') || '/';
   if (NAVIGATION.some(([route]) => route === path) || ['/preview','/demo','/history/dodge','/records/dodge','/evolution/dodge','/achievements/dodge','/assessment/dodge','/assessment/kiting','/history/kiting','/records/kiting','/evolution/kiting','/achievements/kiting','/assessment/reflex','/history/reflex','/records/reflex','/evolution/reflex','/achievements/reflex','/practice/reflex','/timed/reflex','/practice/kiting','/timed/kiting','/practice/precision','/timed/precision','/assessment/precision','/history/precision','/records/precision','/evolution/precision','/achievements/precision'].includes(path)) return { path };
+  if(path==='/drill/dodge/sidestep')return {path};
   if(path==='/train/dodge')return {path,modality:'dodge',level:1};
   if(path==='/play/dodge/normal')return {path,modality:'dodge',mode:'normal',level:null};
   if(/^\/(practice\/dodge|dodge-tech)(\/|$)/.test(path))return {path:'/train/dodge',modality:'dodge',level:1};

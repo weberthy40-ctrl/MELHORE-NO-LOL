@@ -7,7 +7,7 @@ export function mountDodgeReplayReview({container,recording,loadPreview=()=>impo
  const button=element(doc,'button','button replay-open','Rever últimos 6 s'),panel=element(doc,'section','replay-review');
  button.type='button';button.disabled=frames.length<2;panel.hidden=true;container.prepend(button);container.append(panel);
  const dialog=container.closest('dialog'),top=Object.entries(recording.counts).sort((a,b)=>b[1]-a[1])[0];
- let drill,tip;
+ let drill,tip,beamPractice;
  if(top){
   drill=link(doc,'Repetir nível na Sobrevivência',`/play/dodge/survival/${frames.at(-1)?.snapshot.level??1}`,'button focus-recommendation');container.insertBefore(drill,button.nextSibling);
   tip=element(doc,'p','status-note',tips[top[0]]??'Observe a conjuração e mude a direção antes da chegada da habilidade.');container.append(tip);
@@ -35,6 +35,7 @@ export function mountDodgeReplayReview({container,recording,loadPreview=()=>impo
  }
  panel.insertBefore(timeline,controls);
  panel.append(element(doc,'h4','','Rever um contato'),markers.length?events:element(doc,'p','muted replay-empty','Nenhum contato registrado neste trecho.'));
+ if(markers.some(marker=>marker.variant==='sun_beam')){beamPractice=link(doc,'Praticar saída lateral · 45 s','/drill/dodge/sidestep','button beam-practice-link');panel.append(beamPractice);}
  function selectEvent(selected){for(const event of eventButtons)event.setAttribute('aria-pressed',String(event===selected));}
  function stop(){playing=false;last=null;if(frameId!==null)win.cancelAnimationFrame(frameId);frameId=null;play.textContent='Reproduzir';}
  function present(next){index=Math.max(0,Math.min(frames.length-1,next));const frame=frames[index];if(!frame)return;slider.value=String(index);status.textContent=`${frame.time.toFixed(2)} s da tentativa · ${(frame.time-start).toFixed(2)} / ${(end-start).toFixed(2)} s de revisão`;preview?.presentFrame?.(frame);}
@@ -52,5 +53,5 @@ export function mountDodgeReplayReview({container,recording,loadPreview=()=>impo
    preview=mountPreview(stage,{controls:false,fullscreenControls:false,exercise:{kind:'dodge',snapshot:()=>frames[index].snapshot},onError:()=>{if(current()){error.textContent='Revisão 3D indisponível neste navegador.';error.hidden=false;}}});present(index);
   }catch{if(current()){error.textContent='Não foi possível abrir a revisão.';error.hidden=false;}}
  });
- return {dispose(){if(!active)return;active=false;generation++;dialog?.classList.remove('reviewing');stop();preview?.dispose();button.remove();drill?.remove();tip?.remove();panel.remove();}};
+ return {dispose(){if(!active)return;active=false;generation++;dialog?.classList.remove('reviewing');stop();preview?.dispose();button.remove();drill?.remove();tip?.remove();beamPractice?.remove();panel.remove();}};
 }

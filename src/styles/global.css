@@ -390,3 +390,13 @@ h1[tabindex='-1']:focus { outline:none; }
 .arena-ready { padding-top:3.5rem; padding-bottom:.5rem; }
 .arena-ready-card { max-height:calc(100svh - 5rem); background:#101b22; }
 .training-screen:has(.arena-ready) > .fullscreen-toggle { top:.5rem; bottom:auto; z-index:4; }
+/* Série técnica: arena existente, objetivo legível e feedback sem nota. */
+.drill-goal { position:relative;z-index:1;max-width:34rem;padding:.8rem 1rem;border-left:3px solid #b1f479;background:#101b22ed;font-size:.82rem;line-height:1.6; }
+.drill-controls { position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;width:fit-content;max-width:100%;padding:.7rem;border:1px solid #b1f47944;border-radius:.6rem;background:#101b22ed; }
+.dodge-drill-status { margin:0;font-variant-numeric:tabular-nums;font-size:.8rem; }
+.dodge-drill-result:not([hidden]) { position:fixed;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);width:min(620px,calc(100% - 2rem));max-height:85svh;overflow:auto;padding:1.6rem;border:1px solid #b1f47966;border-radius:1rem;background:#101b22;box-shadow:0 0 0 100vmax #03080b99; }
+.dodge-drill-result .button { margin:.5rem .5rem 0 0; }
+.training-screen:has(.arena-ready) .drill-controls { visibility:hidden; }
+@media(max-width:600px){.drill-goal {font-size:.72rem;padding:.5rem;margin:.5rem 0;}.drill-controls {padding:.4rem;gap:.4rem;}.dodge-drill-status {width:100%;font-size:.7rem;}.drill-controls .button {padding:.5rem;min-height:44px;}}
+
+.dodge-drill .dodge-spell-legend { display:none; }

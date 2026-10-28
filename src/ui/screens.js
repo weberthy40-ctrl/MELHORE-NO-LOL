@@ -35,7 +35,9 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
   main.append(link(document, '← Voltar ao início', '/'));
   let title = 'Página não encontrada';
   let description = 'Esse endereço não corresponde a uma tela do MOBA Training.';
-  if (route.path === '/levels') {
+  if (route.path === '/drill/dodge/sidestep') {
+    title='Saída lateral do feixe';description='Série técnica de 45 segundos: leia o aviso e encontre a saída perpendicular.';
+  } else if (route.path === '/levels') {
     title = 'Todos os níveis'; description = 'Escolha uma habilidade. Na esquiva, o Normal segue sua avaliação; a Sobrevivência permite seleção livre.';
   } else if (route.path === '/diagnostics') {
     title = 'Descubra seu nível'; description = 'Uma avaliação independente para cada habilidade. Escolha uma das quatro modalidades para uma avaliação curta.';
@@ -120,7 +122,7 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
     survival.append(element(document,'span','eyebrow','ESCOLHA SEU DESAFIO'),element(document,'h2','','Sobrevivência'),element(document,'p','muted','Uma vida, tempo ilimitado. Escolha qualquer nível para jogar.' ));
     const label=element(document,'label','','Nível '),select=element(document,'select');select.setAttribute('aria-label','Nível da Sobrevivência');
     for(let n=1;n<=MAX_DODGE_LEVEL;n++){const option=element(document,'option','',`${n} · ${n<=5?'Fundamentos':n<=10?'Intermediário':n<=15?'Avançado':'Elite'}`);option.value=String(n);select.append(option);}select.value=String(route.level??1);label.append(select);
-    const play=link(document,'Jogar Sobrevivência →',`/play/dodge/survival/${select.value}`,'button primary');select.addEventListener('change',()=>{play.href=`#/play/dodge/survival/${select.value}`;});survival.append(label,play);modes.append(normal,survival);main.append(modes);
+    const play=link(document,'Jogar Sobrevivência →',`/play/dodge/survival/${select.value}`,'button primary');select.addEventListener('change',()=>{play.href=`#/play/dodge/survival/${select.value}`;});survival.append(label,play);modes.append(normal,survival);main.append(modes,link(document,'Praticar saída lateral · 45 s','/drill/dodge/sidestep','button'),element(document,'p','muted','Série técnica de feixes · não altera seu histórico ou nível Normal.'));
   }
   if (['/preview','/demo'].includes(route.path)||route.mode) {
     const stage = element(document, 'div', 'stage'); stage.setAttribute('aria-label', 'Visualização da arena 3D');

@@ -2,6 +2,8 @@
 
 ## Fontes e escopo
 
+- Mandato permanente: [issue #2](https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/issues/2). Orçamento adicional R$ 0: use a franquia/recursos existentes; não configure chaves ou ative inferência/serviços pagos sem nova autorização explícita. Não prometa retomada automática após renovação sem mecanismo suportado e comprovado.
+
 - Trabalhe no checkout atual. Cada tarefa Cloud já é isolada; não crie worktree sem pedido explícito.
 - Preserve o produto funcional. Faça mudanças pequenas dentro do pedido, sem reconstrução ou refatoração ampla incidental.
 - Siga [DEVELOPMENT_RULES.md](docs/DEVELOPMENT_RULES.md). Para comportamento vigente, consulte [CURRENT_SCOPE.md](docs/CURRENT_SCOPE.md), a revisão nele indicada e o [README](README.md).

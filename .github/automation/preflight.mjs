@@ -3,6 +3,9 @@ import {readFile} from 'node:fs/promises';
 import process from 'node:process';
 export function admission(policy, rounds, env) {
  if(!Number.isInteger(rounds)||rounds<0||!Number.isInteger(policy.max_monthly_rounds)||policy.max_monthly_rounds<1||!Number.isFinite(policy.estimated_round_usd)||policy.estimated_round_usd<=0)throw new Error("Invalid admission policy/history");
+ // Budget-zero is a trusted policy boundary, not an overridable repository variable.
+ if(env.RIFT_MODE!==undefined&&!['dry-run','live'].includes(env.RIFT_MODE))throw new Error('Unknown execution mode');
+ if(policy.paid_api_allowed!==true)return {admit:false,reason:env.RIFT_MODE==='dry-run'?'dry-run: paid API forbidden by R$0 policy':'paid API forbidden by R$0 policy',limit:0,budget:0};
  const number=(value,fallback,max)=>{const n=value===''||value===undefined?fallback:Number(value);if(!Number.isFinite(n)||n<0||n>max)throw new Error('Invalid budget configuration');return n;};
  const budget=number(env.RIFT_MONTHLY_BUDGET_USD,policy.monthly_budget_usd,1000);
  const limit=Math.min(Math.floor(number(env.RIFT_MAX_MONTHLY_ROUNDS,policy.max_monthly_rounds,policy.max_monthly_rounds)),Math.floor(budget/policy.estimated_round_usd));
@@ -34,9 +37,9 @@ export default async function preflight({github,context,core},env=process.env) {
  const result=admission(policy,rounds,env);
  for(const [key,value]of Object.entries({...result,base,seed:policy.seed_sha,model:policy.model,cli:policy.codex_version,rounds}))core.setOutput(key,String(value));
  core.notice(result.reason);
- if(!result.admit&&env.RIFT_MODE==='live'&&env.RIFT_ENABLED==='true')core.warning('No API invocation: monthly allowance exhausted. USD estimate is not a hard API spending cap.');
+ if(!result.admit&&env.RIFT_MODE==='live'&&env.RIFT_ENABLED==='true')core.warning('No API invocation: '+result.reason+'. USD estimates are not hard API spending caps.');
  await core.summary.addHeading('RIFT LAB — admission').addTable([
-  [{data:'Status',header:true},{data:'Value',header:true}],['Decision',result.reason],['Started rounds this UTC month',String(rounds)],['Allowed rounds',String(result.limit)],['Budget estimate USD',String(result.budget)],['API expenditure','Unknown; configure project alerts/billing separately'],['Base',base]
+  [{data:'Status',header:true},{data:'Value',header:true}],['Decision',result.reason],['Started rounds this UTC month',String(rounds)],['Allowed rounds',String(result.limit)],['Budget estimate USD',String(result.budget)],['API expenditure',policy.paid_api_allowed===true?'Unknown; configure project alerts/billing separately':'No call admitted: R$0 policy'],['Base',base]
  ]).write();
  return result;
 }

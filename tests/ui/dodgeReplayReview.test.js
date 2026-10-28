@@ -98,3 +98,7 @@ describe('replay resource and error ownership',()=>{
   m.container.querySelector('.replay-event').click();expect(m.container.querySelector('input').value).toBe('1');m.view.dispose();
  });
 });
+
+it('offers beam practice only from a captured beam contact, with no diagnosis or duplicate CTA',()=>{
+ for(const [markers,expected]of [[[],0],[[{time:9,variant:'sun_beam'}],0],[[{time:12,variant:'cage'}],0],[[{time:12,variant:'sun_beam'},{time:13,variant:'sun_beam'}],1]]){const data=recording(markers);data.counts={sun_beam:10};const original=structuredClone(data),m=mount(data);m.open();const links=m.container.querySelectorAll('.beam-practice-link');expect(links).toHaveLength(expected);if(expected){expect(links[0].hash).toBe('#/drill/dodge/sidestep');expect(links[0].textContent).toContain('45 s');}expect(data).toEqual(original);m.view.dispose();expect(m.container.querySelector('.beam-practice-link')).toBeNull();}
+});

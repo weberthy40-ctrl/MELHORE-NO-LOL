@@ -27,3 +27,7 @@ A arena de esquiva mede 28 × 44 unidades. Piso mais discreto, cavaleiro animado
 
 - Jornada M001: entrada RIFT LAB com briefing e trilha avaliar → praticar → revisar, mantendo todas as modalidades. Avaliações de Precisão/Kiting/Reflexos completas podem ser consultadas novamente durante a mesma instância da aplicação; refazer/cancelar preserva o último resumo. São temporárias, não tentativas oficiais: reload/descarte limpa a memória, sem alterações de backup.
 - Preparação E010: mobilidade e câmera explicadas antes do início, com as teclas remapeadas atuais. O tempo permanece zero durante carregamento e preparação; nenhum comando de combate é emitido pelo briefing.
+
+- Série técnica E011: menu de esquiva oferece saída lateral de feixes,45segundos ativos em padrão fixo de nível5. Início manual, pausa e repetição; sem eliminação, notas, pontos, histórico ou alteração do Normal. Contatos e ameaças evitadas são contadores do motor, não diagnóstico de domínio.
+
+- Revisão E013: contato de feixe presente nos quadros capturados oferece entrada opcional na série técnica; contagens fora do trecho não geram essa entrada nem diagnóstico de fraqueza.

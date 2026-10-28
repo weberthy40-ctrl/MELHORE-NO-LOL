@@ -23,10 +23,13 @@ Priorize defeitos reproduzíveis e integridade antes de ampliar recursos. Compar
 
 | E009 | Entrada genérica não explicava jornada nem distinguia acesso Normal. | Alto primeiro uso / baixo-médio / médio | Concluído M001: briefing, avaliação real como CTA e trilha de prática/revisão. |
 | E010 | Flash/dash/parada eram descobertos sob pressão; preparo só ensinava três controles. | Alto primeiro treino / baixo-médio / médio | Implementado: kit com bindings reais, gating e lifecycle reforçado; evidências finais no registro. |
-| E011 | Revisão ensina saída lateral, mas só oferece repetir toda a mistura em Sobrevivência. | Alto prática deliberada / médio / médio | Próximo candidato: série curta por padrão, sem nota/escrita, usando motor existente; contrato de fluxo/QA antes de implementar. |
+| E011 | Prática deliberada de saída lateral do feixe. | Alto / médio / médio | Concluído: série45s, perfil5, início/pausa/repetição e contadores sem pontuação/escrita. |
+| E013 | Ligar contato observado à prática do gesto. | Alto didática / baixo / pequeno | Concluído: CTA de série apenas para feixe no intervalo capturado; teclado/rotas/cleanup validados. |
 
 CI remoto e publicação continuam distintos. Pages independente do novo QA; não mudar gatilhos/publicação sem autorização. O próximo trabalho é escolhido novamente à luz do [registro](EVOLUTION_LOG.md), não por uma fila executada cegamente.
 
 ## Continuidade
 
 Use a [skill versionada](../.agents/skills/rift-lab-evolution/SKILL.md). Ela define execução e evidência; este arquivo guarda visão e backlog, e o registro guarda prompts/resultados. Não há daemon, agendamento nem API de orquestração: uma execução Codex realiza ciclos finitos e deixa o próximo pronto. Dados de jogador não pertencem ao backlog.
+
+Mandato vigente: issue #2, orçamento adicional R$0. API paga bloqueada na policy; não há retomada automática comprovada após renovação. Próxima prioridade de produto: feedback contextual de trajetória com evidência de posição, começando por investigação/contrato sem inferir causa de erro apenas do contato.

@@ -35,6 +35,7 @@ try {
     await page.clickButton('Rever últimos 6 s', 'dialog');
     await page.waitFor("document.querySelector('.replay-stage')?.dataset.visuals==='ready'", {timeout:45000});
     assert.equal(await page.evaluate("document.querySelectorAll('.replay-event').length"), 4);
+    assert.equal(await page.evaluate("document.querySelector('.beam-practice-link').hash"),'#/drill/dodge/sidestep');
     // A native keyboard activation must seek to 1 s before contact, and pause.
     await page.evaluate("document.querySelectorAll('.replay-event')[1].focus()");
     assert.equal(await page.evaluate("document.activeElement===document.querySelectorAll('.replay-event')[1]"), true);
@@ -59,7 +60,16 @@ try {
     await page.clickButton('Fechar revisão', 'dialog');
     await page.waitFor("document.querySelector('.replay-stage canvas')===null");
     reports.push({width,events:4,keyboardSeekSeconds:3,closedWithoutCanvas:true});
-    await page.evaluate("qaReplay.dispose();document.querySelector('dialog').close()");
+    await page.clickButton('Rever últimos 6 s', 'dialog');
+    await page.waitFor("document.querySelector('.replay-stage')?.dataset.visuals==='ready'",{timeout:45000});
+    await page.evaluate("(()=>{const a=document.querySelector('.beam-practice-link');a.scrollIntoView({block:'center',behavior:'instant'});a.focus({preventScroll:true});window.addEventListener('hashchange',()=>qaReplay.dispose(),{once:true});})()");
+    assert.equal(await page.evaluate("(()=>{const a=document.querySelector('.beam-practice-link'),r=a.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)===a;})()"),true);
+    if(process.env.QA_ARTIFACT_DIR){const shot=await page.send('Page.captureScreenshot',{format:'png'});await writeFile(`${process.env.QA_ARTIFACT_DIR}/replay-practice-${width}.png`,Buffer.from(shot.data,'base64'));}
+    await page.send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
+    await page.send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+    await page.waitFor("location.hash==='#/drill/dodge/sidestep'&&document.querySelector('.arena-ready button')?.disabled===false",{timeout:45000});
+    await page.go('/');
+    await page.waitFor("document.querySelectorAll('canvas').length===0");
   }
   assert.deepEqual(page.errors, []);
   console.log(JSON.stringify({status:'PASSOU',scope:'controlled recording, real WebGL and native keyboard; not official gameplay',reports}, null, 2));

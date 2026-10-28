@@ -1,15 +1,15 @@
 # Registro de evolução
 
-## Checkpoint operacional — E012 infraestrutura recorrente preparada
+## Checkpoint operacional — E011/E013, mandato R$ 0
 
-- Produto preservado no seed `25acaf93dc86aa8c136e9e41b9e75cac8f205c30`, enviado e conferido em `origin/rift-lab/product-journey`. Marco M001/E010 não foi reimplementado; E011 continua próximo corte de produto.
-- Branch de trabalho `rift-lab/recurring-qa` (checkpoint local). Infraestrutura isolada enviada em `origin/rift-lab/autoevolution-infra`, derivada de `origin/main` e contendo somente18arquivos novos de workflow/controladores/docs. Main permanece `e221ae62d57d39ae69e8b1f512e540d709cc5d23`. Não houve merge ou deploy.
-- Abertura de PR pelo gh falhou com Forbidden. Link pronto: https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/compare/main...rift-lab/autoevolution-infra?expand=1 . Não abrir PR da branch de produto para instalar somente a infraestrutura.
-- Implementado: schedule09America/Sao_Paulo+dispatchdryrun/live; seed/continuidade, prompt e orçamento protegidos; agente/revisor semGitwrite, QAsemchave soboutroUID, coletorsemseguirlinks e publisher confiável exclusivo evolution. Detalhes normativos em docs/AUTOMATION.md.
-- Validação local atual:49 testes Python + 3 testes Node de controles/admissão, YAML/shell, ausência de chave negativa; controladorQA completo com npmciignore-scripts,304unit/59arquivos,lint/build/audit0,seisbrowser+produçãosmoke APROVADOS. Simulações Git usam remotesbarelocais; não são API/modeloremoto.
-- Pendentes externas: PR/merge inicial, confirmar/adicionar ActionsSecretOPENAI_API_KEY e faturamento/alertas API+GitHub, enablevariable eprimeirodryrun/live/agendado. Segredo remoto NÃO VERIFICADO; execuçãoremota eagenda NÃO COMPROVADAS. SEM AGENDAMENTO ATIVO nesta entrega.
-- Não chamar APIs pagas nem ativar modelo comcredenciais novas nesta sessão. A implantação não altera CI/Pages/produto/lockfile. O merge humano da infraestrutura dispara o Pages existente conforme seus gatilhos, sem mudanças de produto neste PR.
-- Trava recurrence-20261028 liberada no fechamento após conferir proprietário. Próximaexecução: conferir estado remoto e ativação pelos resultados reais; depois retomar E011 na branch evolution pelo master, sem novos prompts de produto.
+- Branch `rift-lab/beam-practice`, base `3db5669`; trabalho anterior preservado. Concluídos: série técnica de feixes de45s e acesso a ela a partir de contato capturado na revisão. Menu esquiva oferece entrada; sem pontos, vidas eliminatórias, histórico ou mudança no Normal.
+- Orçamento adicional R$0, conforme issue#2 lida pela página pública. Policy `paid_api_allowed:false` bloqueia API antes de variáveis; live/secret não foram ativados. Guard publicado na branch de infraestrutura do PR#1; não mesclar/ativar API paga para testar o jogo.
+- Validação:309 testes/60 arquivos, lint/build aprovados. Bateria completa antes do último CTA: seis suítes, audit0, produção e cenário nativo45s aprovados. Após CTA: replay nativo com Enter/navegação em1366/390 e smokeprodução final aprovados. Infra49Python+4Node aprovados. Detalhes/falhas/exclusões abaixo.
+- Revisão independente sem bloqueios; capturas da arena ativa390×600, resultado e CTA inspecionadas. Fullscreen headless excluído; hardware físico, som percebido e calibração humana não executados.
+- Sem retomada automática comprovada após renovar franquia. CLI aceita loginChatGPT, mas não há ferramenta nativa de agendamento nesta interface nem acesso ao Windows do usuário. Alternativas A/B/C/D e fontes oficiais em docs/AUTOMATION.md. Não copiarOAuth nem usar provedores/APIpagos ou burlar limites.
+- Próxima prioridade escolhida: acrescentar revisão temporária dos contatos da série técnica, reaproveitando gravador/review existentes, sem salvar tentativas. Antes de editar, confirmar eventos técnicos de impacto e contrato de captura terminal; não usar contagem como causa/diagnóstico.
+- Retomada curta: “Continue do checkpoint em rift-lab/beam-practice, seguindo a issue#2 e orçamento R$0.” Isso é instrução de retomada, não execução agendada.
+- Trava free-product-20261028 liberada no fechamento após conferir proprietário; novos agentes devem adquirir a sua. Sem merge/main/deploy ou dependências novas.
 
 
 Execução inicial: 27/10/2026. Base: rc.14, Fases 1/2 com alterações locais ainda não commitadas. Sem push, merge, deploy ou serviço externo. Método: [skill](../.agents/skills/rift-lab-evolution/SKILL.md); visão/backlog: [EVOLUTION.md](EVOLUTION.md).
@@ -318,3 +318,30 @@ Extensibilidade do QA: o controlador aceita até5cenários nativos adicionais em
 Coletor confiável também foi exercitado com as evidências reais desta rodada, copiando-as para o arquivo local de recuperação sem seguir links; essa verificação não é uma execução remota ou de modelo.
 
 Revisão independente final da extensão de cenários nativos: sem bloqueios;10 testes de estrutura/protocolo e bash-n reexecutados pelo revisor e aprovados. Infraestrutura final publicada em `2ef78d912e5871574932004a6f08326be736a333`, na branch `rift-lab/autoevolution-infra`; nenhuma execução remota do orquestrador é alegada.
+
+
+## E011 — série técnica de feixes — execução autorizada com R$0
+
+Autoprompt: implemente corte vertical jogável de saída lateral: rota /drill/dodge/sidestep,45s, perfil sidestep nível5 existente, início manual após assets, pausa/foco e resultado com contadores reais de contatos/ameaças evitadas, sem nota/vidas eliminatórias nem writes. Menu esquiva oferece acesso explícito. Preserve física/controles/persistência; resultado deixa claros os limites de amostra, repetir/voltar; dispose/callbacktardio guardados. Teste motor real e UI/rota/ausênciaescrita, navegador+capturas e revisão independente. Não recrie laboratório genérico antigo. Arquivos previstos módulo UI, routes/screens/navigation/CSS/tests. Condição de parada: regressão sem solução após3correções; preservar seed e deixar checkpoint. Em paralelo pesquisa gratuita limitada, sem APIpaga ouserviços novos; R$0 substitui orçamento anterior. Issue2 APIretornou403, não alegar leituraconcluída.
+
+
+### E011/R$0 — implementação e pesquisa
+
+Issue2 lida na página pública GitHub após REST403. A norma exige R$0 e nãoativarAPI. Seed anterior preservado no Git; módulo novo, rotas/menu e série usam perfil sidestep5 e renderer/motor existentes, sem onStep duplicado. Testesfocados e revisão independente confirmam sessão/pausa/restart/descarte/erro/importtardio. Função de admissão agora bloqueia APIpaga antes de considerar variáveis; testes positivos antigos usam fixture explicitamente autorizada, não política real. GuardR$0 publicado no PRinfra existente(branch) em1fb4f350020a791ff621f2c0136c748ef56be10a. Main inspecionada seguee221ae6 semworkflowrecorrente; nenhumserviçopago ativado.
+
+Pesquisa: READMEoficialCodex confirma loginChatGPT, não gatilho quota; ferramentas nativas de agendamento/Goals não expostas, docsApp/Help403. Ollamaoficial descreve localWindows mashardwareusuário desconhecido; seminstalação/benchmark. READMEatualGeminiCLI avisaqueoferta individual migrouparaAntigravityCLI e nãooferecefree tiernesseCLI; nenhumdireitodecota/contafoicomprovado. CItestessóvalidamcódigo,nãogeramnovasrodadas. Não copiarOAuth, não contornarlimites, não prometer retomada automática. Comparação/citações emdocs/AUTOMATION.md.
+
+Primeironativo E011 emVitedev: APROVADO,45s reais, WebGL, pausacongelada, restart, canvasremovido e contagensIndexedDBiguais. Unidade308/60, lint/build passaram inicialmente. Ao movercaso parahooktests/browser/*.mjs, lintnegou consoleglobal; corrigido importexplícitode node:console sem desabilitarregra. Primeirabateria final foiinterrompida por essa falha(sem aprovação global); reexecução completa emandamento. Capturasreadyeplayingdesktopinspecionadas; resultadoestreito e arenaativa390px aguardam a rodadafinal. Nenhum teste removido.
+
+
+**E011 fechado:** controladorQA completoAPROVADO, saída0,308testes/60arquivos,lint/build/audit,seisbrowser,smokeprodução e novo nativo45s. Capturasproduçãoready/ativa390×600/resultados1366/390inspecionadas: feixe/personagemvisíveis e açõesacessíveis, semoverflow. Semhardwarefísico/fullscreenaprovado.
+
+## E013 — rever um feixe e praticar o gesto — contrato
+Autoprompt: acrescentar CTA direto para /drill/dodge/sidestep na revisão SOMENTE quando há contato sun_beam no intervalo capturado. Não usar ranking de contagem global para inventar diagnóstico; conservar botão repetirnível existente. Exibir como prática opcional de45s, não recomendação de redução de nível nem fraqueza. Removerlink no dispose. Testar positivo/negativo/fora do intervalo/cleanup e teclado/href/layout em browserreplay controlado. Não alterar gravação/scores/dados. Escopo pequeno: replayReview, unitUI e assertion no scriptbrowserreplay. Aceite: semcontato nenhumCTA, umCTA porgravaçãomesmocomváriosfeixes, navegaçãohashcompatível e replaycontrolesanteriorespreservados.
+
+
+**E013 fechado:**309testes/60arquivos,lint/build finais APROVADOS; replay controlado comWebGL/tecladonativos em1366/390 passou, inclusive Enter no CTA abrindo a preparação real da série e saída semcanvas. Captura estreita do CTA inspecionada. O caso de revisão usa gravação controlada, não tentativa oficial. Smoke geral do build final APROVADO apósCTA; caso45sprodução já aprovado antes, motor e nova série não mudaram neste segundo ciclo. Nenhuma API paga, token ou serviço externo ativado. As falhas intermediárias de lint foram corrigidas sem desabilitar regras.
+
+Arquivos desta rodada: src/ui/dodgeDrillScreen.js, routes.js/screens.js/navigation.js, dodgeReplayReview.js; global.css; tests/ui/dodgeDrill.test.js, dodgeReplayReview.test.js, tests/browser/beam.mjs e scripts/browser-replay.js. Normas/checkpoints: AGENTS.md, docs/CURRENT_SCOPE.md, EVOLUTION.md, EVOLUTION_LOG.md, QA.md e AUTOMATION.md. Proteção R$0: .github/automation/policy.json, preflight.mjs e tests/check_preflight.mjs. Persistência, lockfile e workflows CI/Pages sem diff. Nenhum modelo alternativo foi instalado.
+
+Fechamento: guard e documentação R$0 publicados em `76ef174b0b1d1dea755a9d72e8d189d47e29c44a` no PRinfra; main permaneceu intacta. Evidências arquivadas em /workspace/.cache/rift-beam-20261028. Candidata-fonte em /workspace/rift-lab-beam-practice.zip. Sem agendamento nativo/retomada após franquia comprovados; sem API paga ativada.
