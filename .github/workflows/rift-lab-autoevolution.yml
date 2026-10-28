@@ -1,0 +1,299 @@
+name: RIFT LAB autoevolution
+on:
+  schedule:
+    - cron: '0 12 * * *' # 09:00 America/Sao_Paulo; GitHub may delay scheduled jobs.
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry-run never calls the API; live also requires the enable variable and secret'
+        type: choice
+        options: [dry-run, live]
+        default: dry-run
+permissions:
+  contents: read
+concurrency:
+  group: rift-lab-autoevolution
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      admit: ${{ steps.plan.outputs.admit }}
+      reason: ${{ steps.plan.outputs.reason }}
+      base: ${{ steps.plan.outputs.base }}
+      seed: ${{ steps.plan.outputs.seed }}
+      model: ${{ steps.plan.outputs.model }}
+      cli: ${{ steps.plan.outputs.cli }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: control/.nvmrc
+      - name: Static and adversarial controller tests
+        run: |
+          python3 -m unittest discover -s control/.github/automation/tests -v
+          node --test control/.github/automation/tests/check_preflight.mjs
+          bash -n control/.github/automation/qa.sh
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        id: plan
+        env:
+          RIFT_MODE: ${{ github.event_name == 'schedule' && 'live' || inputs.mode }}
+          RIFT_ENABLED: ${{ vars.RIFT_AUTOMATION_ENABLED }}
+          RIFT_MONTHLY_BUDGET_USD: ${{ vars.RIFT_MONTHLY_BUDGET_USD }}
+          RIFT_MAX_MONTHLY_ROUNDS: ${{ vars.RIFT_MAX_MONTHLY_ROUNDS }}
+          RIFT_RUN_ATTEMPT: ${{ github.run_attempt }}
+        with:
+          script: |
+            const {pathToFileURL}=require('node:url');
+            const {default:plan}=await import(pathToFileURL(`${process.env.GITHUB_WORKSPACE}/control/.github/automation/preflight.mjs`));
+            await plan({github,context,core});
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.plan.outputs.base }}
+          path: project
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify immutable seed and accumulated evolution paths
+        env:
+          SEED: ${{ steps.plan.outputs.seed }}
+        run: python3 control/.github/automation/control.py verify-source project --seed "$SEED"
+
+  implement:
+    needs: preflight
+    if: needs.preflight.outputs.admit == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      body: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Fail before any API call if the secret is absent
+        env:
+          RIFT_KEY_PRESENT: ${{ secrets.OPENAI_API_KEY != '' }}
+        run: python3 control/.github/automation/control.py dry-run --live
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.preflight.outputs.base }}
+          path: project
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: project/.nvmrc
+      - name: Verify source before installing immutable dependencies without lifecycle hooks
+        env:
+          SEED: ${{ needs.preflight.outputs.seed }}
+        run: |
+          python3 control/.github/automation/control.py verify-source project --seed "$SEED"
+          cd project
+          npm ci --ignore-scripts --no-fund
+      # Last step: never execute generated code or another action after Codex on this host.
+      - uses: openai/codex-action@c05cfd74ad95c626cdf05c6685e62becc3bf7813
+        id: codex
+        timeout-minutes: 15
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: ${{ needs.preflight.outputs.cli }}
+          model: ${{ needs.preflight.outputs.model }}
+          permission-profile: ':workspace'
+          safety-strategy: drop-sudo
+          codex-home: ${{ runner.temp }}/rift-codex-implement
+          working-directory: project
+          prompt-file: control/.github/automation/master.md
+          output-schema-file: control/.github/automation/candidate.schema.json
+          codex-args: '["--ephemeral"]'
+
+  verify:
+    needs: [preflight, implement]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    outputs:
+      status: ${{ steps.patch.outputs.status }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.preflight.outputs.base }}
+          path: project
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: project/.nvmrc
+      - name: Validate base, paths, modes and canonical patch on a fresh runner
+        id: patch
+        env:
+          BODY: ${{ needs.implement.outputs.body }}
+          BASE: ${{ needs.preflight.outputs.base }}
+          SEED: ${{ needs.preflight.outputs.seed }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/candidate.json"
+          python3 control/.github/automation/control.py verify-source project --seed "$SEED"
+          python3 control/.github/automation/control.py accept project --base "$BASE" --body-file "$RUNNER_TEMP/candidate.json" --out "$RUNNER_TEMP/validated"
+          python3 -c 'import json,os; m=json.load(open(os.environ["RUNNER_TEMP"]+"/validated/manifest.json")); open(os.environ["GITHUB_OUTPUT"],"a").write("status="+m["status"]+"\n")'
+      - name: QA under another OS user, without API key, GitHub credentials or runner file access
+        if: steps.patch.outputs.status == 'changed'
+        run: |
+          sudo useradd --create-home --shell /bin/bash riftqa
+          sudo mkdir -p /opt/rift-control
+          sudo cp control/.github/automation/qa.sh /opt/rift-control/qa.sh
+          sudo chown root:root /opt/rift-control/qa.sh
+          sudo chmod 444 /opt/rift-control/qa.sh
+          sudo cp -a project /home/riftqa/project
+          sudo rm -rf /home/riftqa/project/.git
+          sudo chown -R riftqa:riftqa /home/riftqa/project
+          marker="$(cat /proc/sys/kernel/random/uuid)"
+          echo "::stop-commands::$marker"
+          set +e
+          sudo -u riftqa /usr/bin/env -i HOME=/home/riftqa PATH="$PATH" CI=true /usr/bin/timeout 50m /bin/bash /opt/rift-control/qa.sh /home/riftqa/project /home/riftqa/results
+          result=$?
+          echo "::$marker::"
+          sudo pkill -KILL -u riftqa || true
+          sudo python3 control/.github/automation/collect.py /home/riftqa/results "$RUNNER_TEMP/qa-results"
+          exit "$result"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: steps.patch.outputs.status == 'changed' && success()
+        with:
+          name: validated-patch
+          path: ${{ runner.temp }}/validated/
+          if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: qa-evidence
+          path: ${{ runner.temp }}/qa-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+  review:
+    needs: [preflight, verify]
+    if: needs.verify.outputs.status == 'changed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    outputs:
+      body: ${{ steps.codex.outputs.final-message }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.preflight.outputs.base }}
+          path: project
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: validated-patch
+          path: candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: qa-evidence
+          path: qa-evidence
+      - name: Revalidate before independent read-only review; execute no candidate code
+        env:
+          BASE: ${{ needs.preflight.outputs.base }}
+        run: python3 control/.github/automation/control.py bundle project --base "$BASE" --artifact candidate --out "$RUNNER_TEMP/reviewed"
+      # Last step; separate process and context from the implementer.
+      - uses: openai/codex-action@c05cfd74ad95c626cdf05c6685e62becc3bf7813
+        id: codex
+        timeout-minutes: 8
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: ${{ needs.preflight.outputs.cli }}
+          model: ${{ needs.preflight.outputs.model }}
+          permission-profile: ':read-only'
+          safety-strategy: drop-sudo
+          codex-home: ${{ runner.temp }}/rift-codex-review
+          working-directory: project
+          prompt-file: control/.github/automation/review.md
+          output-schema-file: control/.github/automation/review.schema.json
+          codex-args: '["--ephemeral"]'
+
+  publish:
+    needs: [preflight, verify, review]
+    if: needs.verify.outputs.status == 'changed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Require independent approval
+        env:
+          BODY: ${{ needs.review.outputs.body }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/review.json"
+          python3 control/.github/automation/control.py approve --body-file "$RUNNER_TEMP/review.json"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.preflight.outputs.base }}
+          path: project
+          fetch-depth: 0
+          # Only this trusted publisher receives Git write credentials; it executes no candidate code.
+          persist-credentials: true
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: validated-patch
+          path: candidate
+      - name: Revalidate and publish only an optimistic fast-forward to the fixed evolution branch
+        env:
+          BASE: ${{ needs.preflight.outputs.base }}
+          SEED: ${{ needs.preflight.outputs.seed }}
+        run: |
+          python3 control/.github/automation/publish.py project --base "$BASE" --seed "$SEED" --artifact candidate --out "$RUNNER_TEMP/publish" --run-id "$GITHUB_RUN_ID"
+
+  report:
+    needs: [preflight, implement, verify, review, publish]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Exact pipeline status, never a claim of release or physical hardware approval
+        env:
+          ADMISSION: ${{ needs.preflight.outputs.reason }}
+          IMPLEMENT: ${{ needs.implement.result }}
+          VERIFY: ${{ needs.verify.result }}
+          CHANGE: ${{ needs.verify.outputs.status }}
+          REVIEW: ${{ needs.review.result }}
+          PUBLISH: ${{ needs.publish.result }}
+        run: |
+          {
+            echo '## RIFT LAB — execution status'
+            echo "Admission: $ADMISSION"
+            echo "Implement: $IMPLEMENT; candidate: $CHANGE"
+            echo "QA: $VERIFY; review job: $REVIEW; branch publication: $PUBLISH"
+            echo 'Read reviewer decision in the approval step. A successful model invocation is not approval.'
+            echo 'Skipped jobs are NOT EXECUTED. Fullscreen is EXCLUDED; hardware and commercial readiness are NOT VERIFIED.'
+            echo 'No merge, release or public deploy belongs to this workflow. API cost is not measured here.'
+          } >> "$GITHUB_STEP_SUMMARY"
