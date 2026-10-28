@@ -22,12 +22,11 @@ Estado da implantação (28/10/2026):
 | Primeira execução remota do orquestrador | Não comprovada. API do GitHub nesta sessão retornou Forbidden; nenhum modelo/API foi chamado. |
 | Agendamento comprovado | Não. Workflow ainda fora da branch padrão; nenhum merge/ativação foi feito. |
 
-Abertura automática do PR foi recusada pela API (`Forbidden`), apesar de o push Git
-funcionar. [Abra o PR de infraestrutura para main](https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/compare/main...rift-lab/autoevolution-infra?expand=1)
-e confira os18 arquivos de infraestrutura antes de mesclar. Não use a branch de
-produto para esse PR. Evidências locais completas estão em EVOLUTION_LOG.md na
-branch de checkpoint do desenvolvimento; o PR de infraestrutura não transporta
-esse histórico de produto para main.
+A abertura automática inicial foi recusada pela API (`Forbidden`). O mandato atual
+identifica o [PR #1 em rascunho](https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/pull/1).
+Não é necessário abrir outro PR, mesclá-lo ou configurar chave para jogar/continuar
+com a franquia do Codex. A branch desse PR recebeu o bloqueio de API paga. A existência
+de um cron de CI não significa retomada gratuita da inferência.
 
 ## Retomada gratuita: conclusão verificável
 
@@ -35,8 +34,18 @@ esse histórico de produto para main.
 | --- | --- | --- |
 | A — ChatGPT/Codex app ou CLI | README oficial confirma login ChatGPT e uso incluído nos planos. Isso não comprova scheduler nem evento público de renovação da franquia. Nenhuma ferramenta nativa de Automations/Goals foi exposta nesta sessão. | Continuar com a franquia existente; checkpoint pronto. Retomada automática não configurada. |
 | B — Ollama/OpenCode local no Windows | Não há hardware/instalação local observável nesta sessão; qualidade, RAM/VRAM e custo de energia não medidos. | Não instalar nem prometer desempenho; alternativa depende de validação do computador. |
-| C — Cotas gratuitas de provedores | Nenhuma cota/modelo externo foi comprovado disponível para esta conta. “Free tier” divulgado não prova direito atual nem ausência de cobrança. | Nenhum provedor, token ou serviço ativado. |
+| C — Cotas gratuitas de provedores | Nenhuma cota externa comprovada para esta conta. O README atual do Gemini CLI informa ausência de free tier nessa ferramenta e migração da oferta individual para Antigravity CLI; não presumir antigas cotas. Termos/acesso desta outra ferramenta não foram comprovados aqui. | Nenhum provedor, token ou serviço ativado. |
 | D — CI apenas para testes | Workflows existentes podem validar código enviado sem gerar novas melhorias; franquia/limite de minutos do GitHub depende da conta. | Reutilizar CI existente, sem ativar uso adicional cobrado. Não é agente de desenvolvimento. |
+
+Comparação de execução: A usa os recursos da conta ChatGPT e processa código no
+serviço; a qualidade demonstrada nesta sessão não mede a de outras ferramentas e a
+latência/retomada depende da franquia. B só mantém inferência no computador se for
+configurada estritamente local: consome RAM/VRAM/energia, com qualidade e tempo ainda
+não medidos no PC do usuário. C enviaria código ao provedor escolhido e dependeria
+dos termos, cotas e permissões daquela conta, nenhum comprovado aqui. D processa
+código no runner do GitHub e apenas testa: não tem qualidade de geração nem mecanismo
+de continuar o desenvolvimento. Implementação comprovada: A nesta sessão e os
+checks locais de D; B/C e agendamento após renovação não foram implantados.
 
 Pesquisa limitada em fontes oficiais: README do Codex consultado com sucesso em
 https://github.com/openai/codex#using-codex-with-your-chatgpt-plan confirma autenticação
@@ -125,7 +134,7 @@ Variables opcionais (nunca secrets) ajustam a admissão:
 | `RIFT_MONTHLY_BUDGET_USD` | 0 | Ignorada para habilitação enquanto a política R$0 bloqueia API paga. |
 
 Com a política paga explicitamente autorizada em outro mandato, a contagem usa a API do GitHub e falha fechada se histórico estiver incompleto/negado.
-A concorrência serializa admissões. **20 USD não é teto rígido de gastos:** uma única
+A concorrência serializa admissões. **Uma estimativa de orçamento não é um teto rígido de gastos:** uma única
 rodada pode exceder a reserva estimada, retries internos da API não são medidos e o
 preço/modelo/tokens variam. Não ativar no mandato atual de R$0.
 O modelo é o default da CLI fixada em 0.165.0; acesso/custo efetivo só é confirmado
@@ -182,3 +191,5 @@ Se o reviewer bloquear, preserve/consulte o artefato; a próxima agenda reavalia
 As referências descrevem capacidades; não são evidência de que este workflow remoto
 já rodou. O pin do topo do repositório oficial foi conferido diretamente; o tag v1
 apontava para outra revisão, por isso foi usado SHA explícito compatível com os inputs.
+
+Fontes adicionais consultadas nesta rodada, sem instalação: [Ollama oficial](https://github.com/ollama/ollama) descreve execução local/Windows, mas não comprova capacidade do computador do usuário; [Gemini CLI oficial](https://github.com/google-gemini/gemini-cli) contém o aviso de mudança da oferta individual. Não foram criadas contas, copiados tokens ou usados endpoints de inferência desses provedores. Comparação de qualidade de agentes locais em alterações3D exige hardware e testes, não pode ser inferida de publicidade.
