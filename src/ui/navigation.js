@@ -1,3 +1,4 @@
+import { createAssessmentMemory } from './assessmentMemory.js';
 import { mountDodgeReady } from './dodgeReady.js';
 import { mountArenaInputGuard } from '../game3d/arenaInputGuard.js';
 import { readDodgePlacement,advanceDodgePlacement } from '../progression/dodgePlacement.js';
@@ -33,6 +34,7 @@ import { createScreen } from './screens.js';
 /** Hash routing provides native back/forward without server rewrite rules. */
 export function mountNavigation({ root, core, window = root.ownerDocument.defaultView,
   loadPreview = () => import('../game3d/mountPreview.js'), attemptRepository }) {
+  const assessmentMemory=createAssessmentMemory();
   const document = root.ownerDocument;let preferencesStorage;try{preferencesStorage=window.localStorage;}catch{preferencesStorage=null;}applyInterfacePreferences(document,loadPreferences(preferencesStorage));
   let indexedDB;try{indexedDB=window.indexedDB;}catch{indexedDB=null;}
   const repository = attemptRepository ?? createAttemptRepository({indexedDB});const audio=mountAudioFeedback({root,core,preferences:loadPreferences(preferencesStorage)});
@@ -41,7 +43,7 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   skip.href = '#content';
   skip.addEventListener('click', skipContent);
   const header = element(document, 'header', 'site-header');
-  header.append(link(document, 'M / MOBA TRAINING', '/', 'brand'));
+  header.append(link(document, 'RIFT LAB / LABORATÓRIO DE MECÂNICA', '/', 'brand'));
   const nav = element(document, 'nav', 'site-nav'); nav.setAttribute('aria-label', 'Navegação principal');
   for (const [path, label] of NAVIGATION) nav.append(link(document, label, path, 'nav-link'));
   header.append(nav);
@@ -82,9 +84,9 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
     if(route.path==='/practice/reflex'||route.path.startsWith('/timed/reflex')){const training=mountReflex({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/reflex'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}
     if(route.path==='/practice/kiting'||route.path.startsWith('/timed/kiting')){const training=mountKiting({screen,core,loadPreview,repository,timed:route.path.startsWith('/timed/kiting'),initialLevel:route.level??1});cleanupScreen=()=>training.dispose();}
     if(route.path==='/practice/precision'||route.path.startsWith('/timed/precision')){const practice=mountPrecisionPractice({screen,core,loadPreview,timed:route.path.startsWith('/timed/precision'),initialLevel:route.level??1,repository});cleanupScreen=()=>practice.dispose();}
-    if(route.path==='/assessment/reflex'){const assessment=mountReflexAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
-    if(route.path==='/assessment/kiting'){const assessment=mountKitingAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
-    if(route.path==='/assessment/precision'){const assessment=mountPrecisionAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
+    if(route.path==='/assessment/reflex'){const assessment=mountReflexAssessment({screen,core,loadPreview,assessmentMemory});cleanupScreen=()=>assessment.dispose();}
+    if(route.path==='/assessment/kiting'){const assessment=mountKitingAssessment({screen,core,loadPreview,assessmentMemory});cleanupScreen=()=>assessment.dispose();}
+    if(route.path==='/assessment/precision'){const assessment=mountPrecisionAssessment({screen,core,loadPreview,assessmentMemory});cleanupScreen=()=>assessment.dispose();}
     if(route.path==='/assessment/dodge'){const assessment=mountDodgeAssessment({screen,core,loadPreview});cleanupScreen=()=>assessment.dispose();}
     if(route.path==='/profile'){const profile=mountProfile({screen,repository});cleanupScreen=()=>profile.dispose();}
     if(/^\/(history|records|evolution|achievements)\/(dodge|precision|kiting|reflex)$/.test(route.path)){
@@ -113,6 +115,8 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
         updateTechnical();if(!rules)return;rules.evaluate();const current=rules.snapshot();
         diagnostics.textContent=`Vidas: ${current.lives}/${current.initialLives} · Tempo sobrevivido: ${current.elapsed.toFixed(1)} s`;
         if(telemetry?.isFinal()&&!shownResult){
+          const movement=preview?.movement?.snapshot();
+          if(movement&&exercise)dodgeRecording.finish(exercise.snapshot(),movement.position,movement.angle);
           shownResult=true;resultMetrics.hidden=false;const m=telemetry.snapshot(),score=calculateDodgeScore(m),resultContent=element(document,'div','result-content');
           const title=element(document,'h2','result-title',current.outcome==='victory'?'Vitória!':current.outcome==='defeat'?'Fim de treino — Derrota':current.outcome==='error'?'Treino interrompido':'Treino encerrado');title.id='dodge-result-title';resultMetrics.append(title,resultContent);
           resultContent.append(element(document,'h2','','Métricas da tentativa'),element(document,'p','muted',`Tempo ativo: ${m.elapsedActiveSeconds.toFixed(1)} s · Ameaças: ${m.threatsQualified} · Evitadas: ${m.threatsDodged} · Impactos válidos: ${m.validHits} · Distância: ${m.totalDistanceMoved.toFixed(1)} u · Pendentes: ${m.threatsUnresolved}`));
@@ -151,6 +155,6 @@ export function mountNavigation({ root, core, window = root.ownerDocument.defaul
   return { dispose() {
     if (!active) return;
     active = false; revision++;readyPanel?.dispose();stopArenaContext?.();dodgeReview?.dispose();stopDodgeRecording?.();dodgeRecording?.clear(); preview?.dispose(); cleanupScreen(); rules?.dispose();telemetry?.dispose(); session?.dispose(); exercise?.dispose();
-    stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
+    assessmentMemory.dispose();stopSessionUI();audio.dispose();repository.close();window.removeEventListener('hashchange', render); skip.removeEventListener('click', skipContent); shell.remove();
   } };
 }

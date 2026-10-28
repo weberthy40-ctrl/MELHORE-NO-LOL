@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
+import {DEFAULT_PREFERENCES,PREFERENCES_KEY} from '../../src/settings/preferences.js';
 import { ARENA,isInsideArena } from '../../src/game3d/spatial.js';
 import { createArena } from '../../src/game3d/arena.js';
 import { createCharacter } from '../../src/game3d/character.js';
@@ -42,4 +44,23 @@ describe('preview lifecycle without WebGL', () => {
     expect(container.querySelector('[role=alert]').textContent).toContain('WebGL'); expect(onError).toHaveBeenCalledTimes(1);
     preview.dispose(); expect(container.children).toHaveLength(0);
   });
+});
+
+for(const quality of ['leve','medio','alto'])for(const dodge of [false,true])it(`preserves ${quality} shadow policy in ${dodge?'dodge':'general'} arenas using the supported renderer algorithm`,()=>{
+ const previous=window.localStorage.getItem(PREFERENCES_KEY),container=document.createElement('div');
+ window.localStorage.setItem(PREFERENCES_KEY,JSON.stringify({...DEFAULT_PREFERENCES,quality}));
+ const renderer={shadowMap:{enabled:false},domElement:document.createElement('canvas'),setPixelRatio:vi.fn(),setSize:vi.fn(),render:vi.fn(),dispose:vi.fn(),forceContextLoss:vi.fn()};
+ let view;
+ try{
+  view=mountPreview(container,{controls:false,createRenderer:()=>renderer,exercise:dodge?{kind:'dodge',snapshot:()=>({kind:'dodge',level:1,elapsed:0,projectiles:[]})}:undefined});
+  const scene=renderer.render.mock.calls.at(-1)[0],light=scene.children.find(child=>child.isDirectionalLight);
+  expect(renderer.shadowMap.enabled).toBe(quality!=='leve');expect(light.castShadow).toBe(quality!=='leve');
+  expect(renderer.setPixelRatio).toHaveBeenCalledWith(1);
+  if(quality!=='leve'){
+   expect(renderer.shadowMap.type).toBe(THREE.PCFShadowMap);
+   expect(light.shadow.mapSize.toArray()).toEqual([quality==='alto'?1024:512,quality==='alto'?1024:512]);
+   expect(light.shadow.bias).toBe(-.0002);expect(light.shadow.normalBias).toBe(.04);
+  }
+ }finally{view?.dispose();if(previous===null)window.localStorage.removeItem(PREFERENCES_KEY);else window.localStorage.setItem(PREFERENCES_KEY,previous);}
+ expect(renderer.dispose).toHaveBeenCalledTimes(1);expect(container.querySelector('canvas')).toBeNull();
 });

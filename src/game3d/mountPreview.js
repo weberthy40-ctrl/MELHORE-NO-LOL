@@ -62,7 +62,7 @@ export function mountPreview(container, { createRenderer = options => new THREE.
     if(arena)scene.fog=new THREE.FogExp2(0x192f36,.009);
     scene.add(new THREE.HemisphereLight(0xc9e2f3,0x293c32,1.25));
     const light=new THREE.DirectionalLight(0xffedce,2.5);light.position.set(-12,26,12);scene.add(light);
-    if(arena&&renderer.shadowMap&&preferences.quality!=='leve'){renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;light.castShadow=true;light.shadow.mapSize.setScalar(preferences.quality==='alto'?1024:512);Object.assign(light.shadow.camera,{left:-30,right:30,top:32,bottom:-32,near:1,far:85});light.shadow.bias=-.0002;light.shadow.normalBias=.04;}
+    if(arena&&renderer.shadowMap&&preferences.quality!=='leve'){renderer.shadowMap.enabled=true;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.shadowMap.type=THREE.PCFShadowMap;light.castShadow=true;light.shadow.mapSize.setScalar(preferences.quality==='alto'?1024:512);Object.assign(light.shadow.camera,{left:-30,right:30,top:32,bottom:-32,near:1,far:85});light.shadow.bias=-.0002;light.shadow.normalBias=.04;}
     observer = ResizeObserverClass ? new ResizeObserverClass(resize) : undefined; observer?.observe(container);
     document.addEventListener('visibilitychange',resize); document.defaultView?.addEventListener('resize',resize);
     renderer.domElement.addEventListener('webglcontextlost',lost); resize();

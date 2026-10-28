@@ -14,3 +14,16 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: npm audit
+      - name: QA em navegador (tela cheia excluída explicitamente)
+        timeout-minutes: 45
+        env:
+          QA_ARTIFACT_DIR: ${{ runner.temp }}/rift-browser-artifacts
+        run: bash scripts/ci-browser.sh
+      - name: Guardar evidências do navegador
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-qa
+          path: ${{ runner.temp }}/rift-browser-artifacts
+          if-no-files-found: warn
+          retention-days: 7

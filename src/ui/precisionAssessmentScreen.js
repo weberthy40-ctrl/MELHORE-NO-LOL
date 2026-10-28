@@ -4,23 +4,23 @@ import { createSession } from '../training/session.js';
 import { createRandom } from '../core/random.js';
 import { element,link } from './elements.js';
 /** No official score or repository is available to this transient diagnostic. */
-export function mountPrecisionAssessment({screen,core,loadPreview=()=>import('../game3d/mountPreview.js')}){
+export function mountPrecisionAssessment({screen,core,loadPreview=()=>import('../game3d/mountPreview.js'),assessmentMemory=null}){
  const document=screen.ownerDocument,window=document.defaultView,host=element(document,'section','assessment');screen.append(host);
  const flow=createPrecisionAssessmentFlow();let active=true,revision=0,round=null;
  function button(text,action){const b=element(document,'button','button',text);b.type='button';b.addEventListener('click',action);return b;}
  function clean(){revision++;round?.preview?.dispose();round?.practice.dispose();round?.session.dispose();round=null;}
- function footer(){const actions=element(document,'div','actions');actions.append(button('Refazer avaliação',()=>{clean();flow.reset();intro();}),link(document,'Voltar ao menu','/','button'));return actions;}
+ function footer(){const actions=element(document,'div','actions');actions.append(button('Refazer avaliação',()=>{clean();flow.reset();intro();}),link(document,'Voltar ao menu','/','button'));const saved=assessmentMemory?.get('precision');if(saved)actions.append(button('Ver última avaliação desta sessão',()=>{clean();flow.reset();summary(saved);}));return actions;}
  function intro(){host.replaceChildren(element(document,'p','lead','Três rodadas de 20 segundos ativos com uma sequência mista de alvos. Dificuldades 2, 5 e 8: tamanho, velocidade e pressão mudam com o nível. Esquerdo acerta; ESC pausa. Os resultados ficam apenas nesta visita.'),button('Iniciar avaliação',()=>{if(flow.start())begin();}));}
  function failure(error){if(!active)return;core.errors.report(error,{source:'assessment.precision'});clean();flow.fail();host.replaceChildren(element(document,'p','status-note','Avaliação interrompida. Não foi possível sugerir um nível.'),footer());}
- function summary(){
-  const s=flow.snapshot(),completed=s.state==='completed';host.replaceChildren(element(document,'h2','',completed?'Resultado da avaliação — Precisão de Clique':`Resumo da tentativa ${s.results.length} de 3`));
+ function summary(saved=null){
+  const s=saved?{state:'completed',results:saved}:flow.snapshot(),completed=s.state==='completed';host.replaceChildren(element(document,'h2','',completed?'Resultado da avaliação — Precisão de Clique':`Resumo da tentativa ${s.results.length} de 3`));
   const result=completed?calculatePrecisionGuidedAssessment(s.results):null;
   for(const r of result?.perAttempt.length?result.perAttempt:s.results)host.append(element(document,'p','muted',`Tentativa ${r.index} · ${PRECISION_VARIANTS[r.variant].label} · Dificuldade ${r.level} · ${r.activeSeconds} s · ${r.hits} acertos · ${r.misses} erros · ${r.clicksEligible} cliques · Precisão: ${r.accuracy===null?'—':(r.accuracy*100).toFixed(1)+'%'}${r.qi===undefined||r.qi===null?'':` · Nota diagnóstica: ${r.qi}/100`}`));
   if(completed){
    if(result.status==='recommended')host.append(element(document,'p','record-value',`Nível inicial sugerido para treino: ${result.recommendedStartingLevel}/10`),link(document,'Treinar nesse nível',`/train/precision/${result.recommendedStartingLevel}`,'button'));
    else host.append(element(document,'p','status-note',`Não foi possível sugerir um nível. ${result.reason}`));
    host.append(element(document,'p','status-note','Sugestão provisória baseada em três testes curtos de 20 segundos; não altera seu nível pessoal no Perfil. Notas diagnósticas, separadas dos scores oficiais de 60 segundos.'));
-  }else host.append(button('Próxima tentativa',()=>{if(flow.next())begin();}));host.append(footer());
+  }else host.append(button('Próxima tentativa',()=>{if(flow.next())begin();}));if(completed&&!saved)assessmentMemory?.save('precision',s.results);host.append(footer());if(completed&&assessmentMemory){host.append(element(document,'p','status-note','Resultado desta sessão: pode ser consultado ao voltar à avaliação. Recarregar ou fechar a aplicação descarta este resumo. Não é uma tentativa oficial salva.'));}
  }
  function begin(){
   clean();const token=revision,{index,preset}=flow.snapshot(),session=createSession({timeLimit:20,events:core.events,metadata:{origin:'diagnostic',modality:'precision',index,...preset}});let movement;
@@ -39,5 +39,5 @@ export function mountPrecisionAssessment({screen,core,loadPreview=()=>import('..
    if(!practice.start())throw new Error('No visible diagnostic target.');session.start();pause.disabled=false;update();
   }).catch(report);
  }
- intro();return {dispose(){if(!active)return;active=false;clean();flow.cancel();host.remove();}};
+ const previous=assessmentMemory?.get('precision');if(previous)summary(previous);else intro();return {dispose(){if(!active)return;active=false;clean();flow.cancel();host.remove();}};
 }

@@ -1,7 +1,7 @@
 import { validateAttemptRecord } from '../persistence/attemptRecord.js';
 import { MAX_DODGE_LEVEL } from '../training/dodge/constants.js';
 import { readonlySnapshot } from '../training/snapshot.js';
-export const RATING_VERSION='trainer-rating-v1';
+export const RATING_VERSION='trainer-rating-v2';
 export const RATING_WINDOW=20;
 export const RANKS=Object.freeze([
  ['ferro','Ferro',0,'#a6a6a2'],['bronze','Bronze',600,'#ce9368'],['prata','Prata',1400,'#c0d5e0'],['ouro','Ouro',2300,'#eed078'],['platina','Platina',3300,'#74d9d1'],['esmeralda','Esmeralda',4400,'#68e4a4'],['diamante','Diamante',5600,'#91beff'],['mestre','Mestre',6800,'#c799ff'],['grao-mestre','Grão-Mestre',7800,'#ff8a95'],['desafiante','Desafiante',8800,'#f6cb70'],['profissional','Profissional',9600,'#b1f479'],
@@ -22,7 +22,7 @@ export function pointsForAttempt(record){
   quality=resolved>0 ? .7*m.threatsDodged/resolved+.3*clamp(m.elapsedActiveSeconds/60):0;sample=Math.min(sample,resolved/8);
  }else if(record.modality==='precision'){sample=Math.min(sample,m.clicksEligible/20);if(record.variant!=='mixed')context=.7;}
  else if(record.modality==='kiting'){sample=Math.min(sample,m.shots/10,m.hits/6);if(record.variant!=='combat')context=.7;}
- else{sample=Math.min(sample,m.summary.presented/12);if(record.variant!=='mixed')context=.7;}
+ else{sample=Math.min(sample,m.summary.presented/12);if(!['mixed','integrated'].includes(record.variant))context=.7;}
  return Math.round(base*quality*clamp(sample)*context);
 }
 export function createSkillRating(modality){

@@ -16,7 +16,9 @@
     "test:browser": "node scripts/browser-smoke.js",
     "test:gameplay": "node scripts/browser-feedback.js",
     "test:storage": "node scripts/browser-native.js",
-    "test:dodge": "node scripts/browser-dodge.js"
+    "test:dodge": "node scripts/browser-dodge.js",
+    "test:replay": "node scripts/browser-replay.js",
+    "test:profile": "node scripts/browser-profile.js"
   },
   "dependencies": {
     "three": "0.186.1"

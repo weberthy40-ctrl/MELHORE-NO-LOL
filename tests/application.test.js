@@ -27,8 +27,10 @@ describe('fundação da aplicação', () => {
     expect(root.querySelector('main h1')?.textContent).toBe(
       'Mecânica afiada.\nJogo diferente.',
     );
+    expect(root.querySelector('.home .actions a').hash).toBe('#/assessment/dodge');
+    expect(root.querySelectorAll('.journey-steps li')).toHaveLength(3);
     expect(root.querySelector('main p')?.textContent).toBe(
-      'Velocidade, precisão e controle. Entre na arena e transforme cada treino em evolução.',
+      'Leia a ameaça. Escolha o movimento. Execute com intenção. Um laboratório de mecânica para treinar uma habilidade de cada vez.',
     );
     expect(root.querySelector('main').getAttribute('aria-labelledby')).toBe(
       root.querySelector('h1').id,

@@ -1,7 +1,31 @@
 import { it,expect } from 'vitest';
-import { pointsForAttempt,createSkillRating,rankForPoints,RANKS,overallSkillRating } from '../../src/progression/skillRating.js';
+import { pointsForAttempt,createSkillRating,rankForPoints,RANKS,RATING_VERSION,overallSkillRating } from '../../src/progression/skillRating.js';
 import { modernDodge } from '../fixtures/modernDodge.js';
 import { recordFixture } from '../fixtures/record.js';
+import { createReflexExercise } from '../../src/training/reflex/exercise.js';
+import { createReflexAttempt } from '../../src/training/reflex/attempt.js';
+import { createSession } from '../../src/training/session.js';
+import { calculateReflexScore } from '../../src/training/reflex/score.js';
+import { createReflexRecord } from '../../src/persistence/reflexRecord.js';
+import { createRandom } from '../../src/core/random.js';
+import { createBackup,parseBackup } from '../../src/persistence/backup.js';
+
+// Drive the official engine and presentation clock; scores are never overridden.
+function completedReflex({variant='integrated',level=10,presentationLimit=Infinity}={}){
+ let clock=0,presentedAt=0,presentations=0;
+ const session=createSession({countdown:0,timeLimit:60});
+ const exercise=createReflexExercise({variant,level,technical:false,now:()=>clock,rng:createRandom(42),isRunning:()=>session.snapshot().state==='running'});
+ const attempt=createReflexAttempt({session,exercise});
+ session.start();exercise.start();exercise.setRunning(true);
+ for(let step=0;step<601&&!attempt.snapshot();step++){
+  session.update(.1);clock+=100;exercise.update(.1);let state=exercise.snapshot();
+  if(state.phase==='cue-pending'&&presentations<presentationLimit){exercise.present();presentations++;presentedAt=clock;state=exercise.snapshot();}
+  if(state.phase==='cue-visible'&&state.cue.answer!==null&&clock-presentedAt>=100)exercise.respond(state.cue.answer);
+  attempt.evaluate();
+ }
+ const metrics=attempt.snapshot(),record=createReflexRecord(metrics,calculateReflexScore(metrics));
+ exercise.dispose();session.dispose();return record;
+}
 it('applies every rank boundary and keeps the professional title within the trainer scale',()=>{
  for(const [index,rank]of RANKS.entries()){expect(rankForPoints(rank.minimum).id).toBe(rank.id);if(index)expect(rankForPoints(rank.minimum-1).id).toBe(RANKS[index-1].id);}expect(rankForPoints(400).name).toBe('Ferro');expect(rankForPoints(10000)).toMatchObject({name:'Profissional',next:null,progress:1});for(const n of [-1,10001,NaN])expect(()=>rankForPoints(n)).toThrow();
 });
@@ -22,4 +46,28 @@ it('averages covered skills equally and makes incomplete coverage explicit',()=>
 it('calculates ranking points from valid precision, kiting and reflex histories',async()=>{
  const {precisionRecord}=await import('../fixtures/precisionRecord.js'),{kitingRecord}=await import('../fixtures/kitingRecord.js'),{reflexRecord}=await import('../fixtures/reflexRecord.js');
  for(const record of [precisionRecord(),kitingRecord(),reflexRecord()]){expect(pointsForAttempt(record)).toBeGreaterThan(0);const rating=createSkillRating(record.modality);rating.add(record);expect(rating.snapshot()).toMatchObject({samples:1,provisional:true});expect(rating.snapshot().points).toBeLessThanOrEqual(600);}
+});
+it('gives current integrated and legacy mixed challenges full context while retaining the simple-drill discount',()=>{
+ for(const level of [1,10]){
+  const integrated=completedReflex({level}),mixed=completedReflex({variant:'mixed',level}),simple=completedReflex({variant:'simple',level});
+  expect(integrated.metrics.summary.presented).toBeGreaterThanOrEqual(12);
+  expect(integrated.metrics.rounds.some(round=>round.cue==='MouseGreen')).toBe(true);
+  expect(integrated.metrics.rounds.some(round=>round.status==='inhibited')).toBe(true);
+  expect(integrated.score.score).toBeGreaterThanOrEqual(90);
+  expect(mixed.score.score).toBeGreaterThanOrEqual(90);expect(simple.score.score).toBeGreaterThanOrEqual(90);
+  const maximum=level===1?600:10000;
+  expect(pointsForAttempt(integrated)).toBe(maximum);expect(pointsForAttempt(mixed)).toBe(maximum);
+  expect(pointsForAttempt(simple)).toBe(maximum*.7);
+ }
+});
+it('keeps the integrated evidence gate and preserves persisted scores and backups when deriving v2 ratings',()=>{
+ const full=completedReflex(),sparse=completedReflex({presentationLimit:3}),before=JSON.stringify(full),rating=createSkillRating('reflex');
+ expect(sparse.metrics.summary.presented).toBe(3);expect(sparse.score.score).toBe(88);
+ expect(pointsForAttempt(sparse)).toBe(2444);
+ rating.add(full);rating.add(full);
+ expect(RATING_VERSION).toBe('trainer-rating-v2');
+ expect(rating.snapshot()).toMatchObject({version:RATING_VERSION,points:10000,samples:1,provisional:true});
+ expect(overallSkillRating([rating.snapshot()])).toMatchObject({version:RATING_VERSION,points:10000,covered:1,partial:true});
+ expect(JSON.stringify(full)).toBe(before);
+ expect(parseBackup(createBackup({attempts:[full]})).attempts).toEqual([full]);
 });

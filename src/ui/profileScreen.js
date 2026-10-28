@@ -8,6 +8,7 @@ import { createReflexProgress } from '../progression/reflexProgress.js';
 import { overallSkillRating,RANKS } from '../progression/skillRating.js';
 import { readDodgePlacement } from '../progression/dodgePlacement.js';
 import { formatDate } from './formatters.js';
+import { trainingAdvice } from '../progression/trainingAdvice.js';
 const factories={dodge:createDodgeProgress,precision:createPrecisionProgress,kiting:createKitingProgress,reflex:createReflexProgress};
 const number=n=>new Intl.NumberFormat('pt-BR').format(n);
 export function mountProfile({screen,repository}){
@@ -23,8 +24,9 @@ export function mountProfile({screen,repository}){
  updateOverall();
  for(const mode of MODALITIES){
   const card=element(document,'article','skill-card');card.dataset.mode=mode.id;card.append(element(document,'span','mode-icon',mode.icon),element(document,'h2','',mode.title));const content=element(document,'div');content.append(element(document,'p','muted','Carregando…'));card.append(content);grid.append(card);
-  async function load(){states.set(mode.id,'loading');updateOverall();try{
-   const overview=await loadSkillOverview({repository,modality:mode.id,createProgress:factories[mode.id]});if(!active)return;
+  let loadGeneration=0;
+  async function load(){const token=++loadGeneration;states.set(mode.id,'loading');content.replaceChildren(element(document,'p','muted','Carregando…'));updateOverall();try{
+   const overview=await loadSkillOverview({repository,modality:mode.id,createProgress:factories[mode.id]});if(!active||token!==loadGeneration)return;
    const {total}=overview.progress,rating=overview.rating;ratings.set(mode.id,rating);states.set(mode.id,'ready');content.replaceChildren();card.style.setProperty('--rank-color',rating.rank?.color??'#aec1bd');
    const badge=element(document,'p','rank-badge',rating.rank?.name??'Sem patente'),gauge=element(document,'div','skill-gauge'),value=element(document,'strong','',rating.points===null?'—':number(rating.points));gauge.style.setProperty('--progress',`${(rating.points??0)/100}%`);gauge.append(value,element(document,'span','','PONTOS'));
    const progress=element(document,'progress','rank-progress');progress.max=1;progress.value=rating.rank?.progress??0;progress.setAttribute('aria-label',rating.rank?.next?`Progresso para ${rating.rank.next.name}`:'Progresso da patente');
@@ -33,8 +35,12 @@ export function mountProfile({screen,repository}){
    let destination=`/train/${mode.id}/${overview.latest?.level??1}`,action=total?'Continuar treinando →':'Começar treino →';
    if(mode.id==='dodge'){let placement;try{placement=readDodgePlacement(document.defaultView.localStorage);}catch{placement=null;}destination=placement?'/play/dodge/normal':'/assessment/dodge';action=placement?`Continuar no nível ${placement.level} →`:'Fazer avaliação →';}
    content.append(badge,gauge,progress,element(document,'p','rank-next',next),element(document,'p','rank-sample',rating.samples?`${rating.provisional?'Patente provisória · ':''}${rating.samples} treino${rating.samples===1?'':'s'} na média`:''),numbers,element(document,'p','skill-latest',overview.latest?`Último treino · ${formatDate(overview.latest.completedAt)}`:''),link(document,action,destination,'button primary'));
-   const links=element(document,'div','skill-links');for(const [title,path]of [['Histórico','history'],['Evolução','evolution'],['Recordes','records'],['Conquistas','achievements']])links.append(link(document,title,`/${path}/${mode.id}`));content.append(links);updateOverall();
-  }catch{if(!active)return;states.set(mode.id,'error');ratings.delete(mode.id);updateOverall();content.replaceChildren(element(document,'p','status-note','Dados indisponíveis.'));const retry=element(document,'button','button','Tentar novamente');retry.type='button';retry.addEventListener('click',load);content.append(retry);}}
+   const links=element(document,'div','skill-links');for(const [title,path]of [['Histórico','history'],['Evolução','evolution'],['Recordes','records'],['Conquistas','achievements']])links.append(link(document,title,`/${path}/${mode.id}`));content.append(links);
+   const advice=trainingAdvice(mode.id,overview.latest),suggestion=element(document,'section','training-advice');suggestion.dataset.status=advice.status;
+   suggestion.append(element(document,'span','eyebrow','PRÓXIMO TREINO'),element(document,'h3','',advice.title),element(document,'p','advice-evidence',advice.evidence),element(document,'p','advice-objective',advice.objective));
+   if(overview.latest)suggestion.append(element(document,'p','muted advice-context',`Baseado somente no último treino salvo · nível ${overview.latest.level}. Sugestão de prática, sem diagnóstico de habilidade.`));
+   suggestion.append(link(document,advice.action,advice.path,'button advice-action'));content.append(suggestion);updateOverall();
+  }catch{if(!active||token!==loadGeneration)return;states.set(mode.id,'error');ratings.delete(mode.id);updateOverall();content.replaceChildren(element(document,'p','status-note','Dados indisponíveis.'));const retry=element(document,'button','button','Tentar novamente');retry.type='button';retry.addEventListener('click',load);content.append(retry);}}
   load();
  }
  const explanation=element(document,'details','profile-explanation');explanation.append(element(document,'summary','','Como meus pontos e minha patente funcionam?'),element(document,'p','muted','Cada treino salvo gera uma estimativa de 0 a 10.000 pontos, considerando dificuldade, desempenho e amostra real de jogo. A patente usa a média ponderada dos 20 treinos mais recentes de cada habilidade, com mais peso para os recentes. Repetir um nível fácil não soma pontos de experiência.'),element(document,'p','muted','A patente geral é a média das habilidades com treinos. Ela fica provisória enquanto faltar alguma habilidade ou houver menos de cinco treinos por habilidade. Todo o histórico continua salvo. Patentes são internas ao treinador; não representam elo do LoL ou certificação profissional.'));

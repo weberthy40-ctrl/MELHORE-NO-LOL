@@ -9,15 +9,25 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
     const home = createFoundationView(document);
     home.classList.add('home');
     const panel = home.querySelector('section');
-    panel.replaceChildren(element(document,'span','eyebrow','SEU PRÓXIMO NÍVEL COMEÇA AQUI'),element(document,'h1','','Mecânica afiada.\nJogo diferente.'),element(document,'p','foundation__message','Velocidade, precisão e controle. Entre na arena e transforme cada treino em evolução.'));
-    const actions=element(document,'div','actions');actions.append(link(document,'Entrar na arena →','/levels','button primary'),link(document,'Descobrir meu nível','/diagnostics','button'));panel.append(actions);
-    const art=element(document,'div','hero-art');art.setAttribute('aria-hidden','true');art.append(element(document,'span','hero-art__label','CAMPO DE TREINAMENTO'),element(document,'span','hero-art__cross','✦'),element(document,'span','hero-art__caption','FOCO. MOVIMENTO. EXECUÇÃO.'));home.append(art);
+    panel.replaceChildren(element(document,'span','eyebrow','RIFT LAB / PRÁTICA DELIBERADA'),element(document,'h1','','Mecânica afiada.\nJogo diferente.'),element(document,'p','foundation__message','Leia a ameaça. Escolha o movimento. Execute com intenção. Um laboratório de mecânica para treinar uma habilidade de cada vez.'));
+    const actions=element(document,'div','actions');actions.append(link(document,'Começar pela esquiva →','/assessment/dodge','button primary'),link(document,'Escolher outro treino','/levels','button'));panel.append(actions);
+    panel.append(element(document,'p','briefing-note','Teclado e mouse · Sem conta · Progresso neste dispositivo'));
+    const art=element(document,'div','hero-art lab-map');art.setAttribute('aria-hidden','true');
+    art.append(element(document,'span','hero-art__label','01 / LEITURA DE ARENA'),element(document,'div','lab-map__lane'),element(document,'div','lab-map__threat'),element(document,'div','lab-map__player'),element(document,'span','hero-art__caption','OBSERVAR → DECIDIR → EXECUTAR'));home.append(art);
+    const journey=element(document,'section','training-journey');journey.setAttribute('aria-labelledby','journey-title');
+    journey.append(element(document,'span','eyebrow','SEU PRIMEIRO TREINO'),element(document,'h2','','Uma habilidade. Um foco. Uma nova tentativa.'));journey.querySelector('h2').id='journey-title';
+    const steps=element(document,'ol','journey-steps');
+    for(const [number,title,copy,path,action]of [
+      ['01','Encontre seu ponto de partida','A avaliação de esquiva ajusta o desafio em cinco etapas de até 30 segundos.','/assessment/dodge','Fazer avaliação'],
+      ['02','Pratique com intenção','No Normal, treine no nível indicado. Na Sobrevivência, escolha livremente seu desafio.','/train/dodge','Abrir esquiva'],
+      ['03','Reveja e repita','Ao terminar a esquiva, reveja até os últimos seis segundos disponíveis. No Perfil, consulte as evidências dos treinos salvos.','/profile','Ver meu Perfil']
+    ]){const step=element(document,'li');step.append(element(document,'span','journey-number',number),element(document,'h3','',title),element(document,'p','muted',copy),link(document,action,path,'journey-link'));steps.append(step);}journey.append(steps);home.append(journey);
     const grid=element(document,'div','home-modes');
     for(const [index,mode]of MODALITIES.entries()){
-      const card=link(document,'',`/train/${mode.id}/1`,'home-mode');card.dataset.mode=mode.id;card.append(element(document,'span','eyebrow',`0${index+1} / ${mode.icon}`),element(document,'h2','',mode.title),element(document,'p','muted',mode.description),element(document,'span','home-mode__action','Treinar agora →'));grid.append(card);
+      const card=link(document,'',`/train/${mode.id}/1`,'home-mode');card.dataset.mode=mode.id;card.append(element(document,'span','eyebrow',`0${index+1} / ${mode.icon}`),element(document,'h2','',mode.title),element(document,'p','muted',mode.description),element(document,'span','mode-duration',mode.id==='dodge'?'AVALIAÇÃO + ARENA SEM TEMPO LIMITE':'PRÁTICA LIVRE + DESAFIO DE 60 S'),element(document,'span','home-mode__action','Explorar treino →'));grid.append(card);
     }
     panel.querySelector('h1').id='foundation-title';
-    home.append(grid,element(document,'p','home-footer',`MOBA TRAINING · ${GAME_VERSION} · Seu progresso fica neste dispositivo.`));
+    home.append(grid,element(document,'p','home-footer',`RIFT LAB · ${GAME_VERSION} · Seu progresso fica neste dispositivo.`));
     return home;
   }
   const main = element(document, 'main', 'screen');
@@ -26,7 +36,7 @@ export function createScreen(document, route, {dodgePlacement=null}={}) {
   let title = 'Página não encontrada';
   let description = 'Esse endereço não corresponde a uma tela do MOBA Training.';
   if (route.path === '/levels') {
-    title = 'Todos os níveis'; description = 'Explore quatro modalidades. Todos os níveis estão disponíveis para seleção.';
+    title = 'Todos os níveis'; description = 'Escolha uma habilidade. Na esquiva, o Normal segue sua avaliação; a Sobrevivência permite seleção livre.';
   } else if (route.path === '/diagnostics') {
     title = 'Descubra seu nível'; description = 'Uma avaliação independente para cada habilidade. Escolha uma das quatro modalidades para uma avaliação curta.';
   } else if (route.path.startsWith('/timed/reflex')) {

@@ -288,7 +288,14 @@ h1[tabindex='-1']:focus { outline:none; }
 .replay-review p { font-size:.76rem;line-height:1.5; }
 .replay-timeline { position:relative;height:6px;margin:.5rem 5px 0;border-radius:3px;background:#b2d5dc25; }
 .replay-marker { position:absolute;top:-2px;width:4px;height:10px;background:#ff7c8a;border-radius:2px;transform:translateX(-50%); }
+.replay-events { display:grid;gap:.4rem;list-style:none;padding:0;margin:.5rem 0;max-height:10rem;overflow-y:auto; }
+.replay-events li { min-width:0; }
+.replay-event { display:block;width:100%;min-height:44px;text-align:left;white-space:normal;overflow-wrap:anywhere;font-size:.76rem;line-height:1.5;padding:.55rem .7rem; }
+.replay-event[aria-pressed="true"] { border-color:#b1f479;background:#b1f47918; }
+.replay-event:focus-visible { outline:2px solid #b1f479;outline-offset:-3px; }
+.replay-review>h4 { margin:.65rem 0 .35rem;font-size:.85rem; }
 .replay-open { margin-block:.7rem; }
+.reviewing .result-content>.replay-open { position:sticky;top:0;z-index:2;min-height:44px;background:#101b22; }
 .dodge-origin-alerts { position:absolute;inset:0;pointer-events:none;z-index:1; }
 .dodge-origin-arrow { position:absolute;width:18px;height:23px;background:currentColor;clip-path:polygon(50% 0,100% 100%,50% 72%,0 100%);filter:drop-shadow(0 0 5px currentColor);opacity:.9; }
 .dodge-origin-arrow[hidden] { display:none; }
@@ -340,3 +347,46 @@ h1[tabindex='-1']:focus { outline:none; }
 .is-training[data-session='running'] .dodge-screen .session-hud :is(.session-status,.dodge-analyze,.dodge-exit),.is-training[data-session='running'] .dodge-screen :is(.preview-instructions,.dodge-spell-legend) { display:none; }
 .is-training[data-session='running'] .dodge-screen .session-hud .button { padding:.5rem .7rem;font-size:.72rem; }
 .is-training[data-session='running'] .dodge-screen .ability-hud { opacity:.85; }
+
+/* Advice reads the last saved attempt; it never changes gameplay or ratings. */
+.training-advice { margin-top:1rem;padding:1rem;border:1px solid #b1f4793d;border-radius:.7rem;background:#b1f47908;overflow-wrap:anywhere; }
+.training-advice h3 { margin:.55rem 0;font-size:1rem;line-height:1.4; }
+.training-advice p { font-size:.85rem;line-height:1.6; }
+.training-advice .advice-context { font-size:.72rem; }
+.training-advice .advice-action { display:inline-flex;align-items:center;min-height:44px;white-space:normal;max-width:100%; }
+.training-advice[data-status="legacy"],.training-advice[data-status="insufficient"] { background:#b2d5dc08;border-color:#b2d5dc30; }
+
+/* Briefing de treino: diagramas próprios, sem assets ou animação contínua. */
+.briefing-note { color:#b5c4bf; font-size:.8rem; line-height:1.7; margin-top:1.4rem; }
+.training-journey { grid-column:1/-1; width:100%; border-top:1px solid var(--line); padding-top:2rem; }
+.training-journey h2 { font-size:clamp(1.5rem,3vw,2.25rem); letter-spacing:-.035em; margin:.7rem 0 1.7rem; }
+.journey-steps { list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.5rem; }
+.journey-steps li { border-left:1px solid #65776d; padding:0 1.4rem; display:flex; flex-direction:column; align-items:flex-start; }
+.journey-number { color:var(--color-accent); font:700 .8rem ui-monospace,monospace; }
+.journey-steps h3 { font-size:1.05rem; margin:.8rem 0 0; }
+.journey-steps p { line-height:1.7; font-size:.9rem; }
+.journey-link { color:#c3eda8; display:inline-flex; align-items:center; min-height:44px; margin-top:auto; }
+.mode-duration { display:block; color:#b5c4bf; font-size:.62rem; letter-spacing:.06em; line-height:1.6; margin-bottom:1rem; }
+.lab-map { min-height:390px; background:radial-gradient(ellipse at 50% 80%,#a6f36d20,transparent 45%),linear-gradient(150deg,#1c3029,#101a1f); }
+.lab-map::before { width:270px; height:270px; border-radius:1rem; transform:translate(-50%,-50%) rotate(45deg); border-color:#b1f47933; box-shadow:0 0 0 35px #9eec6b05,0 0 0 70px #9eec6b05; }
+.lab-map__lane { position:absolute; inset:23% 22%; border:1px solid #a9bfb144; background:repeating-linear-gradient(0deg,transparent 0 31px,#a9bfb10a 32px),repeating-linear-gradient(90deg,transparent 0 31px,#a9bfb10a 32px); transform:perspective(500px) rotateX(20deg); border-radius:50% 50% 12% 12%; }
+.lab-map__threat { position:absolute; left:38%; top:29%; width:24%; height:43%; clip-path:polygon(47% 0,53% 0,100% 100%,0 100%); background:linear-gradient(#f9ac7277,#f9ac7211); border-bottom:2px solid #ffb884; }
+.lab-map__player { position:absolute; width:18px; height:18px; left:61%; top:68%; background:#c3eda8; transform:rotate(45deg); border:3px solid #eefbe5; box-shadow:0 0 0 8px #b1f47915,0 0 35px #b1f47966; }
+@media(max-width:700px){ .journey-steps { grid-template-columns:1fr; gap:1.8rem; }.foundation.home { gap:2rem; }.journey-steps li { padding-right:0; }.home .actions { align-items:stretch; }.home .actions .button { text-align:center; justify-content:center; } }
+
+/* Resumos e introduções precisam rolar; a arena ativa mantém enquadramento fixo. */
+.training-screen:not(.dodge-screen):has(> .assessment):not(:has(.stage)) { height:auto; min-height:100svh; overflow:visible; }
+.is-training:has(.training-screen:not(.dodge-screen) > .assessment):not(:has(.stage)) { height:auto; min-height:100svh; overflow:visible; }
+.arena-ready-card { max-height:calc(100svh - 2rem); overflow:auto; }
+.ready-controls { text-align:left; font-size:.8rem; line-height:1.6; border-block:1px solid #b1f47930; padding-block:.65rem; }
+.ready-controls p { margin:.4rem 0; }
+.ready-controls kbd { display:inline-block; min-width:1.7rem; padding:.05rem .35rem; margin-right:.25rem; border:1px solid #9bbd8d66; border-radius:.25rem; color:#e4f8d3; background:#26332b; font:700 .8rem ui-monospace,monospace; text-align:center; }
+.ready-controls h3 { margin:0; font-size:.8rem; color:#d6edc8; }
+.ready-controls dl { display:grid; gap:.55rem; margin:.75rem 0; }
+.ready-control { display:grid; grid-template-columns:4.5rem minmax(0,1fr); gap:.5rem; }
+.ready-control dd { margin:0; color:#c3cfca; }
+.ready-camera { font-size:.72rem; color:#b5c4bf; }
+/* Reserva o topo para tela cheia, sem sobrepor ações do briefing. */
+.arena-ready { padding-top:3.5rem; padding-bottom:.5rem; }
+.arena-ready-card { max-height:calc(100svh - 5rem); background:#101b22; }
+.training-screen:has(.arena-ready) > .fullscreen-toggle { top:.5rem; bottom:auto; z-index:4; }
