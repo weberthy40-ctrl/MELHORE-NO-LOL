@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "notes"],
+  "properties": {
+    "decision": {"type": "string", "enum": ["approve", "block"]},
+    "notes": {"type": "string", "maxLength": 4000}
+  }
+}

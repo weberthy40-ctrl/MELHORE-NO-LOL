@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "status",
+    "base_sha",
+    "patch",
+    "summary"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "changed",
+        "no-change",
+        "blocked"
+      ]
+    },
+    "base_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "patch": {
+      "type": "string",
+      "maxLength": 12000
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 2000
+    }
+  }
+}
