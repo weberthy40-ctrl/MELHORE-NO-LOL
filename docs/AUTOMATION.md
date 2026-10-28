@@ -1,5 +1,15 @@
 # Autoevolução recorrente do RIFT LAB
 
+## Política vigente: orçamento adicional R$ 0
+
+A integração de API paga está bloqueada por `paid_api_allowed:false` e orçamento0
+na política confiável. Nem `RIFT_AUTOMATION_ENABLED=true` nem uma variável de orçamento
+maior pode ultrapassar esse bloqueio. Não configure chave API nem ative serviços pagos
+para esta missão. O restante deste documento descreve a infraestrutura existente, não
+uma promessa de retomada incluída na assinatura ChatGPT.
+
+O mandato vigente está na issue2: https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/issues/2 .
+
 O mecanismo está implementado; **agendamento e uso da API não estão comprovados**.
 O fluxo não faz merge, release nem deploy. CI e Pages existentes não foram alterados.
 Estado da implantação (28/10/2026):
@@ -19,38 +29,33 @@ produto para esse PR. Evidências locais completas estão em EVOLUTION_LOG.md na
 branch de checkpoint do desenvolvimento; o PR de infraestrutura não transporta
 esse histórico de produto para main.
 
-## Ativação única
+## Retomada gratuita: conclusão verificável
 
-1. Revise e mescle **somente a infraestrutura** da branch `rift-lab/autoevolution-infra`
-   na branch padrão. O scheduler do GitHub só reconhece o workflow nessa branch.
-   A base de produto `25acaf9` está publicada em `rift-lab/product-journey`; não precisa
-   ser mesclada na main para a automação continuar nela. O novo fluxo cria/retoma
-   `rift-lab/evolution` a partir desse seed imutável.
-2. Na OpenAI Platform, use um projeto dedicado, configure os controles de faturamento,
-   limites de uso e alertas disponíveis. Confira também a franquia/limites de cobrança
-   do GitHub Actions (minutos e armazenamento podem ter custo). Crie a chave desse projeto. **A API é cobrada
-   separadamente do ChatGPT.** Orçamentos/alertas do projeto podem ser limites suaves;
-   confirme no seu plano antes de assumir bloqueio rígido. Não coloque a chave no chat.
-3. No GitHub, Settings → Secrets and variables → Actions → Secrets, confirme ou adicione
-   `OPENAI_API_KEY`. Em Variables, defina `RIFT_AUTOMATION_ENABLED=true` somente depois
-   de revisar custos e controles. Nenhum segredo/configuração da conta foi criado aqui.
-4. Actions → **RIFT LAB autoevolution** → Run workflow → `dry-run` primeiro, na branch
-   padrão. Essa opção verifica controladores, histórico/orçamento e origem sem chamar
-   modelo nem publicar produto. Depois execute `live` e confira todos os jobs.
-   A execução manual live só usa API se a variável estiver true e o segredo existir.
-5. Confira o primeiro evento `schedule` posterior, suas evidências e o commit em
-   `rift-lab/evolution`. Só isso comprova a recorrência. Não é suficiente ver o cron
-   escrito, um dry-run verde ou uma chamada de modelo concluída.
+| Caminho | Evidência e limite | Decisão atual |
+| --- | --- | --- |
+| A — ChatGPT/Codex app ou CLI | README oficial confirma login ChatGPT e uso incluído nos planos. Isso não comprova scheduler nem evento público de renovação da franquia. Nenhuma ferramenta nativa de Automations/Goals foi exposta nesta sessão. | Continuar com a franquia existente; checkpoint pronto. Retomada automática não configurada. |
+| B — Ollama/OpenCode local no Windows | Não há hardware/instalação local observável nesta sessão; qualidade, RAM/VRAM e custo de energia não medidos. | Não instalar nem prometer desempenho; alternativa depende de validação do computador. |
+| C — Cotas gratuitas de provedores | Nenhuma cota/modelo externo foi comprovado disponível para esta conta. “Free tier” divulgado não prova direito atual nem ausência de cobrança. | Nenhum provedor, token ou serviço ativado. |
+| D — CI apenas para testes | Workflows existentes podem validar código enviado sem gerar novas melhorias; franquia/limite de minutos do GitHub depende da conta. | Reutilizar CI existente, sem ativar uso adicional cobrado. Não é agente de desenvolvimento. |
 
-O workflow pede `contents:write` **somente no publicador**. Se a política da organização
-recusar esse job, um administrador terá de permitir essa operação na branch de evolução;
-não se deve ampliar permissões do agente ou trocar credenciais para contornar a recusa.
-O bot não precisa poder mesclar PRs. Recomenda-se manter a main protegida por revisão.
+Pesquisa limitada em fontes oficiais: README do Codex consultado com sucesso em
+https://github.com/openai/codex#using-codex-with-your-chatgpt-plan confirma autenticação
+ChatGPT; chamadas API são outro caminho. As páginas oficiais do app/Automations e ajuda
+foram bloqueadas pelo proxy desta sessão (403 no CONNECT). Isso impede confirmar
+capacidade/condições atuais por essas páginas; não prova que o recurso inexista em
+outra interface. Não há ferramenta aqui para instalar um agendamento nativo.
 
-**Atenção ao merge humano:** o Pages atual já reage a pushes na main. Mesclar a
-infraestrutura executará esse workflow existente conforme suas regras; este PR não
-altera seu mecanismo nem transporta as mudanças de produto anteriores. Nenhum merge
-ou deploy é realizado pela autoevolução. Branches de produto/evolução não são a main.
+Não foi encontrado nesta sessão um mecanismo verificável para observar a renovação
+da franquia ChatGPT e iniciar automaticamente uma rodada com custo adicional zero.
+Não se implementou polling, cópia de OAuth para CI, scraping de franquia ou contorno
+de limites. Se uma interface suportada expuser Automations incluídas no plano, a
+configuração deve usar esse recurso legítimo e comprovar uma execução antes de afirmar
+retomada. Nenhum mecanismo assim está ativo nesta entrega.
+
+A issue2 informa um PR de infraestrutura draft #1; a API desta sessão continuou403.
+Uma falha da API não deve ser usada como prova de ausência de PR. A infraestrutura
+API antiga não deve ser ativada pelo PR enquanto o mandato de orçamentoR$0 vigorar.
+O Pages existente não foi alterado nem acionado por merge nesta tarefa.
 
 ## Arquitetura e fonte de confiança
 
@@ -115,14 +120,14 @@ Variables opcionais (nunca secrets) ajustam a admissão:
 
 | Variable | Padrão | Efeito |
 | --- | --- | --- |
-| `RIFT_AUTOMATION_ENABLED` | ausente/desligado | `true` habilita admissão live; remover/false é o interruptor. |
+| `RIFT_AUTOMATION_ENABLED` | ausente/desligado | `true` não habilita API enquanto paid_api_allowed for false. |
 | `RIFT_MAX_MONTHLY_ROUNDS` | 10 | Pode reduzir o teto da policy; histórico UTC inclui jobs implement iniciados, mesmo falhos/cancelados. |
-| `RIFT_MONTHLY_BUDGET_USD` | 20 | Estimativa; reserva de 4 USD/rodada limita admissão a 5 rodadas/mês por padrão. |
+| `RIFT_MONTHLY_BUDGET_USD` | 0 | Ignorada para habilitação enquanto a política R$0 bloqueia API paga. |
 
-A contagem usa a API do GitHub e falha fechada se histórico estiver incompleto/negado.
+Com a política paga explicitamente autorizada em outro mandato, a contagem usa a API do GitHub e falha fechada se histórico estiver incompleto/negado.
 A concorrência serializa admissões. **20 USD não é teto rígido de gastos:** uma única
 rodada pode exceder a reserva estimada, retries internos da API não são medidos e o
-preço/modelo/tokens variam. Configure faturamento/alertas reais antes de ativar.
+preço/modelo/tokens variam. Não ativar no mandato atual de R$0.
 O modelo é o default da CLI fixada em 0.165.0; acesso/custo efetivo só é confirmado
 na conta e na primeira execução real. Nenhuma chamada paga foi feita nesta implantação.
 
