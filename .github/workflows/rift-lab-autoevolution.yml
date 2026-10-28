@@ -68,7 +68,7 @@ jobs:
 
   implement:
     needs: preflight
-    if: needs.preflight.outputs.admit == 'true'
+    if: needs.preflight.outputs.admit == 'true' && github.run_attempt == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -119,6 +119,7 @@ jobs:
 
   verify:
     needs: [preflight, implement]
+    if: github.run_attempt == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -188,7 +189,7 @@ jobs:
 
   review:
     needs: [preflight, verify]
-    if: needs.verify.outputs.status == 'changed'
+    if: needs.verify.outputs.status == 'changed' && github.run_attempt == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     permissions:
@@ -237,7 +238,7 @@ jobs:
 
   publish:
     needs: [preflight, verify, review]
-    if: needs.verify.outputs.status == 'changed'
+    if: needs.verify.outputs.status == 'changed' && github.run_attempt == '1'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -290,6 +291,7 @@ jobs:
         run: |
           {
             echo '## RIFT LAB — execution status'
+            echo "Attempt: $GITHUB_RUN_ATTEMPT; attempts above 1 never call a model or publish"
             echo "Admission: $ADMISSION"
             echo "Implement: $IMPLEMENT; candidate: $CHANGE"
             echo "QA: $VERIFY; review job: $REVIEW; branch publication: $PUBLISH"

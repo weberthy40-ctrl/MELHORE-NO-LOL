@@ -65,6 +65,10 @@ class WorkflowBoundary(unittest.TestCase):
         self.assertIn('control.py bundle',job)
         self.assertNotIn('npm ',job)
 
+    def test_partial_reruns_cannot_reuse_an_old_admission(self):
+        for name in ['implement','verify','review','publish']:
+            self.assertIn("github.run_attempt == '1'",self.jobs[name])
+
     def test_budget_and_output_sizes_are_pinned(self):
         policy=json.loads((AUTOMATION/'policy.json').read_text())
         schema=json.loads((AUTOMATION/'candidate.schema.json').read_text())

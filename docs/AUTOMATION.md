@@ -2,7 +2,22 @@
 
 O mecanismo está implementado; **agendamento e uso da API não estão comprovados**.
 O fluxo não faz merge, release nem deploy. CI e Pages existentes não foram alterados.
-Estado e evidências desta implantação: [EVOLUTION_LOG.md](EVOLUTION_LOG.md).
+Estado da implantação (28/10/2026):
+
+| Etapa | Situação comprovada |
+| --- | --- |
+| Implementado no repositório | Sim, controladores/prompt/workflow e testes locais. |
+| Enviado ao remoto | Sim: branches `rift-lab/autoevolution-infra` (infra somente) e `rift-lab/product-journey` (seed25acaf9). Main intacta. |
+| Segredo configurado | Não verificado; nenhuma chave foi criada ou lida nesta tarefa. |
+| Primeira execução remota do orquestrador | Não comprovada. API do GitHub nesta sessão retornou Forbidden; nenhum modelo/API foi chamado. |
+| Agendamento comprovado | Não. Workflow ainda fora da branch padrão; nenhum merge/ativação foi feito. |
+
+Abertura automática do PR foi recusada pela API (`Forbidden`), apesar de o push Git
+funcionar. [Abra o PR de infraestrutura para main](https://github.com/weberthy40-ctrl/MELHORE-NO-LOL/compare/main...rift-lab/autoevolution-infra?expand=1)
+e confira os18 arquivos de infraestrutura antes de mesclar. Não use a branch de
+produto para esse PR. Evidências locais completas estão em EVOLUTION_LOG.md na
+branch de checkpoint do desenvolvimento; o PR de infraestrutura não transporta
+esse histórico de produto para main.
 
 ## Ativação única
 
@@ -82,7 +97,8 @@ A política confiável está em `.github/automation/policy.json`:
   GitHub pode atrasar/pular agendas e pode desativar schedules por inatividade conforme
   suas regras. Não há garantia de execução pontual nem processo contínuo nesta sessão.
 - Uma rodada por vez; timeout do implementador 15 min, revisor 8 min e QA 50 min
-  (jobs têm margens limitadas). Não há wrapper de retry; rerun de uma execução é recusado.
+  (jobs têm margens limitadas). Não há wrapper de retry; rerun de uma execução é recusado
+  tanto na admissão quanto nos jobs, inclusive rerun parcial que reutilize outputs antigos.
 - Até uma implementação e uma revisão Codex por rodada; **cada invocação pode fazer
   várias requisições à API**. O custo real não é medido por este workflow.
 - Um ciclo e três correções por problema são instruções ao modelo e critérios de
