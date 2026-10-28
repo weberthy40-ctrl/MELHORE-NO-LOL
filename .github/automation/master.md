@@ -30,6 +30,12 @@ outro job examinará o patch. O orquestrador não repete automaticamente chamada
    permitir. Não instale dependências nem acesse a rede. Dependências imutáveis já
    estão preparadas. Falhas ambientais e checks não executados são distintos de PASS.
    A validação externa fará npm test/lint/build/audit, seis suítes nativas e produção.
+   Para UI/rota nova, acrescente cenário nativo executável em tests/browser/*.mjs:
+   até cinco arquivos,90s cada, Node ESM com URL de produção em process.argv[2],
+   CDP já disponível em9222 e QA_ARTIFACT_DIR para capturas. Reutilize scripts/cdp.js;
+   não simule DOM/renderer se a alegação é de gameplay/WebGL. Faça assertions e
+   capturas das telas alteradas; saia com código não-zero em falhas. Essa extensão
+   roda somente no job sem chave API, sob usuário isolado, após os gates existentes.
 5. Revise o próprio diff procurando regressões, pouca evidência, zero ações, legado,
    callbacks tardios, pausa/saída, descarte, teclado e layout estreito. Não remova nem
    enfraqueça assertions para passar. Se não conseguir corrigir, reverta só o seu diff.

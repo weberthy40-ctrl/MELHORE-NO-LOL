@@ -129,7 +129,11 @@ na conta e na primeira execução real. Nenhuma chamada paga foi feita nesta imp
 ## Validação e classificação
 
 `verify` reutiliza npm test, lint, build, audit e `scripts/ci-browser.sh` (seis suítes),
-seguido do smoke de produção. Instalação respeita lockfile e não executa lifecycle hooks.
+seguido do smoke de produção. Até cinco cenários novos de produto em
+`tests/browser/*.mjs` também são executados nesse job sem chave, com limite90s cada,
+URL de produção no primeiro argumento e CDP disponível. Assim novas telas/modos podem
+obter evidência nativa sem permitir ao agente alterar os controladores. Casos ausentes
+não são inventados; falha/timeout ou mais de cinco cenários bloqueia a rodada. Instalação respeita lockfile e não executa lifecycle hooks.
 A action instala CLI/proxy como ferramentas do runner, não dependências do produto.
 O Node dos testes é `.nvmrc`; a action tem seu próprio bootstrap Node24 documentado.
 

@@ -82,4 +82,31 @@ class WorkflowBoundary(unittest.TestCase):
         for action in re.findall(r'uses: ([^\s]+)',self.text):
             self.assertRegex(action,r'@[a-f0-9]{40}$')
 
+
+class ExtraBrowserProtocol(unittest.TestCase):
+    def run_cases(self,cases):
+        import os
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);folder=root/'tests/browser';folder.mkdir(parents=True)
+            for name,body in cases.items():(folder/name).write_text(body)
+            text=(AUTOMATION/'qa.sh').read_text()
+            section=text.split('# BEGIN EXTRA BROWSER SCENARIOS\n',1)[1].split('# END EXTRA BROWSER SCENARIOS',1)[0]
+            result=subprocess.run(['bash','-euo','pipefail','-c',section],cwd=root,env={**os.environ,'out':str(root/'results')},capture_output=True,text=True,timeout=10)
+            return result,(root/'ran.txt').exists()
+
+    def test_native_scenario_receives_url_and_artifact_dir(self):
+        result,_=self.run_cases({'journey.mjs':"import assert from 'node:assert/strict';import process from 'node:process';assert.equal(process.argv[2],'http://127.0.0.1:4173/');assert.ok(process.env.QA_ARTIFACT_DIR.endsWith('/new-browser'));console.log('fixture scenario, not native browser evidence');"})
+        self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_more_than_five_scenarios_is_rejected_before_execution(self):
+        code="import {writeFileSync} from 'node:fs';writeFileSync('ran.txt','bad');"
+        result,ran=self.run_cases({str(i)+'.mjs':code for i in range(6)})
+        self.assertNotEqual(result.returncode,0);self.assertFalse(ran)
+
+    def test_failing_scenario_blocks_round(self):
+        result,_=self.run_cases({'failure.mjs':"import process from 'node:process';process.exit(7);"})
+        self.assertEqual(result.returncode,7)
+
 if __name__=='__main__':unittest.main()

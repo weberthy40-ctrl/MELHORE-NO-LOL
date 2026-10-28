@@ -29,4 +29,13 @@ for endpoint in http://127.0.0.1:4173/ http://127.0.0.1:9222/json/version; do
  [[ "$ready" == true ]] || exit 1
 done
 QA_ARTIFACT_DIR="$out/production" CDP_TIMEOUT_MS=45000 npm run test:browser -- http://127.0.0.1:4173/
+# BEGIN EXTRA BROWSER SCENARIOS
+# Candidate scenarios execute only here, under the unprivileged QA user and no secrets.
+shopt -s nullglob
+scenarios=(tests/browser/*.mjs)
+if (( ${#scenarios[@]} > 5 )); then echo 'Too many additional browser scenarios'; exit 1; fi
+for scenario in "${scenarios[@]}"; do
+ QA_ARTIFACT_DIR="$out/new-browser" CDP_TIMEOUT_MS=45000 timeout 90s node -- "$scenario" http://127.0.0.1:4173/
+done
+# END EXTRA BROWSER SCENARIOS
 printf 'APROVADA: unit/lint/build/audit/browser6/production. Fullscreen EXCLUIDO; hardware NAO EXECUTADO.\n' >"$out/result.txt"
